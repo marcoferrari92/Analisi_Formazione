@@ -118,7 +118,7 @@ if uploaded_file is not None:
                    
                 with c2:
                     st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}** su {total_aziende}")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}**")
                     st.metric("Volume Target (€)", f"{info_rank['VALORE_TARGET_€']:,.2f} €")
                     st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TARGET']}**")
                 with c3:
