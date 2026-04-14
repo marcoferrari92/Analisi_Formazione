@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-from analisi import analisi_incidenza
+
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
