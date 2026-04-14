@@ -44,7 +44,7 @@ if uploaded_file is not None:
             text = str(row_text).upper()
             return any(k in text for k in keywords)
 
-        # Applichiamo il flag target a ogni riga del file originale
+        # Flag target
         df_raw['is_target'] = df_raw['RNA_MISURA'].apply(is_target_row)
         df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
@@ -77,32 +77,35 @@ if uploaded_file is not None:
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO EVIDENZIATO ---
-        st.subheader("🎯 Dettaglio Azienda e Bandi Target")
-        search_txt = st.text_input("Inserisci Ragione Sociale per vedere tutti i suoi bandi (Verde = Target)")
+        st.subheader("🎯 Dettaglio Bandi per Azienda")
+        search_txt = st.text_input("Inserisci Ragione Sociale per analizzare la storia dei bandi")
 
         if search_txt:
-            # Filtriamo i bandi originali per quell'azienda
             azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
             
             if not azienda_details.empty:
-                # Funzione per colorare le righe
+                # Recuperiamo il nome esatto (dal primo match) per sicurezza
+                nome_esatto = azienda_details['RAGIONE SOCIALE'].iloc[0]
+                st.info(f"Visualizzando i bandi per: **{nome_esatto}**")
+
                 def highlight_target(row):
                     return ['background-color: #d4edda' if row.is_target else '' for _ in row]
 
-                # Mostriamo solo le colonne interessanti per il dettaglio
-                cols_to_show = ['RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target']
+                # Aggiunto 'RAGIONE SOCIALE' tra le colonne mostrate per sicurezza
+                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO']
+                
                 st.dataframe(
                     azienda_details[cols_to_show].style.apply(highlight_target, axis=1),
                     use_container_width=True,
                     hide_index=True
                 )
             else:
-                st.warning("Nessuna azienda trovata con questo nome.")
+                st.warning("Nessuna azienda trovata.")
 
         st.divider()
 
-        # --- TABELLA GENERALE ---
-        st.subheader("📋 Report Generale")
+        # --- REPORT GENERALE ---
+        st.subheader("📋 Report Riepilogativo Generale")
         st.dataframe(
             report,
             column_config={
@@ -121,4 +124,4 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"Errore: {e}")
 else:
-    st.info("Carica il file CSV per iniziare.")
+    st.info("In attesa del file CSV...")
