@@ -118,14 +118,14 @@ if uploaded_file is not None:
                    
                 with c2:
                     st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
-                    st.caption(f"🏆 Rank Volume: **#{info_rank['RANK_VOL_TOT']}** su {total_aziende}")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}** su {total_aziende}")
                     st.metric("Volume Target (€)", f"{info_rank['VALORE_TARGET_€']:,.2f} €")
-                    st.caption(f"🏆 Rank Vol. Target: **#{info_rank['RANK_VOL_TARGET']}**")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TARGET']}**")
                 with c3:
                     st.metric("Bandi Totali", int(info_rank['N_TOT_AIUTI']))
-                    st.caption(f"🏆 Rank N. Totale: **#{info_rank['RANK_N_TOT']}**")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_N_TOT']}**")
                     st.metric("Bandi Target", int(info_rank['N_AIUTI_TARGET']))
-                    st.caption(f"🏆 Rank N. Target: **#{info_rank['RANK_N_TARGET']}**")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_N_TARGET']}**")
 
                 st.write("---")
                 st.write("**Dettaglio cronologico bandi (Verde = Target):**")
