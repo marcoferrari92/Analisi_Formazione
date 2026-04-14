@@ -6,81 +6,96 @@ import io
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
 
 st.title("📊 Analizzatore Registro Nazionale Aiuti")
-st.markdown("""
-Carica il file arricchito generato dallo script Python per ottenere una sintesi commerciale delle aziende.
-""")
+st.markdown("Carica il file arricchito per analizzare i finanziamenti e qualificare i tuoi lead.")
 
-# --- SIDEBAR: INPUT DATI ---
+# --- SIDEBAR: INPUT E CONTROLLI ---
 st.sidebar.header("1. Caricamento Dati")
-uploaded_file = st.sidebar.file_opener = st.sidebar.file_uploader("Carica il file CSV arricchito", type=["csv"])
+uploaded_file = st.sidebar.file_uploader("Carica il file CSV arricchito", type=["csv"])
 
-st.sidebar.header("2. Filtri Ricerca")
+st.sidebar.header("2. Filtri Target")
 default_kw = "formazione, competenze, corso, training"
 keywords_raw = st.sidebar.text_area("Parole chiave (separate da virgola)", value=default_kw)
 
-# --- LOGICA PRINCIPALE ---
+# TASTO DI RICERCA / AGGIORNAMENTO
+btn_ricerca = st.sidebar.button("🔍 Avvia Ricerca / Aggiorna", use_container_width=True, type="primary")
+
+st.sidebar.header("3. Ordinamento")
+sort_options = {
+    "Numero Aiuti Target": "N_AIUTI_TARGET",
+    "Valore Aiuti Target (€)": "VALORE_TARGET_€",
+    "Valore Totale (€)": "VALORE_TOTALE_€",
+    "Numero Totale Aiuti": "N_TOT_AIUTI"
+}
+sort_choice = st.sidebar.selectbox("Ordina tabella per:", list(sort_options.keys()), index=0)
+
+# --- LOGICA DI ELABORAZIONE ---
 if uploaded_file is not None:
     try:
-        # Caricamento dati
-        df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8-sig')
+        # Caricamento e caching per velocità
+        @st.cache_data
+        def load_data(file):
+            return pd.read_csv(file, sep=';', encoding='utf-8-sig')
+
+        df_raw = load_data(uploaded_file)
         
         # Pulizia Importi
-        df['RNA_IMPORTO'] = pd.to_numeric(df['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
+        df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
         
-        # Elaborazione parole chiave
-        keywords = [k.strip().upper() for k in keywords_raw.split(',')]
+        # Eseguiamo i calcoli solo se il tasto viene premuto o se è la prima esecuzione
+        # Streamlit gestisce lo stato, quindi usiamo btn_ricerca come trigger
         
-        def check_keywords(testo):
-            testo = str(testo).upper()
-            return any(k in testo for k in keywords)
+        with st.spinner('Rielaborazione dati in corso...'):
+            # Elaborazione parole chiave
+            keywords = [k.strip().upper() for k in keywords_raw.split(',')]
+            
+            def check_keywords(testo):
+                testo = str(testo).upper()
+                return any(k in testo for k in keywords)
 
-        # Calcolo indicatori
-        df['is_target'] = df['RNA_MISURA'].apply(check_keywords)
-        df['importo_target'] = df.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
+            # Calcolo indicatori target
+            df_raw['is_target'] = df_raw['RNA_MISURA'].apply(check_keywords)
+            df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
-        # --- AGGREGAZIONE REPORT ---
-        colonne_rna = ['RNA_PIVA', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target', 'importo_target']
-        colonne_anagrafiche = [c for c in df.columns if c not in colonne_rna]
-        
-        report = df.groupby('RAGIONE SOCIALE').agg({
-            **{c: 'first' for c in colonne_anagrafiche if c != 'RAGIONE SOCIALE'},
-            'RNA_MISURA': 'count',
-            'RNA_IMPORTO': 'sum',
-            'is_target': 'sum',
-            'importo_target': 'sum'
-        }).reset_index()
+            # --- AGGREGAZIONE ---
+            col_rna = ['RNA_PIVA', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target', 'importo_target']
+            col_ana = [c for c in df_raw.columns if c not in col_rna]
+            
+            report = df_raw.groupby('RAGIONE SOCIALE').agg({
+                **{c: 'first' for c in col_ana if c != 'RAGIONE SOCIALE'},
+                'RNA_MISURA': 'count',
+                'RNA_IMPORTO': 'sum',
+                'is_target': 'sum',
+                'importo_target': 'sum'
+            }).reset_index()
 
-        # Rinominiamo per l'utente
-        report.columns = [
-            'RAGIONE SOCIALE' if c == 'RAGIONE SOCIALE' else c for c in report.columns
-        ]
-        report = report.rename(columns={
-            'RNA_MISURA': 'N_TOT_AIUTI',
-            'RNA_IMPORTO': 'VALORE_TOTALE_€',
-            'is_target': 'N_AIUTI_TARGET',
-            'importo_target': 'VALORE_TARGET_€'
-        })
+            report = report.rename(columns={
+                'RNA_MISURA': 'N_TOT_AIUTI',
+                'RNA_IMPORTO': 'VALORE_TOTALE_€',
+                'is_target': 'N_AIUTI_TARGET',
+                'importo_target': 'VALORE_TARGET_€'
+            })
 
-        # --- VISUALIZZAZIONE DASHBOARD ---
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Aziende Analizzate", len(report))
-        m2.metric("Aiuti Totali Trovati", df.shape[0])
-        m3.metric("Volume Totale €", f"{report['VALORE_TOTALE_€'].sum():,.2f} €")
-        m4.metric("Aiuti Target (Keyword)", int(report['N_AIUTI_TARGET'].sum()))
+            # Ordinamento
+            report = report.sort_values(by=sort_options[sort_choice], ascending=False)
+
+        # --- VISUALIZZAZIONE ---
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Aziende", len(report))
+        k2.metric("Aiuti Totali", df_raw.shape[0])
+        k3.metric("Volume Totale", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
+        k4.metric("Aiuti Target", int(report['N_AIUTI_TARGET'].sum()), delta_color="normal")
 
         st.divider()
 
-        # Tabella Interattiva
-        st.subheader("🔍 Analisi Dettagliata per Azienda")
-        
-        # Filtro rapido in app
-        search = st.text_input("Cerca azienda nella tabella...")
-        if search:
-            report = report[report['RAGIONE SOCIALE'].str.contains(search, case=False)]
+        # Ricerca testuale veloce sulla tabella risultante
+        search_txt = st.text_input("🎯 Cerca azienda specifica nel report...")
+        if search_txt:
+            report_disp = report[report['RAGIONE SOCIALE'].str.contains(search_txt, case=False)]
+        else:
+            report_disp = report
 
-        # Visualizzazione con stile
         st.dataframe(
-            report.sort_values(by='VALORE_TOTALE_€', ascending=False),
+            report_disp,
             column_config={
                 "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
                 "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
@@ -90,18 +105,17 @@ if uploaded_file is not None:
             use_container_width=True
         )
 
-        # --- DOWNLOAD ---
-        st.divider()
+        # Download button
         csv_buffer = io.BytesIO()
         report.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
-        st.download_button(
-            label="💾 Scarica Report Sintetico (CSV)",
+        st.sidebar.download_button(
+            label="💾 Scarica Report (CSV)",
             data=csv_buffer.getvalue(),
-            file_name="Report_Sintesi_RNA.csv",
+            file_name="Analisi_RNA_Target.csv",
             mime="text/csv"
         )
 
     except Exception as e:
-        st.error(f"Errore nel processare il file: {e}")
+        st.error(f"Si è verificato un errore: {e}")
 else:
-    st.info("In attesa del caricamento del file CSV...")
+    st.info("👋 Benvenuto! Carica il file CSV generato dalla scansione dell'SSD per iniziare l'analisi.")
