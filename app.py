@@ -151,8 +151,8 @@ if uploaded_file is not None:
         st.subheader("📈 Analisi Correlazione: Budget Target vs Budget Totale")
         st.scatter_chart(
             report,
-            x='VALORE_TOTALE_€',
-            y='VALORE_TARGET_€',
+            y='VALORE_TOTALE_€',
+            x='VALORE_TARGET_€',
             size='N_TOT_AIUTI',
             color='#2ecc71',
             use_container_width=True
