@@ -23,6 +23,8 @@ st.sidebar.header("3. Ordinamento Report")
 sort_options = {
     "Numero Aiuti Target": "N_AIUTI_TARGET",
     "Valore Aiuti Target (€)": "VALORE_TARGET_€",
+    "Incidenza Numero (%)": "INCIDENZA_N_TARGET_%",
+    "Incidenza Volume (%)": "INCIDENZA_VOL_TARGET_%",
     "Valore Totale (€)": "VALORE_TOTALE_€",
     "Numero Totale Aiuti": "N_TOT_AIUTI"
 }
@@ -36,14 +38,18 @@ if uploaded_file is not None:
             return pd.read_csv(file, sep=';', encoding='utf-8-sig')
 
         df_raw = load_data(uploaded_file)
+        
+        # Pulizia Importi
         df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
         
+        # Elaborazione parole chiave
         keywords = [k.strip().upper() for k in keywords_raw.split(',')]
         
         def is_target_row(row_text):
             text = str(row_text).upper()
             return any(k in text for k in keywords)
 
+        # Identificazione righe target
         df_raw['is_target'] = df_raw['RNA_MISURA'].apply(is_target_row)
         df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
@@ -64,12 +70,17 @@ if uploaded_file is not None:
             'importo_target': 'VALORE_TARGET_€'
         })
 
+        # --- CALCOLO NUOVE COLONNE INCIDENZA ---
+        report['INCIDENZA_N_TARGET_%'] = (report['N_AIUTI_TARGET'] / report['N_TOT_AIUTI'] * 100).fillna(0)
+        report['INCIDENZA_VOL_TARGET_%'] = (report['VALORE_TARGET_€'] / report['VALORE_TOTALE_€'] * 100).fillna(0)
+
         # --- CALCOLO RANKING ---
         report['RANK_VOL_TOT'] = report['VALORE_TOTALE_€'].rank(ascending=False, method='min').astype(int)
         report['RANK_VOL_TARGET'] = report['VALORE_TARGET_€'].rank(ascending=False, method='min').astype(int)
         report['RANK_N_TOT'] = report['N_TOT_AIUTI'].rank(ascending=False, method='min').astype(int)
         report['RANK_N_TARGET'] = report['N_AIUTI_TARGET'].rank(ascending=False, method='min').astype(int)
 
+        # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
         # --- KPI GENERALI ---
@@ -99,7 +110,7 @@ if uploaded_file is not None:
 
                 st.info(f"### 🏢 {nome_esatto}")
                 
-                # --- BLOCCO ETICHETTE (RIPRISTINATO) ---
+                # --- BLOCCO ETICHETTE (MANTENUTO ORIGINALE) ---
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
@@ -140,8 +151,8 @@ if uploaded_file is not None:
             column_config={
                 "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
                 "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
-                "RANK_VOL_TOT": "Rank Vol.",
-                "RANK_N_TARGET": "Rank Target"
+                "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
+                "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
             },
             hide_index=True, use_container_width=True
         )
