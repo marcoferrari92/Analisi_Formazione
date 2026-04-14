@@ -81,21 +81,31 @@ if uploaded_file is not None:
         search_txt = st.text_input("Inserisci Ragione Sociale per analizzare la storia dei bandi")
 
         if search_txt:
+            # Filtriamo i bandi originali
             azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
             
             if not azienda_details.empty:
-                # Recuperiamo il nome esatto (dal primo match) per sicurezza
                 nome_esatto = azienda_details['RAGIONE SOCIALE'].iloc[0]
                 st.info(f"Visualizzando i bandi per: **{nome_esatto}**")
 
-                def highlight_target(row):
-                    return ['background-color: #d4edda' if row.is_target else '' for _ in row]
-
-                # Aggiunto 'RAGIONE SOCIALE' tra le colonne mostrate per sicurezza
-                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO']
+                # Definiamo le colonne da visualizzare (includiamo is_target ma la nasconderemo)
+                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target']
                 
+                # Funzione di styling corretta
+                def highlight_rows(row):
+                    # Se il valore nella colonna is_target è True, colora la riga
+                    color = 'background-color: #d4edda' if row['is_target'] else ''
+                    return [color] * len(row)
+
+                # Creiamo il dataframe stilizzato
+                styled_df = azienda_details[cols_to_show].style.apply(highlight_rows, axis=1)
+
                 st.dataframe(
-                    azienda_details[cols_to_show].style.apply(highlight_target, axis=1),
+                    styled_df,
+                    column_config={
+                        "is_target": None, # Nasconde la colonna tecnica is_target alla vista
+                        "RNA_IMPORTO": st.column_config.NumberColumn(format="%.2f €"),
+                    },
                     use_container_width=True,
                     hide_index=True
                 )
