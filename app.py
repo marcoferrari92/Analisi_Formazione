@@ -85,8 +85,6 @@ if uploaded_file is not None:
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
-        if 'report' in locals():
-            analisi_incidenza(report)
 
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
