@@ -104,14 +104,16 @@ if uploaded_file is not None:
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
-                    st.metric("Bandi Totali", tot_bandi)
+                    perc = (target_bandi / tot_bandi * 100) if tot_bandi > 0 else 0
+                    st.metric("% Incidenza Target", f"{perc:.1f}%")
+ 
                 with c2:
                     st.metric("Volume Totale (€)", f"{vol_totale:,.2f} €")
                     st.metric("Volume Target (€)", f"{vol_target:,.2f} €", delta=f"{vol_target-vol_totale:,.2f} €", delta_color="off")
                 with c3:
+                    st.metric("Bandi Totali", tot_bandi)
                     st.metric("Bandi Target", int(target_bandi))
-                    perc = (target_bandi / tot_bandi * 100) if tot_bandi > 0 else 0
-                    st.metric("% Incidenza Target", f"{perc:.1f}%")
+                    
 
                 st.write("---")
                 st.write("**Cronologia completa bandi (Verde = Corrisponde alle parole chiave):**")
