@@ -77,7 +77,7 @@ if uploaded_file is not None:
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO EVIDENZIATO ---
-        st.subheader("🎯 Dettaglio Bandi per Azienda")
+        st.subheader("🎯 Analisi Dettagliata Azienda")
         search_txt = st.text_input("Inserisci Ragione Sociale per analizzare la storia dei bandi")
 
         if search_txt:
@@ -86,24 +86,48 @@ if uploaded_file is not None:
             
             if not azienda_details.empty:
                 nome_esatto = azienda_details['RAGIONE SOCIALE'].iloc[0]
-                st.info(f"Visualizzando i bandi per: **{nome_esatto}**")
-
-                # Definiamo le colonne da visualizzare (includiamo is_target ma la nasconderemo)
-                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target']
                 
+                # Conversione date per calcolare il periodo storico
+                azienda_details['RNA_DATA_DT'] = pd.to_datetime(azienda_details['RNA_DATA'], dayfirst=True, errors='coerce')
+                data_min = azienda_details['RNA_DATA_DT'].min()
+                data_max = azienda_details['RNA_DATA_DT'].max()
+                
+                # Calcoli per il riquadro riassuntivo
+                tot_bandi = len(azienda_details)
+                vol_totale = azienda_details['RNA_IMPORTO'].sum()
+                target_bandi = azienda_details['is_target'].sum()
+                vol_target = azienda_details['importo_target'].sum()
+
+                # --- RIQUADRO RIASSUNTIVO (Dashboard Aziendale) ---
+                st.info(f"### 🏢 {nome_esatto}")
+                
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
+                    st.metric("Bandi Totali", tot_bandi)
+                with c2:
+                    st.metric("Volume Totale (€)", f"{vol_totale:,.2f} €")
+                    st.metric("Volume Target (€)", f"{vol_target:,.2f} €", delta=f"{vol_target-vol_totale:,.2f} €", delta_color="off")
+                with c3:
+                    st.metric("Bandi Target", int(target_bandi))
+                    perc = (target_bandi / tot_bandi * 100) if tot_bandi > 0 else 0
+                    st.metric("% Incidenza Target", f"{perc:.1f}%")
+
+                st.write("---")
+                st.write("**Cronologia completa bandi (Verde = Corrisponde alle parole chiave):**")
+
                 # Funzione di styling corretta
                 def highlight_rows(row):
-                    # Se il valore nella colonna is_target è True, colora la riga
                     color = 'background-color: #d4edda' if row['is_target'] else ''
                     return [color] * len(row)
 
-                # Creiamo il dataframe stilizzato
+                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target']
                 styled_df = azienda_details[cols_to_show].style.apply(highlight_rows, axis=1)
 
                 st.dataframe(
                     styled_df,
                     column_config={
-                        "is_target": None, # Nasconde la colonna tecnica is_target alla vista
+                        "is_target": None, 
                         "RNA_IMPORTO": st.column_config.NumberColumn(format="%.2f €"),
                     },
                     use_container_width=True,
