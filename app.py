@@ -128,38 +128,6 @@ if uploaded_file is not None:
                     st.metric("Bandi Target", int(info_rank['N_AIUTI_TARGET']))
                     st.caption(f"🏆 Rank: **{info_rank['RANK_N_TARGET']}**")
 
-                    # --- CALCOLO VARIABILI INCIDENZA PER IL GRAFICO ---
-                    inc_n = (info_rank['N_AIUTI_TARGET'] / info_rank['N_TOT_AIUTI'] * 100) if info_rank['N_TOT_AIUTI'] > 0 else 0
-                    inc_vol = (info_rank['VALORE_TARGET_€'] / info_rank['VALORE_TOTALE_€'] * 100) if info_rank['VALORE_TOTALE_€'] > 0 else 0
-
-                    # --- NUOVO GRAFICO DELLE INCIDENZE ---
-                    st.write("#### 📊 Confronto Incidenze Target")
-                
-                    # Creiamo un piccolo dataframe per il grafico
-                    df_chart_inc = pd.DataFrame({
-                        'Tipo Incidenza': ['Su Numero Bandi', 'Su Volume Economico'],
-                        'Percentuale': [inc_n, inc_vol]
-                    })
-
-                    chart_inc = alt.Chart(df_chart_inc).mark_bar(cornerRadiusEnd=4).encode(
-                        x=alt.X('Percentuale:Q', scale=alt.Scale(domain=(0, 100)), title="Percentuale (%)"),
-                        y=alt.Y('Tipo Incidenza:N', title=None, sort='-x'),
-                        color=alt.Color('Tipo Incidenza:N', scale=alt.Scale(range=['#2ecc71', '#27ae60']), legend=None),
-                        tooltip=['Tipo Incidenza', alt.Tooltip('Percentuale:Q', format='.1f')]
-                    ).properties(height=150)
-
-                    # Aggiungiamo il testo delle percentuali sopra le barre
-                    text_inc = chart_inc.mark_text(
-                        align='left',
-                        baseline='middle',
-                        dx=5,
-                        color='white'
-                    ).encode(
-                        text=alt.Text('Percentuale:Q', format='.1f')
-                    )
-
-                    st.altair_chart(chart_inc + text_inc, use_container_width=True)
-
                 st.write("---")
                 def apply_highlight(row):
                     color = 'background-color: #d4edda' if row['is_target'] else ''
