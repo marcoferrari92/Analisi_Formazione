@@ -174,13 +174,21 @@ if uploaded_file is not None:
             )
     
             fig.update_traces(
-                marker=dict(size=8, opacity=0.6, color='#2ecc71'),
+                marker=dict(size=6, opacity=0.4, color='#2ecc71'), # Pallini più piccoli e trasparenti
                 line_color='#27ae60',
-                boxmean=True 
+                boxmean=True,
+                jitter=0, # <--- Rimuove lo spostamento laterale dei pallini, mettendoli "in fila"
+                pointpos=0 # <--- Posiziona i pallini esattamente sopra la scatola (0 = centro)
             )
 
-            fig.update_layout(height=300, margin=dict(l=20, r=20, t=20, b=20))
-            st.plotly_chart(fig, use_container_width=True)
+            # Riduciamo l'altezza a 200/250px per guadagnare spazio nell'expander
+            fig.update_layout(
+                height=220, 
+                margin=dict(l=10, r=10, t=10, b=10),
+                yaxis=dict(showticklabels=False) # Nascondiamo l'asse Y che è inutile nel box plot orizzontale
+            )
+
+st.plotly_chart(fig, use_container_width=True)
 
             st.caption("Il grafico analizza la distribuzione del benchmark tra le sole aziende che hanno già investito in formazione.")
 
