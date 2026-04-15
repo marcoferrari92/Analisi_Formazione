@@ -88,6 +88,7 @@ if uploaded_file is not None:
 
         render_database_misure(df_raw)
         st.divider()
+        st.subheader("📋 Report Riepilogativo Generale")
         
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
@@ -95,11 +96,8 @@ if uploaded_file is not None:
         k2.metric("Volume Totale Analizzato", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
         k3.metric("Bandi Target Trovati", int(report['N_AIUTI_TARGET'].sum()))
         k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
-
-        st.divider()
         
         # --- REPORT GENERALE ---
-        st.subheader("📋 Report Riepilogativo Generale")
         st.dataframe(
             report,
             column_config={
