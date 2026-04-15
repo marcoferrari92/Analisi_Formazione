@@ -145,22 +145,24 @@ if uploaded_file is not None:
             """)
             st.divider()
 
-            # --- GRAFICO DEGLI OUTSIDER ---
-            st.write("### 📈 Distribuzione Incidenza Target per Azienda")
-    
-            # Prepariamo i dati per il grafico: prendiamo le prime 20 aziende per volume totale
-            # o tutte, ordinate per incidenza per vedere subito chi sta fuori
-            chart_data = report.sort_values('INCIDENZA_VOL_TARGET_%', ascending=False).head(30) # Top 30 per leggibilità
-    
-            # Creazione grafico con Streamlit (semplice ed efficace)
-            st.bar_chart(
-                chart_data,
-                x="RAGIONE SOCIALE",
-                y="INCIDENZA_VOL_TARGET_%",
-                color="#2ecc71", # Un verde business
+            # --- PARTE 2: SCATTER CHART (Incidenza sulla X) ---
+            st.write("### 📍 Posizionamento Aziende: Budget vs Incidenza")
+            st.markdown(f"""
+            Il grafico mostra dove si collocano le aziende. La linea verticale immaginaria della **mediana ({mediana_incidenza:.2f}%)** separa i target dai profili maturi.
+            """)
+
+            # Visualizziamo lo scatter chart
+            # X = Incidenza (quello che hai chiesto)
+            # Y = Valore Totale (per capire l'importanza economica del lead)
+            st.scatter_chart(
+                report,
+                x='INCIDENZA_VOL_TARGET_%',
+                y='VALORE_TOTALE_€',
+                color='STATO',  # Distingue graficamente Clienti da Prospect
+                size='N_TOT_AIUTI',
                 use_container_width=True
             )
-            st.caption("Il grafico mostra l'incidenza della formazione sul budget totale. Le barre molto alte indicano gli outlier positivi.")
+            st.caption("👈 Sinistra: Alto Potenziale (Sotto Mediana) | Destra 👉: Aziende Mature")
 
             st.divider()
 
