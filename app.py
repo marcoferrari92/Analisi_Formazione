@@ -82,17 +82,27 @@ if uploaded_file is not None:
             'importo_target': 'VALORE_TARGET_€'
         })
 
-        # --- CALCOLO NUOVE COLONNE INCIDENZA ---
+        # --- CALCOLO INCIDENZE ---
         report['INCIDENZA_N_TARGET_%'] = (report['N_AIUTI_TARGET'] / report['N_TOT_AIUTI'] * 100).fillna(0)
         report['INCIDENZA_VOL_TARGET_%'] = (report['VALORE_TARGET_€'] / report['VALORE_TOTALE_€'] * 100).fillna(0)
-        report['RANK_INC_N'] = report['INCIDENZA_N_TARGET_%'].rank(ascending=False, method='min').astype(int)
-        report['RANK_INC_VOL'] = report['INCIDENZA_VOL_TARGET_%'].rank(ascending=False, method='min').astype(int)
 
         # --- CALCOLO RANKING ---
         report['RANK_VOL_TOT'] = report['VALORE_TOTALE_€'].rank(ascending=False, method='min').astype(int)
         report['RANK_VOL_TARGET'] = report['VALORE_TARGET_€'].rank(ascending=False, method='min').astype(int)
         report['RANK_N_TOT'] = report['N_TOT_AIUTI'].rank(ascending=False, method='min').astype(int)
         report['RANK_N_TARGET'] = report['N_AIUTI_TARGET'].rank(ascending=False, method='min').astype(int)
+        report['RANK_INC_N'] = report['INCIDENZA_N_TARGET_%'].rank(ascending=False, method='min').astype(int)
+        report['RANK_INC_VOL'] = report['INCIDENZA_VOL_TARGET_%'].rank(ascending=False, method='min').astype(int)
+
+                
+        # --- CALCOLO MEDIA E MEDIANA ---
+        # Filtriamo chi ha almeno un aiuto target per avere un benchmark reale di settore
+        imprese_attive_formazione = report[report['INCIDENZA_VOL_TARGET_%'] > 0]
+        media_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].mean()
+        mediana_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].median()
+
+        # Definiamo la soglia di riferimento (puoi scegliere quella più conservativa)
+        soglia_riferimento = mediana_incidenza
 
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
