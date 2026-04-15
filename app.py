@@ -147,8 +147,6 @@ if uploaded_file is not None:
 
             # --- PARTE 2: BOX PLOT (Distribuzione e Outsider) ---
             st.write("### 📈 Distribuzione Statistica dell'Incidenza")
-    
-            # Creazione del Box Plot orizzontale con Plotly
             fig = px.box(
                 report, 
                 x="INCIDENZA_VOL_TARGET_%", 
@@ -158,13 +156,8 @@ if uploaded_file is not None:
                 labels={"INCIDENZA_VOL_TARGET_%": "Incidenza Formazione (%)"},
                 template="plotly_white"
             )
-
-            # Personalizzazione colori e stile
             fig.update_traces(marker_color='#2ecc71', line_color='#27ae60')
-    
-            # Visualizzazione del grafico
             st.plotly_chart(fig, use_container_width=True)
-    
             st.caption("""
             **Legenda del grafico:** La linea centrale nella scatola è la **Mediana**. 
             I pallini isolati agli estremi sono gli **Outsider**. Passa il mouse sui pallini per leggere il nome dell'azienda.
