@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-from utils import render_database_misure
+from utils import render_database_misure, verifica_stato_clienti
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
