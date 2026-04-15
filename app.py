@@ -116,7 +116,6 @@ if uploaded_file is not None:
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Aziende Totali", len(report))
-        k1.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
         k2.metric("Volume Totale Analizzato", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
         k3.metric("Bandi Target Trovati", int(report['N_AIUTI_TARGET'].sum()))
         k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
@@ -137,9 +136,8 @@ if uploaded_file is not None:
         
         with st.expander("📊 Benchmark di Mercato", expanded=True):
             c1, c2 = st.columns(3)
-            with c1:
-                c1.metric("Media Incidenza", f"{media_incidenza:.2f}%")
-                c1.metric("Mediana Incidenza", f"{mediana_incidenza:.2f}%")
+            c1.metric("Media Incidenza", f"{media_incidenza:.2f}%")
+            c1.metric("Mediana Incidenza", f"{mediana_incidenza:.2f}%")
     
             st.info(f"""
             **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
