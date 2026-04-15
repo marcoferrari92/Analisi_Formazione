@@ -146,25 +146,39 @@ if uploaded_file is not None:
             """)
             st.divider()
 
-            # --- PARTE 2: BOX PLOT (Distribuzione e Outsider) ---
-            st.write("### 📈 Distribuzione Statistica dell'Incidenza")
+            # --- PARTE 2: BOX PLOT (Il grafico che cercavi) ---
+            st.write("### 📈 Distribuzione Incidenza e Outsider")
+    
+            # Creazione Box Plot Orizzontale
             fig = px.box(
                 report, 
                 x="INCIDENZA_VOL_TARGET_%", 
                 orientation='h',
-                points="all",        # Mostra tutti i punti (pallini) sopra il grafico
-                hover_data=["RAGIONE SOCIALE"], # Così vedi il nome dell'azienda passando il mouse sui pallini
-                labels={"INCIDENZA_VOL_TARGET_%": "Incidenza Formazione (%)"},
+                points="all",                # Mostra tutti i pallini lungo la retta
+                hover_name="RAGIONE SOCIALE", # Il titolo del fumetto quando passi il mouse
+                hover_data={
+                    "INCIDENZA_VOL_TARGET_%": ":.2f", 
+                    "VALORE_TOTALE_€": ":,.2f €"
+                },
+                labels={"INCIDENZA_VOL_TARGET_%": "Incidenza % Formazione sul Totale"},
                 template="plotly_white"
             )
-            fig.update_traces(marker_color='#2ecc71', line_color='#27ae60')
+            # Personalizzazione estetica: colore verde "formazione" e altezza ridotta
+            fig.update_traces(
+                marker=dict(size=8, opacity=0.6, color='#2ecc71'), # Pallini
+                line_color='#27ae60',                              # Scatola e baffi
+                boxmean=True                                       # Aggiunge una linea tratteggiata per la Media
+            )
+
+            fig.update_layout(height=350, margin=dict(l=20, r=20, t=20, b=20))
+    
             st.plotly_chart(fig, use_container_width=True)
+    
             st.caption("""
-            **Legenda del grafico:** La linea centrale nella scatola è la **Mediana**. 
-            I pallini isolati agli estremi sono gli **Outsider**. Passa il mouse sui pallini per leggere il nome dell'azienda.
+            **Come leggere il grafico:** La riga verticale spessa è la **Mediana**. I pallini isolati a destra sono gli **Outsider** che investono molto. La massa di pallini a sinistra rappresenta il tuo mercato potenziale (aziende sotto media).
             """)
 
-            st.divider()
+    st.divider()
 
             # --- TABELLA TARGET ---
             st.write("### 🚀 Lead Prioritari (Sotto Mediana)")
