@@ -174,11 +174,16 @@ if uploaded_file is not None:
             )
     
             fig.update_traces(
-                marker=dict(size=6, opacity=0.4, color='#2ecc71'), # Pallini più piccoli e trasparenti
-                line_color='#27ae60',
+                    marker=dict(
+                    color='#34495e',     # Grigio scuro per i pallini (cambia questo come vuoi)
+                    size=6, 
+                    opacity=0.5
+                ),
+                line_color='#27ae60',    # Verde scuro
+                fillcolor='#2ecc71',     # Verde chiaro
                 boxmean=True,
-                jitter=0, # <--- Rimuove lo spostamento laterale dei pallini, mettendoli "in fila"
-                pointpos=0 # <--- Posiziona i pallini esattamente sopra la scatola (0 = centro)
+                jitter=0, 
+                pointpos=0
             )
 
             # Riduciamo l'altezza a 200/250px per guadagnare spazio nell'expander
