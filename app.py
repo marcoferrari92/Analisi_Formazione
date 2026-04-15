@@ -145,24 +145,30 @@ if uploaded_file is not None:
             """)
             st.divider()
 
-            # --- PARTE 2: SCATTER CHART (Incidenza sulla X) ---
-            st.write("### 📍 Posizionamento Aziende: Budget vs Incidenza")
-            st.markdown(f"""
-            Il grafico mostra dove si collocano le aziende. La linea verticale immaginaria della **mediana ({mediana_incidenza:.2f}%)** separa i target dai profili maturi.
-            """)
-
-            # Visualizziamo lo scatter chart
-            # X = Incidenza (quello che hai chiesto)
-            # Y = Valore Totale (per capire l'importanza economica del lead)
-            st.scatter_chart(
-                report,
-                x='INCIDENZA_VOL_TARGET_%',
-                y='VALORE_TOTALE_€',
-                color='STATO',  # Distingue graficamente Clienti da Prospect
-                size='N_TOT_AIUTI',
-                use_container_width=True
+            # --- PARTE 2: BOX PLOT (Distribuzione e Outsider) ---
+            st.write("### 📈 Distribuzione Statistica dell'Incidenza")
+    
+            # Creazione del Box Plot orizzontale con Plotly
+            fig = px.box(
+                report, 
+                x="INCIDENZA_VOL_TARGET_%", 
+                orientation='h',
+                points="all",        # Mostra tutti i punti (pallini) sopra il grafico
+                hover_data=["RAGIONE SOCIALE"], # Così vedi il nome dell'azienda passando il mouse sui pallini
+                labels={"INCIDENZA_VOL_TARGET_%": "Incidenza Formazione (%)"},
+                template="plotly_white"
             )
-            st.caption("👈 Sinistra: Alto Potenziale (Sotto Mediana) | Destra 👉: Aziende Mature")
+
+            # Personalizzazione colori e stile
+            fig.update_traces(marker_color='#2ecc71', line_color='#27ae60')
+    
+            # Visualizzazione del grafico
+            st.plotly_chart(fig, use_container_width=True)
+    
+            st.caption("""
+            **Legenda del grafico:** La linea centrale nella scatola è la **Mediana**. 
+            I pallini isolati agli estremi sono gli **Outsider**. Passa il mouse sui pallini per leggere il nome dell'azienda.
+            """)
 
             st.divider()
 
