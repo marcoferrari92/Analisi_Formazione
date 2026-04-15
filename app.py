@@ -144,11 +144,8 @@ if uploaded_file is not None:
             st.info(f"""
             **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita perchè, sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi rispetto alla concorrenza. 
             """)
-            st.divider()
 
             # --- PARTE 2: BOX PLOT (Il grafico che cercavi) ---
-            st.write("### 📈 Distribuzione Incidenza e Outsider")
-    
             # Creazione Box Plot Orizzontale
             fig = px.box(
                 report, 
@@ -163,7 +160,6 @@ if uploaded_file is not None:
                 labels={"INCIDENZA_VOL_TARGET_%": "Incidenza % Formazione sul Totale"},
                 template="plotly_white"
             )
-            # Personalizzazione estetica: colore verde "formazione" e altezza ridotta
             fig.update_traces(
                 marker=dict(size=8, opacity=0.6, color='#2ecc71'), # Pallini
                 line_color='#27ae60',                              # Scatola e baffi
