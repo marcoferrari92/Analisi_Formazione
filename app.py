@@ -95,20 +95,6 @@ if uploaded_file is not None:
         report['RANK_INC_N'] = report['INCIDENZA_N_TARGET_%'].rank(ascending=False, method='min').astype(int)
         report['RANK_INC_VOL'] = report['INCIDENZA_VOL_TARGET_%'].rank(ascending=False, method='min').astype(int)
 
-                
-        # --- CALCOLO MEDIA E MEDIANA ---
-        # Filtriamo chi ha almeno un aiuto target per avere un benchmark reale di settore
-        # Filtriamo: più di 0% ma meno di 100%
-        imprese_attive = report[
-            (report['INCIDENZA_VOL_TARGET_%'] > 0) & 
-            (report['INCIDENZA_VOL_TARGET_%'] < 100)
-        ]
-        media_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].mean()
-        mediana_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].median()
-
-        # Definiamo la soglia di riferimento (puoi scegliere quella più conservativa)
-        soglia_riferimento = mediana_incidenza
-
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
@@ -142,7 +128,10 @@ if uploaded_file is not None:
         with st.expander("📊 Analisi Benchmark di Mercato", expanded=True):
             
             # Calcolo benchmark sulle sole imprese che hanno fatto formazione
-            imprese_attive = report[report['INCIDENZA_VOL_TARGET_%'] > 0]
+            imprese_attive = report[
+                (report['INCIDENZA_VOL_TARGET_%'] > 0) & 
+                (report['INCIDENZA_VOL_TARGET_%'] < 100)
+            ]
     
             # Gestione caso in cui nessuna azienda abbia fatto formazione
             if not imprese_attive.empty:
