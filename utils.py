@@ -112,3 +112,10 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
     except Exception as e:
         st.error(f"❌ Errore durante il confronto P.IVA: {e}")
         return df_rna
+
+
+def colora_clienti(row):
+    # Definiamo il colore: verde chiaro per i clienti
+    # Il codice HEX #d4edda è il classico verde "success"
+    color = 'background-color: #d4edda' if "CLIENTE" in str(row['STATO']) else ''
+    return [color] * len(row)
