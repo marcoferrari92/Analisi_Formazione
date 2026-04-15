@@ -2,6 +2,8 @@ import pandas as pd
 import streamlit as st
 import io
 
+import plotly.express as px
+
 def render_database_misure(df_rna):
     st.subheader("📋 Database degli Aiuti")
     st.markdown("""
@@ -10,13 +12,13 @@ def render_database_misure(df_rna):
     """)
 
     # 1. Elaborazione dati: raggruppamento per Misura
-    # Convertiamo l'importo in numero per il calcolo
-    df_rna['importo_numerico'] = pd.to_numeric(
-        df_rna['RNA_IMPORTO'].astype(str).str.replace(',', '.'), 
+    df_temp = df_rna.copy()
+    df_temp['importo_numerico'] = pd.to_numeric(
+        df_temp['RNA_IMPORTO'].astype(str).str.replace(',', '.'), 
         errors='coerce'
     ).fillna(0)
 
-    db_misure = df_rna.groupby('RNA_MISURA').agg({
+    db_misure = df_temp.groupby('RNA_MISURA').agg({
         'RAGIONE SOCIALE': 'nunique', # Numero di aziende uniche
         'RNA_MISURA': 'count',        # Numero di erogazioni totali
         'importo_numerico': 'sum'     # Valore totale erogato
@@ -26,15 +28,63 @@ def render_database_misure(df_rna):
         'importo_numerico': 'Valore_Totale_€'
     }).reset_index()
 
-    # 2. Ordinamento per popolarità (più erogazioni in alto)
+    # Ordinamento base per popolarità
     db_misure = db_misure.sort_values(by='Numero_Erogazioni', ascending=False)
 
-    # 3. Visualizzazione Statistiche Veloci
+    # 2. Visualizzazione Statistiche Veloci
     m1, m2 = st.columns(2)
     m1.metric("Misure Univoche Trovate", len(db_misure))
     m2.metric("Volume Economico Totale", f"€ {db_misure['Valore_Totale_€'].sum():,.0f}")
 
+    # --- 3. SEZIONE GRAFICI INTERATTIVI ---
+    st.write("### 📊 Analisi Visuale del Mercato")
+    tab1, tab2, tab3 = st.tabs(["💰 Top per Budget", "🎯 Diffusione Misure", "📈 Matrice Opportunità"])
+
+    with tab1:
+        # Top 10 per Valore Economico
+        top_valore = db_misure.sort_values(by='Valore_Totale_€', ascending=False).head(10)
+        fig_val = px.bar(
+            top_valore, 
+            x='Valore_Totale_€', 
+            y='RNA_MISURA', 
+            orientation='h',
+            title="Top 10 Bandi per Volume Economico (€)",
+            labels={'Valore_Totale_€': 'Budget Totale (€)', 'RNA_MISURA': 'Nome Bando'},
+            color='Valore_Totale_€',
+            color_continuous_scale='Viridis'
+        )
+        fig_val.update_layout(yaxis={'categoryorder':'total ascending'})
+        st.plotly_chart(fig_val, use_container_width=True)
+
+    with tab2:
+        # Treemap per vedere la frammentazione del mercato
+        fig_tree = px.treemap(
+            db_misure.head(20), 
+            path=['RNA_MISURA'], 
+            values='Numero_Erogazioni',
+            title="Prime 20 Misure per Numero di Erogazioni",
+            color='Numero_Erogazioni',
+            color_continuous_scale='Blues'
+        )
+        st.plotly_chart(fig_tree, use_container_width=True)
+
+    with tab3:
+        # Scatter Plot: Rapporto tra numero aziende e budget
+        fig_scatter = px.scatter(
+            db_misure, 
+            x='Aziende_Coinvolte', 
+            y='Valore_Totale_€',
+            size='Numero_Erogazioni',
+            hover_name='RNA_MISURA',
+            title="Relazione tra Numero Aziende e Budget Totale",
+            labels={'Aziende_Coinvolte': 'N. Aziende Uniche', 'Valore_Totale_€': 'Volume Totale (€)'},
+            color='Valore_Totale_€',
+            log_y=True # Scala logaritmica per gestire le grandi differenze di budget
+        )
+        st.plotly_chart(fig_scatter, use_container_width=True)
+
     # 4. Tabella interattiva
+    st.write("### 🗄️ Dati Analitici")
     st.dataframe(
         db_misure,
         column_config={
@@ -47,7 +97,7 @@ def render_database_misure(df_rna):
         use_container_width=True
     )
 
-    # 5. Pulsante di Download per il Database Misure
+    # 5. Pulsante di Download
     csv_misure = io.BytesIO()
     db_misure.to_csv(csv_misure, index=False, sep=';', encoding='utf-8-sig')
     
