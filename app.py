@@ -85,8 +85,9 @@ if uploaded_file is not None:
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
-
+        st.divider()
         render_database_misure(df_raw)
+        
         st.divider()
         st.subheader("📋 Report Riepilogativo della Ricerca Target")
         
