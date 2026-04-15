@@ -42,6 +42,14 @@ if uploaded_file is not None:
             return pd.read_csv(file, sep=';', encoding='utf-8-sig')
 
         df_raw = load_data(uploaded_file)
+
+        # --- LOGICA DI CONFRONTO CLIENTI ---
+        if uploaded_clienti is not None:
+            # Chiamiamo la funzione che fa apparire il loading nella sidebar
+            df_raw = verifica_stato_clienti(df_raw, uploaded_clienti)
+        else:
+            # Se non carichi il file, definiamo tutti come PROSPECT
+            df_raw['STATO'] = "⚪ PROSPECT"
         
         # Pulizia Importi
         df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
