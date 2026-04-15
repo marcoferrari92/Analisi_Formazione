@@ -85,6 +85,17 @@ if uploaded_file is not None:
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
+
+        
+        # --- KPI GENERALI ---
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Aziende Totali", len(report))
+        k2.metric("Volume Totale Analizzato", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
+        k3.metric("Bandi Target Trovati", int(report['N_AIUTI_TARGET'].sum()))
+        k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
+
+        st.divider()
+        
         # --- REPORT GENERALE ---
         st.subheader("📋 Report Riepilogativo Generale")
         st.dataframe(
@@ -97,15 +108,6 @@ if uploaded_file is not None:
             },
             hide_index=True, use_container_width=True
         )
-        st.divider()
-        
-        # --- KPI GENERALI ---
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Aziende Totali", len(report))
-        k2.metric("Volume Totale Analizzato", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
-        k3.metric("Bandi Target Trovati", int(report['N_AIUTI_TARGET'].sum()))
-        k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
-
         st.divider()
         render_database_misure(df_raw)
         st.divider()
