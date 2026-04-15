@@ -32,7 +32,7 @@ def render_database_misure(df_rna):
     # 3. Visualizzazione Statistiche Veloci
     m1, m2 = st.columns(2)
     m1.metric("Misure Univoche Trovate", len(db_misure))
-    m2.metric("Volume Economico Totale", f"€ {db_misure['Valore_Totale_€'].sum():,.2f}")
+    m2.metric("Volume Economico Totale", f"€ {db_misure['Valore_Totale_€'].sum():,.0f}")
 
     # 4. Tabella interattiva
     st.dataframe(
