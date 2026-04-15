@@ -155,7 +155,7 @@ if uploaded_file is not None:
                     st.caption(f"🏆 Rank: **{info_rank['RANK_INC_N']}** su {len(report)}")
                     # Metrica Incidenza Volume + Rank
                     st.metric("% Incidenza Vol. Target", f"{info_rank['INCIDENZA_VOL_TARGET_%']:.1f}%")
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_INC_VOL']}** su {len(report)}")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_INC_VOL']}**")
                 with c2:
                     st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
                     st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}**")
