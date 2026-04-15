@@ -145,7 +145,7 @@ if uploaded_file is not None:
             """)
             
             # --- TABELLA TARGET ---
-            st.write("### 🚀 Lista Lead Prioritari (Sotto Mediana)")
+            st.write("### 🚀 Lead Prioritari (Sotto Mediana)")
     
             # Filtro: Prospect e sotto mediana
             df_target = report[
@@ -183,6 +183,7 @@ if uploaded_file is not None:
                     mime="text/csv",
                     use_container_width=True
                 )
+                st.info(f"""**Gap:** Quanto dovrebbero spendere per raggiungere la mediana."""
             else:
                 st.write("Nessun prospect sotto la mediana trovato.")
         
