@@ -136,13 +136,13 @@ if uploaded_file is not None:
         
         with st.expander("📊 Analisi Benchmark di Mercato", expanded=True):
             b1, b2, b3 = st.columns(3)
-            b1.metric("Media Incidenza", f"{media_incidenza:.2f}%")
-            b2.metric("Mediana Incidenza", f"{mediana_incidenza:.2f}%")
-            b3.write("") # Spazio vuoto o una nota
+            b1.metric("Media Incidenza Vol.", f"{media_incidenza:.2f}%")
+            b2.metric("Mediana Incidenza Vol.", f"{mediana_incidenza:.2f}%")
+            b3.write("") 
     
             st.info(f"""
-            **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
-            perché investono in formazione meno rispetto alla norma del campione analizzato.
+            **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita. 
+            Sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi. 
             """)
         st.divider()
 
