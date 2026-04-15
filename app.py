@@ -85,6 +85,8 @@ if uploaded_file is not None:
         # --- CALCOLO NUOVE COLONNE INCIDENZA ---
         report['INCIDENZA_N_TARGET_%'] = (report['N_AIUTI_TARGET'] / report['N_TOT_AIUTI'] * 100).fillna(0)
         report['INCIDENZA_VOL_TARGET_%'] = (report['VALORE_TARGET_€'] / report['VALORE_TOTALE_€'] * 100).fillna(0)
+        report['RANK_INC_N'] = report['INCIDENZA_N_TARGET_%'].rank(ascending=False, method='min').astype(int)
+        report['RANK_INC_VOL'] = report['INCIDENZA_VOL_TARGET_%'].rank(ascending=False, method='min').astype(int)
 
         # --- CALCOLO RANKING ---
         report['RANK_VOL_TOT'] = report['VALORE_TOTALE_€'].rank(ascending=False, method='min').astype(int)
@@ -148,15 +150,13 @@ if uploaded_file is not None:
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
-
-                    # Incidenza sul NUMERO dei bandi
-                    perc_n = (info_rank['N_AIUTI_TARGET'] / info_rank['N_TOT_AIUTI'] * 100) if info_rank['N_TOT_AIUTI'] > 0 else 0
-                    st.metric("% Incidenza N. Target", f"{perc_n:.1f}%")
-
-                    # Incidenza sul VOLUME economico
-                    perc_vol = (info_rank['VALORE_TARGET_€'] / info_rank['VALORE_TOTALE_€'] * 100) if info_rank['VALORE_TOTALE_€'] > 0 else 0
-                    st.metric("% Incidenza Vol. Target", f"{perc_vol:.1f}%")
-                   
+                    st.write("---") # Separatore visivo opzionale
+                    # Metrica Incidenza Numero + Rank
+                    st.metric("% Incidenza N. Target", f"{info_rank['INCIDENZA_N_TARGET_%']:.1f}%")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_INC_N']}** su {len(report)}")
+                    # Metrica Incidenza Volume + Rank
+                    st.metric("% Incidenza Vol. Target", f"{info_rank['INCIDENZA_VOL_TARGET_%']:.1f}%")
+                    st.caption(f"🏆 Rank: **{info_rank['RANK_INC_VOL']}** su {len(report)}")
                 with c2:
                     st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
                     st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}**")
