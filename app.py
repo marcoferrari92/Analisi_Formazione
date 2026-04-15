@@ -88,7 +88,7 @@ if uploaded_file is not None:
 
         render_database_misure(df_raw)
         st.divider()
-        st.subheader("📋 Report Riepilogativo Generale")
+        st.subheader("📋 Report Riepilogativo della Ricerca Target")
         
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
