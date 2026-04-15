@@ -58,3 +58,57 @@ def render_database_misure(df_rna):
         mime="text/csv",
         use_container_width=True
     )
+
+
+
+
+
+def verifica_stato_clienti(df_rna, uploaded_clienti):
+    """
+    Confronta il database RNA con il file Clienti tramite Partita IVA.
+    Ritorna il dataframe RNA arricchito con la colonna 'STATO'.
+    """
+    try:
+        # 1. Caricamento del file Clienti 2026 (separatore ;)
+        # Usiamo 'low_memory=False' per gestire colonne con tipi misti
+        df_clienti = pd.read_csv(uploaded_clienti, sep=';', encoding='utf-8-sig', low_memory=False)
+        
+        if 'Partita IVA' not in df_clienti.columns:
+            st.error("⚠️ Errore: Colonna 'Partita IVA' non trovata nel file clienti!")
+            return df_rna
+
+        # 2. Pulizia e Normalizzazione P.IVA Clienti
+        # Rimuoviamo spazi, rendiamo tutto stringa e togliamo eventuali prefissi
+        lista_piva_clienti = (
+            df_clienti['Partita IVA']
+            .astype(str)
+            .str.strip()
+            .str.replace(' ', '')
+            .unique()
+            .tolist()
+        )
+
+        # 3. Pulizia P.IVA nel database RNA
+        # Creiamo una versione pulita per il confronto
+        df_rna['RNA_PIVA_CLEAN'] = (
+            df_rna['RNA_PIVA']
+            .astype(str)
+            .str.strip()
+            .str.replace(' ', '')
+        )
+
+        # 4. Matching (Il confronto vero e proprio)
+        # Se la P.IVA pulita è nella lista clienti -> CLIENTE, altrimenti PROSPECT
+        df_rna['STATO'] = df_rna['RNA_PIVA_CLEAN'].apply(
+            lambda x: "🟢 CLIENTE" if x in lista_piva_clienti else "⚪ PROSPECT"
+        )
+        
+        # Rimuoviamo la colonna di servizio per pulizia
+        df_rna = df_rna.drop(columns=['RNA_PIVA_CLEAN'])
+        
+        st.sidebar.success(f"✅ Confronto completato: {len(lista_piva_clienti)} clienti caricati.")
+        return df_rna
+
+    except Exception as e:
+        st.error(f"❌ Errore durante il confronto P.IVA: {e}")
+        return df_rna
