@@ -196,7 +196,7 @@ if uploaded_file is not None:
                     tickmode='linear', 
                     tick0=0,           
                     dtick=5,           # Un tick ogni 5%
-                    showgrid=True,
+                    showgrid=False,
                     gridcolor='lightgrey'
                 ),
                 # Configurazione ASSE Y (Verticale)
