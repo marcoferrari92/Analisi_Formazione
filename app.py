@@ -86,6 +86,8 @@ if uploaded_file is not None:
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
 
+        render_database_misure(df_raw)
+        st.divider()
         
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
@@ -108,8 +110,7 @@ if uploaded_file is not None:
             },
             hide_index=True, use_container_width=True
         )
-        st.divider()
-        render_database_misure(df_raw)
+
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO ---
