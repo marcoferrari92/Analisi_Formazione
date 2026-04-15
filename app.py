@@ -164,19 +164,6 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # --- REPORT GENERALE ---
-        st.subheader("📋 Report Riepilogativo Generale")
-        st.dataframe(
-            report,
-            column_config={
-                "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
-                "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
-                "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
-                "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
-            },
-            hide_index=True, use_container_width=True
-        )
-
         # --- SEZIONE GRAFICO SCATTER ---
         st.divider()
         st.subheader("📈 Analisi Correlazione: Budget Target vs Budget Totale")
