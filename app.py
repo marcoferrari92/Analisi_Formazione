@@ -190,11 +190,19 @@ if uploaded_file is not None:
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10, r=10, t=10, b=10),
-                yaxis=dict(showticklabels=False),
-                tickmode='linear', # Imposta la modalità lineare
-                tick0=0,           # Punto di partenza
-                dtick=5,           # Un tick ogni 5 unità (ovvero ogni 5%)
-                # nticks=20,       # Alternativa: forza Plotly a metterne circa 20 totali
+                # Configurazione ASSE X (Orizzontale)
+                xaxis=dict(
+                    title="Incidenza %",
+                    tickmode='linear', 
+                    tick0=0,           
+                    dtick=5,           # Un tick ogni 5%
+                    showgrid=True,
+                    gridcolor='lightgrey'
+                ),
+                # Configurazione ASSE Y (Verticale)
+                yaxis=dict(
+                    showticklabels=False # Nasconde i nomi sull'asse verticale
+                )
             )
             st.plotly_chart(fig, use_container_width=True)
             st.caption("Il grafico analizza la distribuzione del benchmark tra le sole aziende che hanno già investito in formazione.")
