@@ -143,6 +143,49 @@ if uploaded_file is not None:
             st.info(f"""
             **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita perchè, sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi rispetto alla concorrenza. 
             """)
+            
+            # --- TABELLA TARGET ---
+            st.write("### 🚀 Lista Lead Prioritari (Sotto Mediana)")
+    
+            # Filtro: Prospect e sotto mediana
+            df_target = report[
+                (report['STATO'].str.contains("PROSPECT")) & 
+                (report['INCIDENZA_VOL_TARGET_%'] < mediana_incidenza)
+            ].copy()
+
+            # Calcolo del GAP (opzionale, utile per la vendita)
+            # Quanto dovrebbero spendere in formazione per arrivare alla mediana?
+            df_target['GAP_POTENZIALE_€'] = (df_target['VALORE_TOTALE_€'] * (mediana_incidenza / 100)) - df_target['VALORE_TARGET_€']
+
+            df_target = df_target.sort_values(by='VALORE_TOTALE_€', ascending=False)
+
+            if not df_target.empty:
+                st.dataframe(
+                    df_target,
+                    column_config={
+                        "RAGIONE SOCIALE": st.column_config.TextColumn("Azienda", width="large"),
+                        "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
+                        "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza %", format="%.2f %%"),
+                        "GAP_POTENZIALE_€": st.column_config.NumberColumn("Potenziale Upselling", format="%.2f €"),
+                    },
+                    column_order=("RAGIONE SOCIALE", "VALORE_TOTALE_€", "INCIDENZA_VOL_TARGET_%", "GAP_POTENZIALE_€"),
+                    hide_index=True,
+                    use_container_width=True
+                )
+        
+                # Bottone di download piccolo dentro l'expander
+                csv_target = io.BytesIO()
+                df_target.to_csv(csv_target, index=False, sep=';', encoding='utf-8-sig')
+                st.download_button(
+                    label="📥 Scarica questa lista (CSV)",
+                    data=csv_target.getvalue(),
+                    file_name="target_prioritari.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            else:
+                st.write("Nessun prospect sotto la mediana trovato.")
+        
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO ---
