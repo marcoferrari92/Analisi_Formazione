@@ -190,8 +190,7 @@ if uploaded_file is not None:
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10, r=10, t=10, b=10),
-                yaxis=dict(showticklabels=False) # Nascondiamo l'asse Y che è inutile nel box plot orizzontale
-                # --- OPZIONI PER I TICK ---
+                yaxis=dict(showticklabels=False),
                 tickmode='linear', # Imposta la modalità lineare
                 tick0=0,           # Punto di partenza
                 dtick=5,           # Un tick ogni 5 unità (ovvero ogni 5%)
