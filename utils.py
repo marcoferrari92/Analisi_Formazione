@@ -4,7 +4,8 @@ import io
 
 def render_database_misure(df_rna):
     # Avvolgiamo tutto il contenuto dentro un expander
-    with st.expander("🔍 Database Bandi", expanded=False):
+    st.subheader("🔓 Database Bandi")
+    with st.expander("Database Bandi", expanded=False):
         
         st.markdown("""
         Questa sezione raggruppa tutti i bandi trovati nel file RNA, indicando quante aziende li hanno utilizzati 
