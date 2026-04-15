@@ -112,14 +112,16 @@ if uploaded_file is not None:
         
         # --- REPORT GENERALE ---
         st.dataframe(
-            report,
-            column_config={
-                "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
-                "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
-                "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
-                "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
+        report.style.apply(colora_clienti, axis=1),
+        column_config={
+            "STATO": st.column_config.TextColumn("Stato", width="medium"),
+            "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
+            "VALORE_TARGET_€": st.column_config.NumberColumn("Budget Target", format="%.2f €"),
+            "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn("Incidenza N.", format="%.1f %%"),
+            "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Vol.", format="%.1f %%"),
             },
-            hide_index=True, use_container_width=True
+            hide_index=True, 
+            use_container_width=True
         )
 
         st.divider()
