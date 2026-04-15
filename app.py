@@ -133,11 +133,17 @@ if uploaded_file is not None:
             hide_index=True, 
             use_container_width=True
         )
-        with st.sidebar.expander("📊 Benchmark di Mercato", expanded=True):
-            st.write(f"Media Incidenza: **{media_incidenza:.2f}%**")
-            st.write(f"Mediana Incidenza: **{mediana_incidenza:.2f}%**")
-            st.caption("Le aziende sotto la mediana sono i tuoi target prioritari per l'upselling della formazione.")
-
+        
+        with st.expander("📊 Analisi Benchmark di Mercato", expanded=True):
+            b1, b2, b3 = st.columns(3)
+            b1.metric("Media Incidenza", f"{media_incidenza:.2f}%")
+            b2.metric("Mediana Incidenza", f"{mediana_incidenza:.2f}%")
+            b3.write("") # Spazio vuoto o una nota
+    
+    st.info(f"""
+    **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
+    perché investono in formazione meno rispetto alla norma del campione analizzato.
+    """)
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO ---
