@@ -187,9 +187,7 @@ if uploaded_file is not None:
                 margin=dict(l=10, r=10, t=10, b=10),
                 yaxis=dict(showticklabels=False) # Nascondiamo l'asse Y che è inutile nel box plot orizzontale
             )
-
-st.plotly_chart(fig, use_container_width=True)
-
+            st.plotly_chart(fig, use_container_width=True)
             st.caption("Il grafico analizza la distribuzione del benchmark tra le sole aziende che hanno già investito in formazione.")
 
             st.divider()
