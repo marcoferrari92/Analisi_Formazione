@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
+import plotly.express as px
 
 from utils import render_database_misure, verifica_stato_clienti, colora_clienti
 
