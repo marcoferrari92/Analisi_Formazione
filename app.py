@@ -129,8 +129,8 @@ if uploaded_file is not None:
             
             # Calcolo benchmark sulle sole imprese che hanno fatto formazione
             imprese_attive = report[
-                (report['INCIDENZA_VOL_TARGET_%'] > 0) & 
-                (report['INCIDENZA_VOL_TARGET_%'] < 100)
+                (report['INCIDENZA_VOL_TARGET_%'] > 0)  
+                #&(report['INCIDENZA_VOL_TARGET_%'] < 100)
             ]
     
             # Gestione caso in cui nessuna azienda abbia fatto formazione
