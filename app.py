@@ -103,8 +103,8 @@ if uploaded_file is not None:
             (report['INCIDENZA_VOL_TARGET_%'] > 0) & 
             (report['INCIDENZA_VOL_TARGET_%'] < 100)
         ]
-        media_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].mean()
-        mediana_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].median()
+        media_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].mean()
+        mediana_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].median()
 
         # Definiamo la soglia di riferimento (puoi scegliere quella più conservativa)
         soglia_riferimento = mediana_incidenza
