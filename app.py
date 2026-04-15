@@ -12,7 +12,9 @@ st.markdown("Analisi strategica e qualificazione lead basata sui dati ufficiali 
 
 # --- SIDEBAR ---
 st.sidebar.header("1. Caricamento Dati")
-uploaded_file = st.sidebar.file_uploader("Carica il file CSV arricchito", type=["csv"])
+uploaded_file = st.sidebar.file_uploader("Carica file RNA", type=["csv"])
+
+uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)", type=["csv"])
 
 st.sidebar.header("2. Filtri Target")
 default_kw = "formazione, competenze, corso, training"
