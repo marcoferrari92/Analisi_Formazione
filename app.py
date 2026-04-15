@@ -165,7 +165,7 @@ if uploaded_file is not None:
                     column_config={
                         "RAGIONE SOCIALE": st.column_config.TextColumn("Azienda", width="large"),
                         "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
-                        "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Target%", format="%.2f %%"),
+                        "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Target", format="%.2f %%"),
                         "GAP_POTENZIALE_€": st.column_config.NumberColumn("Gap", format="%.2f €"),
                     },
                     column_order=("RAGIONE SOCIALE", "VALORE_TOTALE_€", "INCIDENZA_VOL_TARGET_%", "GAP_POTENZIALE_€"),
