@@ -178,7 +178,7 @@ if uploaded_file is not None:
             **Come leggere il grafico:** La riga verticale spessa è la **Mediana**. I pallini isolati a destra sono gli **Outsider** che investono molto. La massa di pallini a sinistra rappresenta il tuo mercato potenziale (aziende sotto media).
             """)
 
-    st.divider()
+            st.divider()
 
             # --- TABELLA TARGET ---
             st.write("### 🚀 Lead Prioritari (Sotto Mediana)")
