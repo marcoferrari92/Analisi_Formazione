@@ -141,8 +141,7 @@ if uploaded_file is not None:
             b3.write("") 
     
             st.info(f"""
-            **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita. 
-            Sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi. 
+            **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita perchè, sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi rispetto alla concorrenza. 
             """)
         st.divider()
 
