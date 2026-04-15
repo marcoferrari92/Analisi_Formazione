@@ -98,7 +98,11 @@ if uploaded_file is not None:
                 
         # --- CALCOLO MEDIA E MEDIANA ---
         # Filtriamo chi ha almeno un aiuto target per avere un benchmark reale di settore
-        imprese_attive_formazione = report[report['INCIDENZA_VOL_TARGET_%'] > 0]
+        # Filtriamo: più di 0% ma meno di 100%
+        imprese_attive = report[
+            (report['INCIDENZA_VOL_TARGET_%'] > 0) & 
+            (report['INCIDENZA_VOL_TARGET_%'] < 100)
+        ]
         media_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].mean()
         mediana_incidenza = imprese_attive_formazione['INCIDENZA_VOL_TARGET_%'].median()
 
