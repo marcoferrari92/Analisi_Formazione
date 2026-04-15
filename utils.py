@@ -3,10 +3,10 @@ import streamlit as st
 import io
 
 def render_database_misure(df_rna):
-    st.subheader("📋 Database Univoco delle Misure (Bandi)")
+    st.subheader("📋 Database Univoco degli Aiuti")
     st.markdown("""
     Questa sezione raggruppa tutti i bandi trovati nel file RNA, indicando quante aziende li hanno utilizzati 
-    e il volume economico totale per ogni singola misura.
+    e il volume economico totale per ogni singolo aiuto.
     """)
 
     # 1. Elaborazione dati: raggruppamento per Misura
