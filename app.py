@@ -137,7 +137,7 @@ if uploaded_file is not None:
         with st.expander("📊 Benchmark di Mercato", expanded=True):
             c1, c2 = st.columns(3)
             c1.metric("Media Incidenza Volume:", f"{media_incidenza:.2f}%")
-            c1.metric("Mediana Incidenza Volume:", f"{mediana_incidenza:.2f}%")
+            c2.metric("Mediana Incidenza Volume:", f"{mediana_incidenza:.2f}%")
     
             st.info(f"""
             **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
