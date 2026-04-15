@@ -133,6 +133,10 @@ if uploaded_file is not None:
             hide_index=True, 
             use_container_width=True
         )
+        with st.sidebar.expander("📊 Benchmark di Mercato", expanded=True):
+            st.write(f"Media Incidenza: **{media_incidenza:.2f}%**")
+            st.write(f"Mediana Incidenza: **{mediana_incidenza:.2f}%**")
+            st.caption("Le aziende sotto la mediana sono i tuoi target prioritari per l'upselling della formazione.")
 
         st.divider()
 
