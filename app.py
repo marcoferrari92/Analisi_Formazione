@@ -183,7 +183,7 @@ if uploaded_file is not None:
                     mime="text/csv",
                     use_container_width=True
                 )
-                st.info(f"""**Gap:** Quanto dovrebbero spendere per raggiungere la mediana."""
+                st.info(f"""**Gap:** Quanto dovrebbero spendere per raggiungere la mediana.""")
             else:
                 st.write("Nessun prospect sotto la mediana trovato.")
         
