@@ -94,6 +94,8 @@ if uploaded_file is not None:
         k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
 
         st.divider()
+        render_database_misure(df_raw)
+        st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO ---
         st.subheader("🎯 Analisi Dettagliata per Azienda")
