@@ -49,7 +49,7 @@ if uploaded_file is not None:
             try:
                 # Controllo estensione per decidere come leggere il file
                 if uploaded_clienti.name.endswith('.xlsx'):
-                    df_clienti = pd.read_excel(uploaded_clienti)
+                    df_clienti = pd.read_excel(uploaded_clienti, engine='openpyxl')
                 else:
                     # Se CSV, proviamo a rilevare il separatore
                     df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', encoding='utf-8-sig')
