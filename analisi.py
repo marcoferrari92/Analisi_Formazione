@@ -1,182 +1,65 @@
 import streamlit as st
-import pandas as pd
-import io
+import plotly.express as px
 
+def analisi_incidenza(df_report):
+    """
+    Funzione per visualizzare l'istogramma dell'incidenza di volume
+    e spiegare il significato dei dati.
+    """
+    st.subheader("📈 Analisi della Specializzazione: Incidenza Volume Target")
+    
+    # 1. Preparazione Dati (Solo aziende con incidenza > 0)
+    df_attivi = df_report[df_report['INCIDENZA_VOL_%'] > 0].copy()
+    
+    if df_attivi.empty:
+        st.warning("Nessun dato di incidenza disponibile per le aziende selezionate.")
+        return
 
+    # 2. Creazione Grafico
+    fig = px.histogram(
+        df_attivi, 
+        x="INCIDENZA_VOL_%", 
+        nbins=20,
+        histnorm='percent',
+        title="Distribuzione % dell'Incidenza (Solo aziende attive nel Target)",
+        labels={'INCIDENZA_VOL_%': 'Incidenza Volume Target (%)', 'percent': 'Quota di Aziende (%)'},
+        color_discrete_sequence=['#27ae60'],
+        marginal="box" # Il boxplot sopra l'istogramma
+    )
 
-# --- CONFIGURAZIONE PAGINA ---
-st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
+    fig.update_layout(
+        bargap=0.1,
+        xaxis_ticksuffix="%",
+        yaxis_ticksuffix="%"
+    )
 
-st.title("📊 Analizzatore Registro Nazionale Aiuti")
-st.markdown("Analisi strategica e qualificazione lead basata sui dati ufficiali RNA.")
-
-# --- SIDEBAR ---
-st.sidebar.header("1. Caricamento Dati")
-uploaded_file = st.sidebar.file_uploader("Carica il file CSV arricchito", type=["csv"])
-
-st.sidebar.header("2. Filtri Target")
-default_kw = "formazione, competenze, corso, training"
-keywords_raw = st.sidebar.text_area("Parole chiave target (separate da virgola)", value=default_kw)
-
-# TASTO DI AGGIORNAMENTO
-btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
-
-st.sidebar.header("3. Ordinamento Report")
-sort_options = {
-    "Numero Aiuti Target": "N_AIUTI_TARGET",
-    "Valore Aiuti Target (€)": "VALORE_TARGET_€",
-    "Incidenza Numero (%)": "INCIDENZA_N_TARGET_%",
-    "Incidenza Volume (%)": "INCIDENZA_VOL_TARGET_%",
-    "Valore Totale (€)": "VALORE_TOTALE_€",
-    "Numero Totale Aiuti": "N_TOT_AIUTI"
-}
-sort_choice = st.sidebar.selectbox("Ordina tabella per:", list(sort_options.keys()), index=0)
-
-# --- LOGICA DI ELABORAZIONE ---
-if uploaded_file is not None:
-    try:
-        @st.cache_data
-        def load_data(file):
-            return pd.read_csv(file, sep=';', encoding='utf-8-sig')
-
-        df_raw = load_data(uploaded_file)
+    # 3. Layout Streamlit: Grafico a sinistra, Spiegazione a destra
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.markdown("### 🔍 Cosa stiamo guardando?")
         
-        # Pulizia Importi
-        df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
+        media = df_attivi['INCIDENZA_VOL_%'].mean()
+        mediana = df_attivi['INCIDENZA_VOL_%'].median()
         
-        # Elaborazione parole chiave
-        keywords = [k.strip().upper() for k in keywords_raw.split(',')]
+        st.metric("Media Incidenza", f"{media:.1f}%")
+        st.metric("Mediana Incidenza", f"{mediana:.1f}%")
         
-        def is_target_row(row_text):
-            text = str(row_text).upper()
-            return any(k in text for k in keywords)
+        st.info(f"""
+        **Interpretazione:**
+        - **La Media ({media:.1f}%)**: Rappresenta il 'punto di equilibrio'. Se è molto più alta della mediana, significa che pochi 'campioni' stanno alzando la media di tutto il gruppo.
+        - **La Mediana ({mediana:.1f}%)**: È il valore centrale. Ci dice che metà delle aziende attive investe meno del {mediana:.1f}% del proprio budget RNA in formazione.
+        """)
 
-        # Identificazione righe target
-        df_raw['is_target'] = df_raw['RNA_MISURA'].apply(is_target_row)
-        df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
-
-        # --- GENERAZIONE REPORT SINTETICO ---
-        col_rna = ['RNA_PIVA', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target', 'importo_target']
-        col_ana = [c for c in df_raw.columns if c not in col_rna]
+    # 4. Approfondimento didattico
+    with st.expander("💡 Guida alla lettura del grafico"):
+        st.write("""
+        L'**Incidenza Volume** misura quanto pesa la formazione sul totale degli aiuti ricevuti da un'azienda.
         
-        report = df_raw.groupby('RAGIONE SOCIALE').agg({
-            **{c: 'first' for c in col_ana if c != 'RAGIONE SOCIALE'},
-            'RNA_MISURA': 'count',
-            'RNA_IMPORTO': 'sum',
-            'is_target': 'sum',
-            'importo_target': 'sum'
-        }).reset_index().rename(columns={
-            'RNA_MISURA': 'N_TOT_AIUTI',
-            'RNA_IMPORTO': 'VALORE_TOTALE_€',
-            'is_target': 'N_AIUTI_TARGET',
-            'importo_target': 'VALORE_TARGET_€'
-        })
-
-        # --- CALCOLO NUOVE COLONNE INCIDENZA ---
-        report['INCIDENZA_N_TARGET_%'] = (report['N_AIUTI_TARGET'] / report['N_TOT_AIUTI'] * 100).fillna(0)
-        report['INCIDENZA_VOL_TARGET_%'] = (report['VALORE_TARGET_€'] / report['VALORE_TOTALE_€'] * 100).fillna(0)
-
-        # --- CALCOLO RANKING ---
-        report['RANK_VOL_TOT'] = report['VALORE_TOTALE_€'].rank(ascending=False, method='min').astype(int)
-        report['RANK_VOL_TARGET'] = report['VALORE_TARGET_€'].rank(ascending=False, method='min').astype(int)
-        report['RANK_N_TOT'] = report['N_TOT_AIUTI'].rank(ascending=False, method='min').astype(int)
-        report['RANK_N_TARGET'] = report['N_AIUTI_TARGET'].rank(ascending=False, method='min').astype(int)
-
-        # Ordinamento
-        report = report.sort_values(by=sort_options[sort_choice], ascending=False)
-
-
-        # --- KPI GENERALI ---
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Aziende Totali", len(report))
-        k2.metric("Volume Totale Analizzato", f"€ {report['VALORE_TOTALE_€'].sum():,.0f}")
-        k3.metric("Bandi Target Trovati", int(report['N_AIUTI_TARGET'].sum()))
-        k4.metric("Volume Target Totale", f"€ {report['VALORE_TARGET_€'].sum():,.0f}")
-
-        st.divider()
-
-        # --- RICERCA AZIENDA E DETTAGLIO ---
-        st.subheader("🎯 Analisi Dettagliata per Azienda")
-        search_txt = st.text_input("Inserisci Ragione Sociale per visualizzare storia e ranking")
-
-        if search_txt:
-            azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
-            
-            if not azienda_details.empty:
-                nome_esatto = azienda_details['RAGIONE SOCIALE'].iloc[0]
-                info_rank = report[report['RAGIONE SOCIALE'] == nome_esatto].iloc[0]
-                total_aziende = len(report)
-
-                azienda_details['RNA_DATA_DT'] = pd.to_datetime(azienda_details['RNA_DATA'], dayfirst=True, errors='coerce')
-                data_min = azienda_details['RNA_DATA_DT'].min()
-                data_max = azienda_details['RNA_DATA_DT'].max()
-
-                st.info(f"### 🏢 {nome_esatto}")
-                
-                # --- BLOCCO ETICHETTE (MANTENUTO ORIGINALE) ---
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
-                    perc = (info_rank['N_AIUTI_TARGET'] / info_rank['N_TOT_AIUTI'] * 100) if info_rank['N_TOT_AIUTI'] > 0 else 0
-                    st.metric("% Incidenza Target", f"{perc:.1f}%")
-                   
-                with c2:
-                    st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TOT']}**")
-                    st.metric("Volume Target (€)", f"{info_rank['VALORE_TARGET_€']:,.2f} €")
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_VOL_TARGET']}**")
-                with c3:
-                    st.metric("Bandi Totali", int(info_rank['N_TOT_AIUTI']))
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_N_TOT']}**")
-                    st.metric("Bandi Target", int(info_rank['N_AIUTI_TARGET']))
-                    st.caption(f"🏆 Rank: **{info_rank['RANK_N_TARGET']}**")
-
-                st.write("---")
-                def apply_highlight(row):
-                    color = 'background-color: #d4edda' if row['is_target'] else ''
-                    return [color] * len(row)
-
-                cols_to_show = ['RAGIONE SOCIALE', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target']
-                st.dataframe(
-                    azienda_details[cols_to_show].style.apply(apply_highlight, axis=1),
-                    column_config={"is_target": None, "RNA_IMPORTO": st.column_config.NumberColumn(format="%.2f €")},
-                    use_container_width=True, hide_index=True
-                )
-            else:
-                st.warning("Nessuna azienda trovata.")
-
-        st.divider()
-
-        # --- REPORT GENERALE ---
-        st.subheader("📋 Report Riepilogativo Generale")
-        st.dataframe(
-            report,
-            column_config={
-                "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
-                "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
-                "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
-                "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
-            },
-            hide_index=True, use_container_width=True
-        )
-
-        # --- SEZIONE GRAFICO SCATTER ---
-        st.divider()
-        st.subheader("📈 Analisi Correlazione: Budget Target vs Budget Totale")
-        st.scatter_chart(
-            report,
-            y='VALORE_TOTALE_€',
-            x='VALORE_TARGET_€',
-            size='N_TOT_AIUTI',
-            color='#2ecc71',
-            use_container_width=True
-        )
-
-        csv_buffer = io.BytesIO()
-        report.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
-        st.sidebar.download_button("💾 Scarica Report (CSV)", csv_buffer.getvalue(), "Analisi_RNA.csv", "text/csv")
-
-    except Exception as e:
-        st.error(f"Errore: {e}")
-else:
-    st.info("👋 Carica il file CSV per iniziare.")
+        * **Fascia 0-20% (Aziende Hardware-Centric):** Imprese che investono principalmente in macchinari e infrastrutture. La formazione è un complemento.
+        * **Fascia 80-100% (Aziende Skills-Centric):** Imprese (spesso di servizi o consulenza) il cui unico sostentamento pubblico deriva dallo sviluppo delle competenze.
+        * **Il Boxplot (riga sopra):** La 'scatola' mostra dove si concentra il 50% centrale del mercato. I puntini a destra sono i tuoi 'Top Spender' o specialisti.
+        """)
