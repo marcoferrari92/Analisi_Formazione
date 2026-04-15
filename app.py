@@ -150,7 +150,6 @@ if uploaded_file is not None:
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
-                    st.write("---") # Separatore visivo opzionale
                     # Metrica Incidenza Numero + Rank
                     st.metric("% Incidenza N. Target", f"{info_rank['INCIDENZA_N_TARGET_%']:.1f}%")
                     st.caption(f"🏆 Rank: **{info_rank['RANK_INC_N']}** su {len(report)}")
