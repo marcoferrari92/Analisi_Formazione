@@ -136,58 +136,68 @@ if uploaded_file is not None:
         )
         
         with st.expander("📊 Analisi Benchmark di Mercato", expanded=True):
+            
+            # Calcolo benchmark sulle sole imprese che hanno fatto formazione
+            imprese_attive = report[report['INCIDENZA_VOL_TARGET_%'] > 0]
+    
+            # Gestione caso in cui nessuna azienda abbia fatto formazione
+            if not imprese_attive.empty:
+                media_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].mean()
+                mediana_incidenza = imprese_attive['INCIDENZA_VOL_TARGET_%'].median()
+            else:
+                media_incidenza = 0
+                mediana_incidenza = 0
+
             b1, b2, b3 = st.columns(3)
             b1.metric("Media Incidenza Vol.", f"{media_incidenza:.2f}%")
             b2.metric("Mediana Incidenza Vol.", f"{mediana_incidenza:.2f}%")
-            b3.write("") 
+            b3.metric("Aziende Attive", len(imprese_attive))
     
             st.info(f"""
             **Possibile Strategia Commerciale:** Aziende con incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) hanno maggior potenziale di crescita perchè, sul budget totale di aiuti percepiti, quelli dedicati all'applicazione target sono ancora bassi rispetto alla concorrenza. 
             """)
 
-            # --- PARTE 2: BOX PLOT (Il grafico che cercavi) ---
-            # Creazione Box Plot Orizzontale
+            # --- PARTE 2: BOX PLOT (Solo imprese attive per pulizia visiva) ---
+            # Mostriamo solo chi ha > 0 nel grafico per vedere bene quartili e outsider
             fig = px.box(
-                report, 
+                imprese_attive, 
                 x="INCIDENZA_VOL_TARGET_%", 
                 orientation='h',
-                points="all",                # Mostra tutti i pallini lungo la retta
-                hover_name="RAGIONE SOCIALE", # Il titolo del fumetto quando passi il mouse
+                points="all",
+                hover_name="RAGIONE SOCIALE",
                 hover_data={
                     "INCIDENZA_VOL_TARGET_%": ":.2f", 
                     "VALORE_TOTALE_€": ":,.2f €"
                 },
-                labels={"INCIDENZA_VOL_TARGET_%": "Incidenza % Formazione sul Totale"},
+                labels={"INCIDENZA_VOL_TARGET_%": "Incidenza % Formazione"},
                 template="plotly_white"
             )
+    
             fig.update_traces(
-                marker=dict(size=8, opacity=0.6, color='#2ecc71'), # Pallini
-                line_color='#27ae60',                              # Scatola e baffi
-                boxmean=True                                       # Aggiunge una linea tratteggiata per la Media
+                marker=dict(size=8, opacity=0.6, color='#2ecc71'),
+                line_color='#27ae60',
+                boxmean=True 
             )
 
-            fig.update_layout(height=350, margin=dict(l=20, r=20, t=20, b=20))
-    
+            fig.update_layout(height=300, margin=dict(l=20, r=20, t=20, b=20))
             st.plotly_chart(fig, use_container_width=True)
-    
-            st.caption("""
-            **Come leggere il grafico:** La riga verticale spessa è la **Mediana**. I pallini isolati a destra sono gli **Outsider** che investono molto. La massa di pallini a sinistra rappresenta il tuo mercato potenziale (aziende sotto media).
-            """)
+
+            st.caption("Il grafico analizza la distribuzione del benchmark tra le sole aziende che hanno già investito in formazione.")
 
             st.divider()
 
-            # --- TABELLA TARGET ---
+            # --- PARTE 3: TABELLA TARGET (Qui includiamo TUTTI i Prospect sotto soglia, anche gli 0%) ---
             st.write("### 🚀 Lead Prioritari (Sotto Mediana)")
     
-            # Filtro: Prospect e sotto mediana
             df_target = report[
                 (report['STATO'].str.contains("PROSPECT")) & 
                 (report['INCIDENZA_VOL_TARGET_%'] < mediana_incidenza)
             ].copy()
 
-            # Calcolo del GAP (opzionale, utile per la vendita)
-            # Quanto dovrebbero spendere in formazione per arrivare alla mediana?
+            # Calcolo del GAP: quanto budget manca per arrivare alla mediana di mercato
             df_target['GAP_POTENZIALE_€'] = (df_target['VALORE_TOTALE_€'] * (mediana_incidenza / 100)) - df_target['VALORE_TARGET_€']
+            # Se il gap è negativo (per errori arrotondamento), mettiamo 0
+            df_target['GAP_POTENZIALE_€'] = df_target['GAP_POTENZIALE_€'].clip(lower=0)
 
             df_target = df_target.sort_values(by='VALORE_TOTALE_€', ascending=False)
 
@@ -197,26 +207,24 @@ if uploaded_file is not None:
                     column_config={
                         "RAGIONE SOCIALE": st.column_config.TextColumn("Azienda", width="large"),
                         "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
-                        "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Target", format="%.2f %%"),
-                        "GAP_POTENZIALE_€": st.column_config.NumberColumn("Gap", format="%.2f €"),
+                        "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Attuale", format="%.2f %%"),
+                        "GAP_POTENZIALE_€": st.column_config.NumberColumn("Gap (Potenziale)", format="%.2f €"),
                     },
                     column_order=("RAGIONE SOCIALE", "VALORE_TOTALE_€", "INCIDENZA_VOL_TARGET_%", "GAP_POTENZIALE_€"),
                     hide_index=True,
                     use_container_width=True
                 )
         
-                # Bottone di download piccolo dentro l'expander
+                # Download
                 csv_target = io.BytesIO()
                 df_target.to_csv(csv_target, index=False, sep=';', encoding='utf-8-sig')
                 st.download_button(
-                    label="📥 Scarica questa lista (CSV)",
+                    label="📥 Scarica Lista Lead (CSV)",
                     data=csv_target.getvalue(),
-                    file_name="target_prioritari.csv",
+                    file_name="lead_prioritari_formazione.csv",
                     mime="text/csv",
                     use_container_width=True
                 )
-                st.info(f"""**Gap:** Quanto dovrebbero acquisire in aiuti per raggiungere la mediana.
-                Ovvero il loro potenziale di crescita""")
             else:
                 st.write("Nessun prospect sotto la mediana trovato.")
         
