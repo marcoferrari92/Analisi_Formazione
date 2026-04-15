@@ -140,10 +140,10 @@ if uploaded_file is not None:
             b2.metric("Mediana Incidenza", f"{mediana_incidenza:.2f}%")
             b3.write("") # Spazio vuoto o una nota
     
-    st.info(f"""
-    **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
-    perché investono in formazione meno rispetto alla norma del campione analizzato.
-    """)
+            st.info(f"""
+            **Strategia Commerciale:** Le aziende con un'incidenza inferiore alla mediana (**{mediana_incidenza:.2f}%**) sono considerate target ad alto potenziale 
+            perché investono in formazione meno rispetto alla norma del campione analizzato.
+            """)
         st.divider()
 
         # --- RICERCA AZIENDA E DETTAGLIO ---
