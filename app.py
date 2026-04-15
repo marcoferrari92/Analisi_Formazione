@@ -85,7 +85,20 @@ if uploaded_file is not None:
         # Ordinamento
         report = report.sort_values(by=sort_options[sort_choice], ascending=False)
 
-
+        # --- REPORT GENERALE ---
+        st.subheader("📋 Report Riepilogativo Generale")
+        st.dataframe(
+            report,
+            column_config={
+                "VALORE_TOTALE_€": st.column_config.NumberColumn(format="%.2f €"),
+                "VALORE_TARGET_€": st.column_config.NumberColumn(format="%.2f €"),
+                "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
+                "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn(format="%.1f %%"),
+            },
+            hide_index=True, use_container_width=True
+        )
+        st.divider()
+        
         # --- KPI GENERALI ---
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Aziende Totali", len(report))
