@@ -148,8 +148,14 @@ if uploaded_file is not None:
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Periodo Analizzato", f"{data_min.year if pd.notnull(data_min) else 'N/D'} - {data_max.year if pd.notnull(data_max) else 'N/D'}")
-                    perc = (info_rank['N_AIUTI_TARGET'] / info_rank['N_TOT_AIUTI'] * 100) if info_rank['N_TOT_AIUTI'] > 0 else 0
-                    st.metric("% Incidenza Target", f"{perc:.1f}%")
+
+                    # Incidenza sul NUMERO dei bandi
+                    perc_n = (info_rank['N_AIUTI_TARGET'] / info_rank['N_TOT_AIUTI'] * 100) if info_rank['N_TOT_AIUTI'] > 0 else 0
+                    st.metric("% Incidenza N. Target", f"{perc_n:.1f}%")
+
+                    # Incidenza sul VOLUME economico
+                    perc_vol = (info_rank['VALORE_TARGET_€'] / info_rank['VALORE_TOTALE_€'] * 100) if info_rank['VALORE_TOTALE_€'] > 0 else 0
+                    st.metric("% Incidenza Vol. Target", f"{perc_vol:.1f}%")
                    
                 with c2:
                     st.metric("Volume Totale (€)", f"{info_rank['VALORE_TOTALE_€']:,.2f} €")
