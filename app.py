@@ -105,6 +105,8 @@ if uploaded_file is not None:
                     'RNA_TITOLO_PROGETTO',      # Titolo Progetto
                     'RNA_IMPORTO',              # Elemento Aiuto (mappata da RNA_ELEMENTO_DI_AIUTO)
                     'is_target'                 # Spunta verde target
+                    'RAGIONE SOCIALE',
+                    'CF_TROVATO',
                 ]
                 
                 # 2. Identifichiamo tutte le altre colonne che iniziano con RNA_ per non perderle
