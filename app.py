@@ -96,8 +96,8 @@ if uploaded_file is not None:
             azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
             
             if not azienda_details.empty:
+                
                 # 1. Definiamo l'ordine PRIORITARIO richiesto
-                # Mappiamo i nomi reali del CSV arricchito
                 colonne_prioritarie = [
                     'RNA_DATA',                 # Data (mappata da RNA_DATA_CONCESSIONE)
                     'RNA_CAR',                  # CAR
@@ -123,11 +123,11 @@ if uploaded_file is not None:
                         lambda r: ['background-color: #d4edda' if r['is_target'] else ''] * len(r), axis=1
                     ),
                     column_config={
-                        "RNA_DATA": st.column_config.TextColumn("📅 Data Concessione"),
+                        "RNA_DATA": st.column_config.TextColumn("📅 Data"),
                         "RNA_CAR": st.column_config.TextColumn("CAR"),
                         "RNA_MISURA": st.column_config.TextColumn("📜 Titolo Misura", width="large"),
                         "RNA_TITOLO_PROGETTO": st.column_config.TextColumn("🏗️ Titolo Progetto", width="medium"),
-                        "RNA_IMPORTO": st.column_config.NumberColumn("💰 Elemento Aiuto (€)", format="%.2f"),
+                        "RNA_IMPORTO": st.column_config.NumberColumn("💰 Aiuto (€)", format="%.2f"),
                         "is_target": st.column_config.CheckboxColumn("🎯 Target"),
                         "RNA_LINK_TRASPARENZA_NAZIONALE": st.column_config.LinkColumn("🔗 Link Trasparenza"),
                         "RNA_LINK_TESTO_INTEGRALE_MISURA": st.column_config.LinkColumn("📄 Bando Originale"),
