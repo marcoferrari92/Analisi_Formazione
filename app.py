@@ -87,6 +87,7 @@ if uploaded_file is not None:
         st.dataframe(report.style.apply(colora_clienti, axis=1), use_container_width=True, hide_index=True)
 
         # --- DETTAGLIO AZIENDA (RIORDINATO SECONDO SCREENSHOT) ---
+        # --- RICERCA AZIENDA E DETTAGLIO ---
         st.divider()
         st.subheader("🎯 Analisi Dettagliata per Azienda")
         search_txt = st.text_input("Inserisci Ragione Sociale per visualizzare i dettagli")
@@ -95,36 +96,45 @@ if uploaded_file is not None:
             azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
             
             if not azienda_details.empty:
-                # 1. Definiamo l'ordine prioritario dello screenshot
-                prime_colonne = [
-                    'RNA_DATA', 
-                    'RNA_MISURA', 
-                    'RNA_STRUMENTO', 
-                    'RNA_IMPORTO',
-                    'is_target'
+                # 1. Definiamo l'ordine PRIORITARIO richiesto
+                # Mappiamo i nomi reali del CSV arricchito
+                colonne_prioritarie = [
+                    'RNA_DATA',                 # Data (mappata da RNA_DATA_CONCESSIONE)
+                    'RNA_CAR',                  # CAR
+                    'RNA_MISURA',               # Titolo Misura (mappata da RNA_TITOLO_MISURA)
+                    'RNA_TITOLO_PROGETTO',      # Titolo Progetto
+                    'RNA_IMPORTO',              # Elemento Aiuto (mappata da RNA_ELEMENTO_DI_AIUTO)
+                    'is_target'                 # Spunta verde target
                 ]
                 
-                # 2. Tutte le altre colonne RNA e anagrafiche seguono
-                restanti_colonne = [c for c in azienda_details.columns if c not in prime_colonne]
-                ordine_finale = [c for c in (prime_colonne + restanti_colonne) if c in azienda_details.columns]
+                # 2. Identifichiamo tutte le altre colonne che iniziano con RNA_ per non perderle
+                altre_col_rna = [c for c in azienda_details.columns if c.startswith('RNA_') and c not in colonne_prioritarie]
+                
+                # 3. Costruiamo l'ordine finale: Priorità -> Altri dati RNA -> Eventuali altri campi
+                ordine_finale = [c for c in colonne_prioritarie if c in azienda_details.columns] + altre_col_rna
 
                 st.write(f"### Dettaglio estrazione: {azienda_details['RAGIONE SOCIALE'].iloc[0]}")
                 
+                # Visualizzazione Tabella
                 st.dataframe(
-                    azienda_details[ordine_finale].style.apply(lambda r: ['background-color: #d4edda' if r['is_target'] else ''] * len(r), axis=1),
+                    azienda_details[ordine_finale].style.apply(
+                        lambda r: ['background-color: #d4edda' if r['is_target'] else ''] * len(r), axis=1
+                    ),
                     column_config={
-                        "RNA_DATA": st.column_config.TextColumn("Data Concessione"),
-                        "RNA_MISURA": st.column_config.TextColumn("Titolo Misura", width="large"),
-                        "RNA_STRUMENTO": st.column_config.TextColumn("Strumento"),
-                        "RNA_IMPORTO": st.column_config.NumberColumn("Importo €", format="%.2f"),
-                        "is_target": st.column_config.CheckboxColumn("Target?"),
-                        "RNA_LINK_TRASPARENZA_NAZIONALE": st.column_config.LinkColumn("Link Trasparenza"),
+                        "RNA_DATA": st.column_config.TextColumn("📅 Data Concessione"),
+                        "RNA_CAR": st.column_config.TextColumn("CAR"),
+                        "RNA_MISURA": st.column_config.TextColumn("📜 Titolo Misura", width="large"),
+                        "RNA_TITOLO_PROGETTO": st.column_config.TextColumn("🏗️ Titolo Progetto", width="medium"),
+                        "RNA_IMPORTO": st.column_config.NumberColumn("💰 Elemento Aiuto (€)", format="%.2f"),
+                        "is_target": st.column_config.CheckboxColumn("🎯 Target"),
+                        "RNA_LINK_TRASPARENZA_NAZIONALE": st.column_config.LinkColumn("🔗 Link Trasparenza"),
+                        "RNA_LINK_TESTO_INTEGRALE_MISURA": st.column_config.LinkColumn("📄 Bando Originale"),
                     },
                     use_container_width=True, 
                     hide_index=True
                 )
             else:
-                st.warning("Azienda non trovata.")
+                st.warning("Nessuna azienda trovata con questa ragione sociale.")
 
         # Download
         csv_buffer = io.BytesIO()
