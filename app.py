@@ -40,7 +40,7 @@ if uploaded_file is not None:
     try:
         @st.cache_data
         def load_data(file):
-            return pd.read_csv(file, sep=';', encoding='utf-8-sig')
+            return pd.read_csv(file, sep=';', encoding='utf-8-sig', dtype={'RNA_PIVA': str})
 
         df_raw = load_data(uploaded_file)
 
@@ -67,7 +67,7 @@ if uploaded_file is not None:
         df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
         # --- GENERAZIONE REPORT SINTETICO ---
-        col_rna = ['RNA_PIVA', 'RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target', 'importo_target']
+        col_rna = ['RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'is_target', 'importo_target']
         col_ana = [c for c in df_raw.columns if c not in col_rna]
         
         report = df_raw.groupby('RAGIONE SOCIALE').agg({
@@ -116,6 +116,7 @@ if uploaded_file is not None:
         report.style.apply(colora_clienti, axis=1),
         column_config={
             "STATO": st.column_config.TextColumn("Stato", width="medium"),
+            "RNA_PIVA": st.column_config.TextColumn("P.IVA", width="small"),
             "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
             "VALORE_TARGET_€": st.column_config.NumberColumn("Budget Target", format="%.2f €"),
             "INCIDENZA_N_TARGET_%": st.column_config.NumberColumn("Incidenza N.", format="%.1f %%"),
@@ -124,6 +125,7 @@ if uploaded_file is not None:
             hide_index=True, 
             use_container_width=True
         )
+        column_order=("STATO", "RAGIONE SOCIALE", "RNA_PIVA", "N_TOT_AIUTI", "VALORE_TOTALE_€", "N_AIUTI_TARGET", "VALORE_TARGET_€", "INCIDENZA_VOL_TARGET_%"),
         
         with st.expander("📊 Analisi Benchmark di Mercato", expanded=True):
             
@@ -222,6 +224,7 @@ if uploaded_file is not None:
                     df_target,
                     column_config={
                         "RAGIONE SOCIALE": st.column_config.TextColumn("Azienda", width="large"),
+                        "RNA_PIVA": st.column_config.TextColumn("P.IVA", width="small"),
                         "VALORE_TOTALE_€": st.column_config.NumberColumn("Budget Totale", format="%.2f €"),
                         "INCIDENZA_VOL_TARGET_%": st.column_config.NumberColumn("Incidenza Attuale", format="%.2f %%"),
                         "GAP_POTENZIALE_€": st.column_config.NumberColumn("Gap (Potenziale)", format="%.2f €"),
