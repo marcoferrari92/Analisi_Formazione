@@ -104,7 +104,7 @@ if uploaded_file is not None:
                     'RNA_MISURA',               # Titolo Misura (mappata da RNA_TITOLO_MISURA)
                     'RNA_TITOLO_PROGETTO',      # Titolo Progetto
                     'RNA_IMPORTO',              # Elemento Aiuto (mappata da RNA_ELEMENTO_DI_AIUTO)
-                    'is_target'                 # Spunta verde target
+                    'is_target',                 # Spunta verde target
                     'RAGIONE SOCIALE',
                     'CF_TROVATO',
                 ]
