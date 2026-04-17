@@ -97,6 +97,7 @@ if uploaded_file is not None:
         with m2:
             st.metric("Aziende", f"{n_aziende}")
             st.write("")
+            st.write("")
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
