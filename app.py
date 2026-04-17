@@ -101,10 +101,10 @@ if uploaded_file is not None:
             st.write("")
             st.write("")
             with st.container(border=True):
-            st.metric("Aziende", f"{n_aziende}")
-            st.write("")
-            st.write("")
-            st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                st.metric("Aziende", f"{n_aziende}")
+                st.write("")
+                st.write("")
+                st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             
         with m3:
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
