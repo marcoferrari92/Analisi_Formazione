@@ -117,53 +117,46 @@ def render_database_misure(df_rna):
 
 def verifica_stato_clienti(df_rna, uploaded_clienti):
     """
-    Confronta il database RNA con il file Clienti tramite Partita IVA.
+    Confronta il database RNA con il file Clienti tramite Codice Fiscale/P.IVA.
     Ritorna il dataframe RNA arricchito con la colonna 'STATO'.
     """
     try:
-        # 1. Caricamento del file Clienti 2026 (separatore ;)
-        # Usiamo 'low_memory=False' per gestire colonne con tipi misti
-        df_clienti = pd.read_csv(uploaded_clienti, sep=';', encoding='utf-8-sig', low_memory=False)
+        # 1. Caricamento del file Clienti (assicuriamoci che legga le P.IVA come stringhe)
+        df_clienti = pd.read_csv(uploaded_clienti, sep=';', encoding='utf-8-sig', dtype=str, low_memory=False)
         
-        if 'Partita IVA' not in df_clienti.columns:
-            st.error("⚠️ Errore: Colonna 'Partita IVA' non trovata nel file clienti!")
+        # Verifichiamo se la colonna esiste (adattala se nel tuo file clienti ha un nome diverso)
+        col_piva_clienti = 'Partita IVA' 
+        if col_piva_clienti not in df_clienti.columns:
+            st.error(f"⚠️ Errore: Colonna '{col_piva_clienti}' non trovata nel file clienti!")
             return df_rna
 
         # 2. Pulizia e Normalizzazione P.IVA Clienti
-        # Rimuoviamo spazi, rendiamo tutto stringa e togliamo eventuali prefissi
-        lista_piva_clienti = (
-            df_clienti['Partita IVA']
+        # Creiamo un set (più veloce della lista per i confronti) di stringhe pulite
+        lista_piva_clienti = set(
+            df_clienti[col_piva_clienti]
             .astype(str)
             .str.strip()
             .str.replace(' ', '')
             .unique()
-            .tolist()
         )
 
-        # 3. Pulizia P.IVA nel database RNA
-        # Creiamo una versione pulita per il confronto
-        df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'] = (
-            df_rna['RNA_CODICE_FISCALE_BENEFICIARIO']
-            .astype(str)
-            .str.strip()
-            .str.replace(' ', '')
-        )
+        # 3. Matching usando il nome colonna UFFICIALE RNA
+        # La colonna corretta è 'RNA_CODICE_FISCALE_BENEFICIARIO'
+        def check_stato(val):
+            clean_val = str(val).strip().replace(' ', '')
+            return "🟢 CLIENTE" if clean_val in lista_piva_clienti else "⚪ PROSPECT"
 
-        # 4. Matching (Il confronto vero e proprio)
-        # Se la P.IVA pulita è nella lista clienti -> CLIENTE, altrimenti PROSPECT
-        df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(
-            lambda x: "🟢 CLIENTE" if x in lista_piva_clienti else "⚪ PROSPECT"
-        )
+        df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
         
-        # Rimuoviamo la colonna di servizio per pulizia
-        df_rna = df_rna.drop(columns=['RNA_PIVA_CLEAN'])
-        
-        st.sidebar.success(f"✅ Confronto completato: {len(lista_piva_clienti)} clienti caricati.")
+        st.sidebar.success(f"✅ Confronto completato: {len(lista_piva_clienti)} codici caricati.")
         return df_rna
 
     except Exception as e:
-        st.error(f"❌ Errore durante il confronto P.IVA: {e}")
+        st.error(f"❌ Errore durante il confronto: {e}")
         return df_rna
+
+
+
 
 
 def colora_clienti(row):
