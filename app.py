@@ -21,7 +21,7 @@ keywords_raw = st.sidebar.text_area("Parole chiave target", value=default_kw)
 
 btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
 
-# --- LOGICA DI ELABORAZIONE ---
+# ANALISI
 if uploaded_file is not None:
     try:
 
@@ -34,16 +34,26 @@ if uploaded_file is not None:
         else:
             if 'STATO' not in df.columns:
                 df['STATO'] = "⚪ PROSPECT"
-        # :::::::::::::::::::::::::::::::::::::::::::
+
 
         
-        
+        # Estrapolazione keywords dal campo di testo
         keywords = [k.strip().upper() for k in keywords_raw.split(',')]
-        def is_target_row(row_text):
-            text = str(row_text).upper()
-            return any(k in text for k in keywords)
+        
+        # 1. Definiamo le colonne su cui vogliamo fare la ricerca
+        colonne_ricerca = ['RNA_TITOLO_MISURA', 'RNA_DESCRIZIONE_PROGETTO', 'RNA_TITOLO_PROGETTO']
 
-        df['is_target'] = df['RNA_MISURA'].astype(str).apply(is_target_row)
+        # 2. Modifichiamo la funzione di controllo
+        def is_target_row(row):
+            # Uniamo il testo di tutte le colonne scelte in un'unica stringa maiuscola
+            testo_completo = " ".join([str(row[col]) for col in colonne_ricerca if col in row]).upper()
+    
+            # Controlliamo se almeno una keyword è presente in questo "super-testo"
+            return any(k in testo_completo for k in keywords)
+
+# 3. Applichiamo la funzione a tutto il DataFrame (axis=1 significa "per riga")
+df['IS_TARGET'] = df.apply(is_target_row, axis=1)
+        
         df['importo_target'] = df.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
         # --- GENERAZIONE REPORT ---
