@@ -198,6 +198,68 @@ if uploaded_file is not None:
 
         else:
             st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
+
+        # --- 1. PREPARAZIONE DATI ---
+        # Usiamo report_aziende (che ha i numeri puri) e filtriamo i target > 0
+        df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
+
+        if not df_plot.empty:
+            with st.expander("📈 Distribuzione Aziende e Benchmark Visivo"):
+                st.write("I singoli puntini rappresentano le aziende. Passa il mouse sopra per vedere la Ragione Sociale.")
+        
+                c1, c2 = st.columns(2)
+        
+                with c1:
+                    # Box Plot Budget Target
+                    fig_budget = px.box(
+                        df_plot, 
+                        y="Budget Target", 
+                        points="all",          # <--- TUTTI i puntini sullo stesso asse
+                        hover_name="Ragione Sociale", # <--- Vedi il nome azienda al passaggio
+                        title="Budget Target (€)",
+                        color_discrete_sequence=['#2ecc71']
+                    )
+                    fig_budget.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(fig_budget, use_container_width=True)
+
+                    # Box Plot F1
+                    fig_f1 = px.box(
+                        df_plot, 
+                        y="F1", 
+                        points="all",
+                        hover_name="Ragione Sociale",
+                        title="F1: Intensità Target (%)",
+                        color_discrete_sequence=['#3498db']
+                    )
+                    fig_f1.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(fig_f1, use_container_width=True)
+
+                with c2:
+                    # Box Plot Numero Aiuti
+                    fig_aiuti = px.box(
+                        df_plot, 
+                        y="Aiuti Target", 
+                        points="all",
+                        hover_name="Ragione Sociale",
+                        title="N. Aiuti Target",
+                        color_discrete_sequence=['#9b59b6']
+                    )
+                    fig_aiuti.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(fig_aiuti, use_container_width=True)
+
+                    # Box Plot F2
+                    fig_f2 = px.box(
+                        df_plot, 
+                        y="F2", 
+                        points="all",
+                        hover_name="Ragione Sociale",
+                        title="F2: Rilevanza Target (%)",
+                        color_discrete_sequence=['#e67e22']
+                    )
+                    fig_f2.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                    st.plotly_chart(fig_f2, use_container_width=True)
+        else:
+            st.info("Nessun dato target disponibile per i grafici.")
     
         st.divider()
 
