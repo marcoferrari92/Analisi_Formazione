@@ -88,7 +88,7 @@ if uploaded_file is not None:
 
         with c1:
             st.metric("Aziende", f"{n_aziende}")
-            st.caption("Aziende uniche nel database RNA")
+            st.caption("P.IVE uniche nel database RNA")
 
         with c2:
             # Rappresentano il mercato "sano"
@@ -98,7 +98,7 @@ if uploaded_file is not None:
         with c3:
             # Il tuo gap commerciale: sono vive ma non nel target
             st.metric("Aziende INATTIVE", f"{n_aziende_off}", 
-                      delta=f"-{n_aziende_off}", delta_color="inverse")
+                      delta=f"-{n_aziende-n_aziende_target}", delta_color="inverse")
             st.caption("Attive ma non nel target")
 
         with c4:
