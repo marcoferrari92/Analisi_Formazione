@@ -66,16 +66,27 @@ if uploaded_file is not None:
         m1, m2, m3 = st.columns(3)
         
         with m1:
-            st.metric("Aziende", f"{n_aziende}")
-            st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            # Usiamo il conteggio basato su Codice Fiscale per la massima precisione
+            st.metric("Aziende Uniche", f"{n_aziende}")
+            st.metric(
+                "Budget Totale", 
+                f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            )
 
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
-            st.metric("Budget Target", f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.metric(
+                "Budget Target", 
+                f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                delta=f"{perc_budget_target:.1f}% del budget" # <--- Aggiunto qui
+            )
 
         with m3:
-            perc_target = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
-            st.metric("Aiuti Target", f"{n_aiuti_target}", f"{perc_target:.1f}% del totale")
+            st.metric(
+                "Aiuti Target", 
+                f"{n_aiuti_target}", 
+                delta=f"{perc_aiuti_target:.1f}% del totale"
+            )
 
         st.divider()
 
