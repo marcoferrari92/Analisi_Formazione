@@ -101,6 +101,7 @@ if uploaded_file is not None:
             st.write("")
             st.write("")
             st.metric("Aziende", f"{n_aziende}")
+            st.write("")
             st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             
         with m3:
