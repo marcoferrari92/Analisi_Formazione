@@ -33,26 +33,34 @@ sort_choice = st.sidebar.selectbox("Ordina tabella per:", list(sort_options.keys
 # --- LOGICA DI ELABORAZIONE ---
 if uploaded_file is not None:
     try:
+
+        # DATA LOADING ::::::::::::::::::::::::::
         @st.cache_data
         def load_data(file):
             df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
+
+            # MAPPING Nomi RNA -> Nomi App
             mapping = {
                 'RNA_TITOLO_MISURA': 'RNA_MISURA',
                 'RNA_DATA_CONCESSIONE': 'RNA_DATA',
                 'RNA_CODICE_FISCALE_BENEFICIARIO': 'RNA_PIVA',
                 'RNA_ELEMENTO_DI_AIUTO': 'RNA_IMPORTO',
-                'RNA_DES_STRUMENTO': 'RNA_STRUMENTO' # Mappato per la tabella dettaglio
+                'RNA_DES_STRUMENTO': 'RNA_STRUMENTO' 
             }
             df = df.rename(columns={k: v for k, v in mapping.items() if k in df.columns})
             return df
-
+        # :::::::::::::::::::::::::::::::::::
+        
+        
+        # CHECK CLIENTI vs PROSPECT :::::::::::::::::
         df_raw = load_data(uploaded_file)
-
         if uploaded_clienti is not None:
             df_raw = verifica_stato_clienti(df_raw, uploaded_clienti)
         else:
             if 'STATO' not in df_raw.columns:
                 df_raw['STATO'] = "⚪ PROSPECT"
+        # :::::::::::::::::::::::::::::::::::::::::::
+
         
         df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
         
