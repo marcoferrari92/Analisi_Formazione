@@ -188,17 +188,26 @@ if uploaded_file is not None:
                     st.write("**Fattore F1**")
                     st.metric("Media", f"{avg_f1:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
-                    
+                    # Calcolo aziende sotto la mediana
+                    sotto_med_f1 = len(df_benchmark[df_benchmark['F1'] < med_f1])
+                    st.caption(f"📉 {sotto_med_f1} aziende sotto mediana")
+        
                 with col3:
                     st.write("**Budget Target**")
                     st.metric("Media", f"€ {avg_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-            
+                    # Calcolo aziende sotto la mediana
+                    sotto_med_budget = len(df_benchmark[df_benchmark['Budget Target'] < med_budget])
+                    st.caption(f"📉 {sotto_med_budget} aziende sotto mediana")
+                    
                 with col4:
                     st.write("**Fattore F2**")
                     st.metric("Media", f"{avg_f2:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f2:.1f}%".replace('.', ','))
-
+                    # Calcolo aziende sotto la mediana
+                    sotto_med_f2 = len(df_benchmark[df_benchmark['F2'] < med_f2])
+                    st.caption(f"📉 {sotto_med_f2} aziende sotto mediana")
+                    
         else:
             st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
 
