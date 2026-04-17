@@ -184,7 +184,7 @@ if uploaded_file is not None:
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
             st.caption("Valori medi e mediani calcolati esclusivamente sulle aziende che hanno ottenuto aiuti nei settori ricercati.")
-            with st.popover("💡 **Possibile Strategia"): 
+            with st.popover("💡Possibile Strategia"): 
                 st.info("""
             > Aziende che si posizionano **sotto la mediana** rappresentano un mercato interessante. 
             > Sono aziende che non stanno sfruttando appieno gli incentivi disponibili o che hanno maggiori margini di crescita nella pianificazione finanziaria agevolata rispetto ai competitor.
