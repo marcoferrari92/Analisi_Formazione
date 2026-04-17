@@ -5,7 +5,7 @@ import plotly.express as px
 
 # Caricamenti
 from settings import DEFAULT_KEYWORDS
-from utils import  load_rna_data, is_target_row, render_database_misure, verifica_stato_clienti, colora_clienti
+from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
@@ -115,12 +115,6 @@ if uploaded_file is not None:
         report_aziende = report_aziende.sort_values(by='Budget Target', ascending=False)
 
         # --- 5. FORMATTAZIONE PER VISUALIZZAZIONE ---
-        def format_it(val):
-            return f"€ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-
-        def format_pct(val):
-            return f"{val:.1f}%".replace('.', ',')
-
         report_visual = report_aziende.copy()
         report_visual['Budget'] = report_visual['Budget'].apply(format_it)
         report_visual['Budget Target'] = report_visual['Budget Target'].apply(format_it)
