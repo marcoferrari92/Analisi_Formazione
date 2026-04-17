@@ -117,6 +117,8 @@ if uploaded_file is not None:
                     st.write("")
                     st.write("")
                     st.metric("Budget Medio per Azienda", f"€ {budget_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.write("")
+                    st.write("")
                     st.caption("Calcolato sulle aziende attive (budget aiuti > 0€)")
 
                 with sub_col2:
