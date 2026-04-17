@@ -87,37 +87,57 @@ if uploaded_file is not None:
         if 'STATO' in df.columns:
             col_raggruppamento.append('STATO')
 
-        # --- 1. PREPARAZIONE DATI ---
-        report_aziende = df.groupby(['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']).agg({
-            'RNA_TITOLO_MISURA': 'count',
-            'IS_TARGET': 'sum',
-            'RNA_ELEMENTO_DI_AIUTO': 'sum',
-            'IMPORTO_TARGET': 'sum'
-        }).reset_index()
+            # --- 1. PREPARAZIONE DATI ---
+            report_aziende = df.groupby(['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']).agg({
+                'RNA_TITOLO_MISURA': 'count',
+                'IS_TARGET': 'sum',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum',
+                'IMPORTO_TARGET': 'sum'
+            }).reset_index()
 
-        # Rinominiamo le colonne
-        report_aziende.columns = ['P.IVA', 'Ragione Sociale', 'Aiuti', 'Aiuti Target', 'Budget', 'Budget Target']
+            # Rinominiamo le colonne per chiarezza
+            report_aziende.columns = [
+                'P.IVA', 'Ragione Sociale', 'Aiuti', 'Aiuti Target', 
+                'Budget', 'Budget Target', 'F1', 'F2'
+            ]
 
-        # --- 2. FORMATTAZIONE MANUALE DEGLI IMPORTI (Stile XXX.XXX,XX) ---
-        def format_it(val):
-            return f"{val:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
+            # Ordiniamo per Budget Target decrescente PRIMA della formattazione
+            report_aziende = report_aziende.sort_values(by='Budget Target', ascending=False)
 
-        # Creiamo una copia del dataframe per la visualizzazione formattata
-        report_visualizzazione = report_aziende.copy()
-        report_visualizzazione['Budget'] = report_visualizzazione['Budget'].apply(format_it)
-        report_visualizzazione['Budget Target'] = report_visualizzazione['Budget Target'].apply(format_it)
+            # --- 2. FORMATTAZIONE ESTETICA (XXX.XXX,XX) ---
+            def format_valuta(val):
+                return f"€ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 
-        # --- 3. VISUALIZZAZIONE TABELLA ---
-        st.dataframe(
-            report_visualizzazione,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
-                "Budget": st.column_config.TextColumn("Budget Totale"),
-                "Budget Target": st.column_config.TextColumn("Budget Target")
-            }
-        )
+            def format_percentuale(val):
+                return f"{val:,.1f}%".replace('.', ',')
+
+            report_visual = report_aziende.copy()
+            report_visual['Budget'] = report_visual['Budget'].apply(format_valuta)
+            report_visual['Budget Target'] = report_visual['Budget Target'].apply(format_valuta)
+            report_visual['F1'] = report_visual['F1'].apply(format_percentuale)
+            report_visual['F2'] = report_visual['F2'].apply(format_percentuale)
+
+            # --- 3. VISUALIZZAZIONE ---
+            st.dataframe(
+                report_visual,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
+                    "F1": st.column_config.TextColumn("F1 (%)", help="Incidenza numero aiuti target"),
+                    "F2": st.column_config.TextColumn("F2 (%)", help="Incidenza budget target")
+                }
+            )
+
+            # --- 4. NOTA ESPLICATIVA ---
+            st.markdown("""
+            <small>
+            **Nota metodologica:**<br>
+            * **F1 (Fattore di Intensità):** Rappresenta la percentuale di aiuti ottenuti dall'azienda che rientrano nelle categorie target rispetto al totale degli aiuti ricevuti.
+            * **F2 (Fattore di Rilevanza):** Rappresenta la percentuale del budget target (es. formazione/innovazione) sul totale del budget erogato dal RNA all'azienda.
+            </small>
+            """, unsafe_allow_html=True)        
+
         st.divider()
 
        
