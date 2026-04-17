@@ -129,16 +129,15 @@ if uploaded_file is not None:
 
         # --- 6. VISUALIZZAZIONE ---
         st.dataframe(
-            report_visual,
+            report_visual.style.apply(colora_clienti, axis=1), 
             use_container_width=True,
             hide_index=True,
             column_config={
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
-                "F1": st.column_config.TextColumn("F1"),
-                "F2": st.column_config.TextColumn("F2")
+                "F1": st.column_config.TextColumn("F1 (%)", help="Incidenza numero aiuti target"),
+                "F2": st.column_config.TextColumn("F2 (%)", help="Incidenza budget target")
             }
         )
-
         st.markdown("""
         <small>**Nota:** F1 = % aiuti target su tot. aiuti | F2 = % budget target su budget totale</small>
         """, unsafe_allow_html=True)      
