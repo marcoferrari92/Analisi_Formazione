@@ -175,21 +175,24 @@ if uploaded_file is not None:
             # Creiamo un contenitore con bordo (stile card)
             with st.container(border=True):
                 col1, col2, col3, col4 = st.columns(4)
-        
-                with col3:
-                    st.write("**Budget Target**")
-                    st.metric("Media", f"€ {avg_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                    st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-            
+                
                 with col1:
                     st.write("**N. Aiuti Target**")
                     st.metric("Media", f"{avg_aiuti:.1f}")
                     st.metric("Mediana", f"{med_aiuti:.1f}")
-            
+                    # Calcolo aziende sotto la mediana
+                    sotto_med_aiuti = len(df_benchmark[df_benchmark['Aiuti Target'] < med_aiuti])
+                    st.caption(f"📉 {sotto_med_aiuti} aziende sotto mediana")
+        
                 with col2:
                     st.write("**Fattore F1**")
                     st.metric("Media", f"{avg_f1:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
+                    
+                with col3:
+                    st.write("**Budget Target**")
+                    st.metric("Media", f"€ {avg_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             
                 with col4:
                     st.write("**Fattore F2**")
