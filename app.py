@@ -42,7 +42,7 @@ if uploaded_file is not None:
             df = verifica_stato_clienti(df, uploaded_clienti)
         else:
             if 'STATO' not in df.columns:
-                df['STATO'] = "PROSPECT"
+                df['STATO'] = "Unknow"
 
 
         # RIEPILOGO
