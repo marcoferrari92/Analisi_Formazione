@@ -111,25 +111,37 @@ if uploaded_file is not None:
         }
         report_aziende = report_aziende.rename(columns=mappa_nomi)
 
-        # Ordiniamo prima di formattare (fondamentale!)
-        report_aziende = report_aziende.sort_values(by='Budget Target', ascending=False)
-
-        # --- 5. FORMATTAZIONE PER VISUALIZZAZIONE ---
-        report_visual = report_aziende.copy()
-        report_visual['Budget'] = report_visual['Budget'].apply(format_it)
-        report_visual['Budget Target'] = report_visual['Budget Target'].apply(format_it)
-        report_visual['F1'] = report_visual['F1'].apply(format_pct)
-        report_visual['F2'] = report_visual['F2'].apply(format_pct)
-
-        # --- 6. VISUALIZZAZIONE ---
         st.dataframe(
-            report_visual.style.apply(colora_clienti, axis=1), 
+            report_aziende.style.apply(colora_clienti, axis=1),
             use_container_width=True,
             hide_index=True,
             column_config={
+                "P.IVA": st.column_config.TextColumn("P.IVA"),
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
-                "F1": st.column_config.TextColumn("F1 (%)", help="Incidenza numero aiuti target"),
-                "F2": st.column_config.TextColumn("F2 (%)", help="Incidenza budget target")
+                "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
+                "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
+        
+                # Formattazione Budget (mantiene il sorting numerico)
+                "Budget": st.column_config.NumberColumn(
+                    "Budget Totale (€)",
+                    format="%.2f", # Streamlit userà il separatore locale del browser (italiano se impostato)
+                ),
+                "Budget Target": st.column_config.NumberColumn(
+                    "Budget Target (€)",
+                    format="%.2f",
+                ),
+        
+                # Formattazione Percentuali F1 e F2
+                "F1": st.column_config.NumberColumn(
+                    "F1 (%)",
+                    format="%.1f%%", # Aggiunge il simbolo % ma resta un numero per il sorting
+                    help="Incidenza numero aiuti target"
+                ),
+                "F2": st.column_config.NumberColumn(
+                    "F2 (%)",
+                    format="%.1f%%",
+                    help="Incidenza budget target"
+                )
             }
         )
         st.markdown("""
