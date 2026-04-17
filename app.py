@@ -181,20 +181,23 @@ if uploaded_file is not None:
         
         # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
         # Usiamo il report_aziende creato precedentemente
-        df_benchmark = report_aziende[report_aziende['Budget Target'] > 0]
+        df_benchmark_1 = report_aziende[report_aziende['Budget Target'] > 0]
+        df_benchmark_2 = report_aziende[report_aziende['Budget'] > 0]
 
-        if not df_benchmark.empty:
+        if not df_benchmark_1.empty:
             # Medie
-            avg_budget = df_benchmark['Budget Target'].mean()
-            avg_aiuti = df_benchmark['Aiuti Target'].mean()
-            avg_f1 = df_benchmark['F1'].mean()
-            avg_f2 = df_benchmark['F2'].mean()
+            avg_budget = df_benchmark_1['Budget Target'].mean()
+            avg_aiuti = df_benchmark_1['Aiuti Target'].mean()
+            avg_f1 = df_benchmark_1['F1'].mean()
+            avg_f2 = df_benchmark_1['F2'].mean()
     
             # Mediane
-            med_budget_target = df_benchmark['Budget Target'].median()
-            med_aiuti_target = df_benchmark['Aiuti Target'].median()
-            med_f1 = df_benchmark['F1'].median()
-            med_f2 = df_benchmark['F2'].median()
+            med_aiuti              = df_benchmark_2['Aiuti Target'].median()
+            med_budget             = df_benchmark_2['Budget'].median()
+            med_budget_target      = df_benchmark_1['Budget Target'].median()
+            med_aiuti_target       = df_benchmark_1['Aiuti Target'].median()
+            med_f1                 = df_benchmark_1['F1'].median()
+            med_f2                 = df_benchmark_1['F2'].median()
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
@@ -210,10 +213,13 @@ if uploaded_file is not None:
                 
                 with col1:
                     st.write("**N. Aiuti Target**")
-                    st.metric("Media", f"{avg_aiuti:.1f}")
-                    st.metric("Mediana", f"{med_aiuti_target:.1f}")
+                    #st.metric("Media", f"{avg_aiuti:.1f}")
+                    #st.metric("Mediana", f"{med_aiuti_target:.1f}")
+                    st.metric("N. Aiuti Medio", f"{med_aiuti:.1f}")
+                    st.metric("N. Aiuti Target Medio", f"{med_aiuti_target:.1f}")
+                    
                     # Calcolo aziende sotto la mediana
-                    sotto_med_aiuti_target = len(df_benchmark[df_benchmark['Aiuti Target'] < med_aiuti_target])
+                    sotto_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] < med_aiuti_target])
                     st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana")
         
                 with col2:
@@ -221,7 +227,7 @@ if uploaded_file is not None:
                     st.metric("Media", f"{avg_f1:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
                     # Calcolo aziende sotto la mediana
-                    sotto_med_f1 = len(df_benchmark[df_benchmark['F1'] < med_f1])
+                    sotto_med_f1 = len(df_benchmark_1[df_benchmark_1['F1'] < med_f1])
                     st.caption(f"📉 {sotto_med_f1} aziende sotto mediana")
         
                 with col3:
@@ -229,7 +235,7 @@ if uploaded_file is not None:
                     st.metric("Media", f"€ {avg_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     # Calcolo aziende sotto la mediana
-                    sotto_med_budget_target = len(df_benchmark[df_benchmark['Budget Target'] < med_budget_target])
+                    sotto_med_budget_target = len(df_benchmark_1[df_benchmark_1['Budget Target'] < med_budget_target])
                     st.caption(f"📉 {sotto_med_budget_target} aziende sotto mediana")
                     
                 with col4:
@@ -237,7 +243,7 @@ if uploaded_file is not None:
                     st.metric("Media", f"{avg_f2:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f2:.1f}%".replace('.', ','))
                     # Calcolo aziende sotto la mediana
-                    sotto_med_f2 = len(df_benchmark[df_benchmark['F2'] < med_f2])
+                    sotto_med_f2 = len(df_benchmark_1[df_benchmark_1['F2'] < med_f2])
                     st.caption(f"📉 {sotto_med_f2} aziende sotto mediana")
                     
         
