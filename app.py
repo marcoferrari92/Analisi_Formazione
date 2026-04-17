@@ -231,7 +231,7 @@ if uploaded_file is not None:
         # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
         df_plot = report_aziende[report_aziende['Budget Target'] > 1].copy()
         if not df_plot.empty:
-            st.write("---")
+            st.write("")
             col_graf_1, col_graf_2 = st.columns(2)
             
             # --- GRAFICO 2: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
