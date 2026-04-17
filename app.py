@@ -219,17 +219,7 @@ if uploaded_file is not None:
                     fig.update_traces(pointpos=0, jitter=0.1, marker=dict(opacity=0.6, size=7))
                     fig.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20))
                     return fig
-
-                # GRAFICO: BUDGET TARGET
-                st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "Budget Target", "Distribuzione Budget Target (€)", "#2ecc71"),
-                    use_container_width=True
-                )
-                # GRAFICO: F2
-                st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "F2", "Distribuzione F2", "#e67e22"),
-                    use_container_width=True
-                )
+                    
                 # GRAFICO: NUMERO AIUTI TARGET
                 st.plotly_chart(
                     crea_box_orizzontale(df_plot, "Aiuti Target", "Distribuzione Numero Aiuti Target", "#9b59b6"),
@@ -240,6 +230,17 @@ if uploaded_file is not None:
                     crea_box_orizzontale(df_plot, "F1", "Distribuzione F1", "#3498db"),
                     use_container_width=True
                 )
+                # GRAFICO: BUDGET TARGET
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "Budget Target", "Distribuzione Budget Target (€)", "#2ecc71"),
+                    use_container_width=True
+                )
+                # GRAFICO: F2
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "F2", "Distribuzione F2", "#e67e22"),
+                    use_container_width=True
+                )
+                
         else:
             st.info("Nessun dato target disponibile per i grafici.")
     
