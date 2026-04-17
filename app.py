@@ -292,7 +292,7 @@ if uploaded_file is not None:
             st.info("""
             **Interpretazione dei quadranti:**
             - **Sopra la linea rossa:** Aziende "Focalizzate" (agiscono sul target più della media dei competitor).
-            - **Sotto la linea rossa:** Aziende "Diversificate" (il target è solo una componente minoritaria della loro attività).
+            - **Sotto la linea rossa:** Aziende "Disinteressate" (il target è solo una componente minoritaria della loro attività).
             """)
     
         # --- GRAFICI ---
