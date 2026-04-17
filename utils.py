@@ -3,9 +3,17 @@ import streamlit as st
 import io
 
 
+
+# *********
+# LOADING 
+# *********
+
+"""Carica i dati RNA e pulisce la colonna importi (rendendoli numeri)."""
+
 @st.cache_data
 def load_rna_data(file):
-    """Carica i dati RNA e pulisce la colonna importi."""
+    
+    # Caricamento file
     df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
     
     # Pulizia colonna importo (trasforma stringa con virgola in numero)
@@ -14,7 +22,9 @@ def load_rna_data(file):
             df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.'), 
             errors='coerce'
         ).fillna(0)
+        
     return df
+# *****************************************************************************
 
 
 
