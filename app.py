@@ -231,8 +231,6 @@ if uploaded_file is not None:
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
             st.write("---")
-            st.subheader("🎯 Analisi di Posizionamento: Specializzazione vs Operatività")
-    
             col_graf_1, col_graf_2 = st.columns(2)
             
             # --- GRAFICO 2: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
@@ -288,8 +286,6 @@ if uploaded_file is not None:
                 fig_budget_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_budget_scatter, use_container_width=True)
                 st.caption(f"La linea tratteggiata rappresenta la Mediana F2 ({med_f2:.1f}%)")
-
-            
 
             st.info("""
             **Interpretazione dei quadranti:**
