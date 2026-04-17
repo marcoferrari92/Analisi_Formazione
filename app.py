@@ -270,6 +270,8 @@ if uploaded_file is not None:
                     df_plot,
                     x="Budget",
                     y="Budget Target",
+                    log_x=True,
+                    log_y=True,
                     hover_name="Ragione Sociale",
                     color="F2",
                     title="Specializzazione Economica (Budget)",
