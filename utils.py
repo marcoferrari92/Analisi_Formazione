@@ -164,3 +164,11 @@ def colora_clienti(row):
     # Il codice HEX #d4edda è il classico verde "success"
     color = 'background-color: #d4edda' if "CLIENTE" in str(row['STATO']) else ''
     return [color] * len(row)
+
+
+
+def format_it(val):
+    return f"€ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+def format_pct(val):
+    return f"{val:.1f}%".replace('.', ',')
