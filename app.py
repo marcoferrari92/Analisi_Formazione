@@ -273,7 +273,7 @@ if uploaded_file is not None:
                 title="Specializzazione Economica (Scala Log)",
                 labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
                 color_continuous_scale="Viridis"
-            )
+                )
                 # 1. Calcoliamo i limiti del grafico per far attraversare tutto lo spazio alla linea
                 x_min = df_plot["Budget"].min()
                 x_max = df_plot["Budget"].max()
@@ -287,11 +287,12 @@ if uploaded_file is not None:
                     x1=x_max, 
                     y1=x_max * (med_f2 / 100),
                     line=dict(color="Red", width=3, dash="dash")
-            )
+                )
 
-            fig_budget_scatter.update_layout(height=450, showlegend=False)
-            st.plotly_chart(fig_budget_scatter, use_container_width=True)
-
+                fig_budget_scatter.update_layout(height=450, showlegend=False)
+                st.plotly_chart(fig_budget_scatter, use_container_width=True)
+                st.caption(f"La linea tratteggiata rappresenta la Mediana F2 ({med_f2:.1f}%)")
+            
             st.info("""
             **Interpretazione dei quadranti:**
             - **Sopra la linea rossa:** Aziende "Focalizzate" (agiscono sul target più della media dei competitor).
