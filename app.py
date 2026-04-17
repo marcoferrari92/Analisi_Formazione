@@ -62,14 +62,11 @@ if uploaded_file is not None:
         data_max = df['RNA_DATA_CONCESSIONE'].max().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
 
         st.subheader("📌 Panoramica Analisi")
-        st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
-
-        # Creazione di 3 colonne per le metriche principali
+        #st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
         m1, m2, m3 = st.columns(3)
         
         with m1:
             st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
-            #st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Aziende", f"{n_aziende}")
             
         with m2:
