@@ -98,7 +98,7 @@ if uploaded_file is not None:
         with c3:
             # Il tuo gap commerciale: sono vive ma non nel target
             st.metric("Aziende INATTIVE", f"{n_aziende_off}", 
-                      delta=f"-{n_aziende-n_aziende_target}", delta_color="inverse")
+                      delta=f"{(n_aziende_off/n_aziende)*100}", delta_color="inverse")
             st.caption("Attive ma non nel target")
 
         with c4:
