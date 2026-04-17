@@ -119,14 +119,17 @@ if uploaded_file is not None:
         
         with m1:
             st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
-            st.metric("Aziende", f"{n_aziende}")
+            #st.metric("Aziende", f"{n_aziende}")
             
         with m2:
+            st.metric("Aziende", f"{n_aziende}")
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
         with m3:
+            st.metric("Aziende ATTIVE", f"{n_aziende_target}", 
+                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
             st.metric("Budget Target",
                       f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
