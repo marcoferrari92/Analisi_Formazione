@@ -80,6 +80,53 @@ if uploaded_file is not None:
                       f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
 
+
+        # Raggruppiamo per CF e Ragione Sociale per evitare duplicati
+        # Se la colonna STATO è presente (da verifica_stato_clienti), la includiamo
+        col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
+        if 'STATO' in df.columns:
+            col_raggruppamento.append('STATO')
+
+        report_aziende = df.groupby(col_raggruppamento).agg({
+            'RNA_TITOLO_MISURA': 'count',       # Totale Aiuti
+            'IS_TARGET': 'sum',                # Aiuti Target
+            'RNA_ELEMENTO_DI_AIUTO': 'sum',     # Budget Totale
+            'IMPORTO_TARGET': 'sum'            # Budget Target
+        }).reset_index()
+
+        # Rinominiamo le colonne per renderle leggibili nella tabella
+        report_aziende = report_aziende.rename(columns={
+            'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA / CF',
+            'RNA_TITOLO_MISURA': 'Aiuti',
+            'IS_TARGET': 'Aiuti Target',
+            'RNA_ELEMENTO_DI_AIUTO': 'Budget Totale (€)',
+            'IMPORTO_TARGET': 'Budget Target (€)'
+        })
+
+        # Ordinamento per Budget Target decrescente (i lead più interessanti in alto)
+        report_aziende = report_aziende.sort_values(by='Budget Target (€)', ascending=False)
+
+        # --- UI: TABELLA ---
+        st.subheader("📋 Analisi Dettagliata per Azienda")
+
+        # Utilizziamo st.dataframe con configurazione delle colonne per formattare i numeri
+        st.dataframe(
+            report_aziende.style.apply(colora_clienti, axis=1) if 'colora_clienti' in globals() else report_aziende,
+            column_config={
+                "Budget Totale (€)": st.column_config.NumberColumn(
+                    "Budget Totale (€)",
+                    format="%.2f €",
+                ),
+                "Budget Target (€)": st.column_config.NumberColumn(
+                    "Budget Target (€)",
+                    format="%.2f €",
+                ),
+                "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
+                "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
+            },
+            use_container_width=True,
+            hide_index=True
+        )
         st.divider()
 
        
