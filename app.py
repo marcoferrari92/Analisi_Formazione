@@ -169,7 +169,7 @@ if uploaded_file is not None:
             med_f2 = df_benchmark['F2'].median()
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
-            st.subheader("🏆 Benchmark Settore Target")
+            st.subheader("📈 Benchmark Settore Target")
             st.caption("Valori medi e mediani calcolati esclusivamente sulle aziende che hanno ottenuto aiuti nei settori ricercati.")
     
             # Creiamo un contenitore con bordo (stile card)
