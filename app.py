@@ -262,32 +262,23 @@ if uploaded_file is not None:
                 
             # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
             with col_graf_2:
-                # Pendenza basata sulla Mediana F2
-                pendenza_f2 = med_f2 / 100 
-                max_x_budget = df_plot["Budget"].max()
-        
-                fig_budget_scatter = px.scatter(
-                    df_plot,
-                    x="Budget",
-                    y="Budget Target",
-                    log_x=True,
-                    log_y=True,
-                    hover_name="Ragione Sociale",
-                    color="F2",
-                    title="Specializzazione Economica (Budget)",
-                    labels={"Budget": "Budget Totale (€)", "Budget Target": "Budget Target (€)"},
-                    color_continuous_scale="Viridis"
-                )
-        
-                # Linea Mediana F2
+                # 1. Calcoliamo i limiti del grafico per far attraversare tutto lo spazio alla linea
+                x_min = df_plot["Budget"].min()
+                x_max = df_plot["Budget"].max()
+
+                # 2. La linea deve seguire l'equazione: y = x * (mediana/100)
+                # Su scala logaritmica, questa rimane una retta se disegnata correttamente
                 fig_budget_scatter.add_shape(
-                    type="line", x0=0, y0=0, x1=max_x_budget, y1=max_x_budget * pendenza_f2,
-                    line=dict(color="Red", width=2, dash="dash")
-                )
-        
-                fig_budget_scatter.update_layout(height=450, showlegend=False)
-                st.plotly_chart(fig_budget_scatter, use_container_width=True)
-                st.caption(f"La linea tratteggiata rappresenta la Mediana F2 ({med_f2:.1f}%)")
+                    type="line",
+                    x0=x_min, 
+                    y0=x_min * (med_f2 / 100),
+                    x1=x_max, 
+                    y1=x_max * (med_f2 / 100),
+                    line=dict(color="Red", width=3, dash="dash")
+            )
+
+            fig_budget_scatter.update_layout(height=450, showlegend=False)
+            st.plotly_chart(fig_budget_scatter, use_container_width=True)
 
             st.info("""
             **Interpretazione dei quadranti:**
