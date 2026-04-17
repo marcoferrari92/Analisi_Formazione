@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import plotly.express as px
-from utils import render_database_misure, verifica_stato_clienti, colora_clienti
+from utils import render_database_misure, verifica_stato_clienti, colora_clienti, load_rna_data
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
@@ -25,10 +25,8 @@ btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=Tru
 if uploaded_file is not None:
     try:
 
-        # DATA LOADING ::::::::::::::::::::::::::
-        @st.cache_data
-        df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8-sig', low_memory=False)
-    
+        # DATA LOADING ::::::::::::::::::
+        df = load_rna_data(uploaded_file)
         
         # CHECK CLIENTI vs PROSPECT :::::::::::::::::
         if uploaded_clienti is not None:
