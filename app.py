@@ -107,28 +107,6 @@ if uploaded_file is not None:
             st.metric("Budget Target",
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
-        """    
-        empty_col, box_col = st.columns([1, 2]) 
-        #with box_col:
-            with st.container(border=True):
-                st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'></p>", unsafe_allow_html=True)
-                sub_col1, sub_col2 = st.columns(2)
-                with sub_col1:
-                    st.metric("Aziende Attive", f"{n_aziende_live}")
-                    st.write("")
-                    st.write("")
-                    st.metric("Budget Medio per Azienda", f"€ {budget_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                    st.write("")
-                    st.write("")
-                    st.caption("Calcolato sulle aziende attive (budget aiuti > 0€)")
-
-                with sub_col2:
-                    st.metric("Aziende Target", f"{n_aziende_target}", 
-                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
-                    st.metric("Budget Medio Target", f"€ {budget_target_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                             delta=f"{(budget_target_medio/budget_medio)*100:.1f}% del budget medio", delta_color = "normal")
-                    st.caption("Budget medio per il settore target delle aziende attive in quel settore (budget target > 0€)")
-            """
         
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
