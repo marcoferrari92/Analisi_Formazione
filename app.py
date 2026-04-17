@@ -108,7 +108,7 @@ if uploaded_file is not None:
         empty_col, box_col = st.columns([1, 2]) 
         with box_col:
             with st.container(border=True):
-                st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'>📊 DATI MEDI PER AZIENDA</p>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'></p>", unsafe_allow_html=True)
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
                     st.metric("Aziende", f"{n_aziende}")
