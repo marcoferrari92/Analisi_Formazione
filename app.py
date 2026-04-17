@@ -262,6 +262,18 @@ if uploaded_file is not None:
                 
             # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
             with col_graf_2:
+                fig_budget_scatter = px.scatter(
+                df_plot,
+                x="Budget",
+                y="Budget Target",
+                log_x=True, 
+                log_y=True,
+                hover_name="Ragione Sociale",
+                color="F2",
+                title="Specializzazione Economica (Scala Log)",
+                labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
+                color_continuous_scale="Viridis"
+            )
                 # 1. Calcoliamo i limiti del grafico per far attraversare tutto lo spazio alla linea
                 x_min = df_plot["Budget"].min()
                 x_max = df_plot["Budget"].max()
