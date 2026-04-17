@@ -91,31 +91,23 @@ if uploaded_file is not None:
         m1, m2, m3 = st.columns(3)
         
         with m1:
-            # Prima riga: Periodo
             st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
-            # Seconda riga: Aziende Totali (spostata qui per bilanciare)
-            st.metric("Aziende Totali", f"{n_aziende}")
-            # Terza riga: Spazio vuoto tecnico (placeholder) per allineare al Budget
-            st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-
+            #st.metric("Aziende", f"{n_aziende}")
+            
         with m2:
-            # Prima riga: Totale Aiuti (Senza delta per allineare con Periodo)
-            st.metric("Volume Aiuti", f"{n_aiuti_totali}", delta="Documentati") 
-            # Seconda riga: Budget Totale
+            st.metric("Aziende", f"{n_aziende}")
+            st.write("")
+            st.metric("Totale Aiuti", f"{n_aiuti_totali}")
+            st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-            # Terza riga: Placeholder o altra metrica
-            st.write("") # Qui puoi mettere un'altra info o lasciarlo vuoto se le altre sono 3
 
         with m3:
-            # Prima riga: Aziende Target
-            st.metric("Aziende ATTIVE (Target)", f"{n_aziende_target}", 
-                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale")
-            # Seconda riga: Aiuti Target
-            st.metric("Aiuti Target", f"{n_aiuti_target}", 
-                      delta=f"{perc_aiuti_target:.1f}% del totale")
-            # Terza riga: Budget Target
-            st.metric("Budget Target", f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                      delta=f"{perc_budget_target:.1f}% del budget")
+            st.metric("Aziende ATTIVE (nel settore Target)", f"{n_aziende_target}", 
+                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
+            st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
+            st.metric("Budget Target",
+                      f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                     delta=f"{perc_budget_target:.1f}% del budget totale")
 
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
