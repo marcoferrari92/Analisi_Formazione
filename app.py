@@ -108,7 +108,7 @@ if uploaded_file is not None:
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
             st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-            t.caption("Budget medio nel settore target per le aziende attive in tale settore")
+            st.caption("Budget medio nel settore target per le aziende attive in tale settore")
             st.metric("Aziende ATTIVE (nel settore target)", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
 
