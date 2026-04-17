@@ -100,16 +100,14 @@ if uploaded_file is not None:
 
         # --- 2. FORMATTAZIONE MANUALE DEGLI IMPORTI (Stile XXX.XXX,XX) ---
         def format_it(val):
-            # Formatta il numero con 2 decimali, usa la virgola per i decimali e il punto per le migliaia
-            return f"€ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            return f"{val:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
 
         # Creiamo una copia del dataframe per la visualizzazione formattata
         report_visualizzazione = report_aziende.copy()
         report_visualizzazione['Budget'] = report_visualizzazione['Budget'].apply(format_it)
         report_visualizzazione['Budget Target'] = report_visualizzazione['Budget Target'].apply(format_it)
 
-        # --- 3. VISUALIZZAZIONE ---
-
+        # --- 3. VISUALIZZAZIONE TABELLA ---
         st.dataframe(
             report_visualizzazione,
             use_container_width=True,
