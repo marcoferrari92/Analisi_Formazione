@@ -43,10 +43,11 @@ if uploaded_file is not None:
         else:
             if 'STATO' not in df.columns:
                 df['STATO'] = "Unknow"
-
-
+                
+        st.diveder();
+        
         # RIEPILOGO
-
+        
         # Metriche
         n_aziende             = df['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
         n_aiuti_totali        = len(df)
