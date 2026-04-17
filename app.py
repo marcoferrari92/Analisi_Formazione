@@ -89,26 +89,27 @@ if uploaded_file is not None:
         data_max = df['RNA_DATA_CONCESSIONE'].max().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
 
         st.subheader("🎯 Panoramica Settore Target")
-        #st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
+        st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
         m1, m2, m3 = st.columns(3)
         
         with m1:
-            st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
-            #st.metric("Aziende", f"{n_aziende}")
-            
+            #st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
+            st.metric("Aziende Attive", f"{n_aziende_live}")
+            st.metric("Aziende Target", f"{n_aziende_target}", 
+                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
+            
             
         with m3:
-            st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
+            st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             st.metric("Budget Target",
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
-            
+        """    
         empty_col, box_col = st.columns([1, 2]) 
-        with box_col:
+        #with box_col:
             with st.container(border=True):
                 st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'></p>", unsafe_allow_html=True)
                 sub_col1, sub_col2 = st.columns(2)
@@ -127,7 +128,8 @@ if uploaded_file is not None:
                     st.metric("Budget Medio Target", f"€ {budget_target_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                              delta=f"{(budget_target_medio/budget_medio)*100:.1f}% del budget medio", delta_color = "normal")
                     st.caption("Budget medio per il settore target delle aziende attive in quel settore (budget target > 0€)")
-
+            """
+        
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
