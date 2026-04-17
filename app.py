@@ -82,7 +82,7 @@ if uploaded_file is not None:
 
 
         # Raggruppiamo per CF e Ragione Sociale per evitare duplicati
-        # Se la colonna STATO è presente (da verifica_stato_clienti), la includiamo
+        # Se la colonna STATO è presente lo includiamo
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
         if 'STATO' in df.columns:
             col_raggruppamento.append('STATO')
@@ -96,7 +96,7 @@ if uploaded_file is not None:
 
         # Rinominiamo le colonne per renderle leggibili nella tabella
         report_aziende = report_aziende.rename(columns={
-            'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA / CF',
+            'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA',
             'RNA_TITOLO_MISURA': 'Aiuti',
             'IS_TARGET': 'Aiuti Target',
             'RNA_ELEMENTO_DI_AIUTO': 'Budget Totale (€)',
