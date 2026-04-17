@@ -45,7 +45,39 @@ if uploaded_file is not None:
                 df['STATO'] = "⚪ PROSPECT"
 
 
-      
+        # CALCOLO METRICHE PER IL RIEPILOGO
+        n_aziende         = df['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+        n_aiuti_totali    = len(df)
+        n_aiuti_target    = df['IS_TARGET'].sum()
+        budget_totale     = df['RNA_ELEMENTO_DI_AIUTO'].sum()
+        budget_target     = df['IMPORTO_TARGET'].sum()
+        
+        # Gestione periodo temporale (assumendo il formato standard RNA YYYY-MM-DD)
+        df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'], errors='coerce')
+        data_min = df['RNA_DATA_CONCESSIONE'].min().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
+        data_max = df['RNA_DATA_CONCESSIONE'].max().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
+
+        st.subheader("📌 Panoramica Analisi")
+        st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
+
+        # Creazione di 3 colonne per le metriche principali
+        m1, m2, m3 = st.columns(3)
+        
+        with m1:
+            st.metric("Aziende Uniche", f"{n_aziende}")
+            st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+
+        with m2:
+            st.metric("Totale Aiuti", f"{n_aiuti_totali}")
+            st.metric("Budget Target", f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+
+        with m3:
+            perc_target = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
+            st.metric("Aiuti Target", f"{n_aiuti_target}", f"{perc_target:.1f}% del totale")
+            incidenza_budget = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
+            st.metric("Incidenza Budget", f"{incidenza_budget:.1f}%")
+
+        st.divider()
 
        
         # --- RICERCA AZIENDA E DETTAGLIO ---
