@@ -228,7 +228,8 @@ if uploaded_file is not None:
         
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
-        df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
+        # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
+        df_plot = report_aziende[report_aziende['Budget Target'] > 1].copy()
         if not df_plot.empty:
             st.write("---")
             col_graf_1, col_graf_2 = st.columns(2)
