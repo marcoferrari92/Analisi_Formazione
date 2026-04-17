@@ -77,6 +77,8 @@ if uploaded_file is not None:
         
         budget_totale         = df['RNA_ELEMENTO_DI_AIUTO'].sum()
         budget_target         = df['IMPORTO_TARGET'].sum()
+        budget_medio          = budget_totale/n_aziende_live
+        budget_target_medio   = budget_target/n_aziende_target
         
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
@@ -114,13 +116,14 @@ if uploaded_file is not None:
                     st.metric("Aziende Attive", f"{n_aziende_live}")
                     st.write("")
                     st.write("")
-                    st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Budget Medio per Azienda", f"€ {budget_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.caption("Calcolato sulle aziende attive (budget aiuti > 0€)")
 
                 with sub_col2:
                     st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
-                    st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Budget Medio Target", f"€ {budget_target_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                             delta=f"{(budget_target_medio/budget_medio)*100:.1f}% del budget medio", delta_color = "normal"))
                     st.caption("Budget medio per il settore target delle aziende attive in quel settore (budget target > 0€)")
 
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
