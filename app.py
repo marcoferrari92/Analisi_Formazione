@@ -4,7 +4,7 @@ import io
 import plotly.express as px
 
 # Caricamenti
-from setting import DEFAULT_KEYWORDS
+from settings import DEFAULT_KEYWORDS
 from utils import  load_rna_data, is_target_row, render_database_misure, verifica_stato_clienti, colora_clienti
 
 # --- CONFIGURAZIONE PAGINA ---
