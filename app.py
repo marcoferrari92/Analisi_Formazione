@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import io
 import plotly.express as px
+
+# Caricamenti
+from setting import DEFAULT_KEYWORDS
 from utils import render_database_misure, verifica_stato_clienti, colora_clienti, load_rna_data
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -24,9 +27,19 @@ btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=Tru
 # ANALISI
 if uploaded_file is not None:
     try:
-
-        # DATA LOADING ::::::::::::::::::
         df = load_rna_data(uploaded_file)
+    
+        # Prendi le keyword dall'area di testo
+        keywords_raw = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
+        keywords = [k.strip().upper() for k in keywords_raw.split(',')]
+
+        # APPLICAZIONE RICERCA MULTI-COLONNA
+        # Usiamo axis=1 perché la funzione ora deve leggere l'intera riga
+        df['IS_TARGET'] = df.apply(lambda row: is_target_row(row, keywords), axis=1)
+    
+        # Calcolo importi (rimane uguale)
+        df['IMPORTO_TARGET'] = df.apply(lambda x: x['RNA_ELEMENTO_DI_AIUTO'] if x['IS_TARGET'] else 0, axis=1)
+        
         
         # CHECK CLIENTI vs PROSPECT :::::::::::::::::
         if uploaded_clienti is not None:
