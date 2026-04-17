@@ -241,8 +241,8 @@ if uploaded_file is not None:
         
                 fig_aiuti_scatter = px.scatter(
                     df_plot,
-                    x="Num. Aiuti Totali",
-                    y="Num. Aiuti Target",
+                    x="Aiuti",
+                    y="Aiuti Target",
                     hover_name="Ragione Sociale",
                     color="F1",
                     title="Specializzazione Operativa (N. Aiuti)",
