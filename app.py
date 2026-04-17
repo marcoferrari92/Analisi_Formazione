@@ -273,7 +273,7 @@ if uploaded_file is not None:
                     hover_name="Ragione Sociale",
                     color="F2",
                     title="Specializzazione Economica (Budget)",
-                    labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
+                    labels={"Budget": "Budget Totale (€)", "Budget Target": "Budget Target (€)"},
                     color_continuous_scale="Viridis"
                 )
         
