@@ -21,6 +21,13 @@ uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)
 st.sidebar.header("2. Filtri Target")
 default_kw = "formazione, competenze, corso, training"
 keywords_raw = st.sidebar.text_area("Parole chiave target", value=default_kw)
+st.sidebar.info("""
+**🔍 Metodo di ricerca:**
+Il sistema scansiona le parole chiave all'interno di:
+- Titolo della Misura
+- Titolo del Progetto
+- Descrizione del Progetto
+""", icon="ℹ️")
 
 btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
 
