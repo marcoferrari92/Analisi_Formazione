@@ -61,7 +61,7 @@ if uploaded_file is not None:
                 df_raw['STATO'] = "⚪ PROSPECT"
         # :::::::::::::::::::::::::::::::::::::::::::
 
-        
+        # Conversioni importo in numero
         df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
         
         keywords = [k.strip().upper() for k in keywords_raw.split(',')]
