@@ -44,7 +44,7 @@ if uploaded_file is not None:
             if 'STATO' not in df.columns:
                 df['STATO'] = "Unknow"
                 
-        st.diveder();
+        st.divider();
         
         # RIEPILOGO
         
