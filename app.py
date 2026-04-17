@@ -150,7 +150,9 @@ if uploaded_file is not None:
         st.markdown("""
         <small>**Nota:** F1 = % aiuti target su tot. aiuti | F2 = % budget target su budget totale</small>
         """, unsafe_allow_html=True)      
+        st.write("")
 
+        
         # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
         # Usiamo il report_aziende creato precedentemente
         df_benchmark = report_aziende[report_aziende['Budget Target'] > 0]
