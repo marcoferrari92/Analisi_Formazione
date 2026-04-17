@@ -116,7 +116,8 @@ if uploaded_file is not None:
                     st.caption("Media calcolata su aziende LIVE")
 
                 with sub_col2:
-                    st.metric("Aziende Target", f"{n_aziende_target}")
+                    st.metric("Aziende Target", f"{n_aziende_target}", 
+                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
                     st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.caption("Media calcolata su aziende TARGET")
 
