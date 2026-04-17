@@ -199,59 +199,51 @@ if uploaded_file is not None:
         else:
             st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
 
-            # GRAFICI    
+        # --- 1. PREPARAZIONE DATI ---
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
-            with st.expander("📈 Distribuzione Aziende e Benchmark Visivo (Vista Orizzontale)"):
-                st.write("I grafici mostrano la distribuzione dei lead. I puntini rappresentano le singole aziende.")
+            with st.expander("📈 Distribuzione Aziende e Benchmark Visivo (Punti Sovrapposti)"):
+                st.write("I punti sono sovrapposti al box plot per mostrare la densità dei lead direttamente sulla distribuzione.")
+
+                # Funzione helper per creare i grafici con lo stesso stile
+                def crea_box_orizzontale(df, col, titolo, colore):
+                    fig = px.box(
+                        df, 
+                        x=col, 
+                        points="all", 
+                        hover_name="Ragione Sociale",
+                        title=titolo,
+                        color_discrete_sequence=[colore]
+                )
+                    # pointpos=0 sovrappone i punti al box
+                    # jitter controlla quanto i punti si allargano (0.1 è molto stretto)
+                    fig.update_traces(pointpos=0, jitter=0.1, marker=dict(opacity=0.6, size=7))
+                    fig.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20))
+                    return fig
 
                 # --- GRAFICO 1: BUDGET TARGET ---
-                fig_budget = px.box(
-                    df_plot, 
-                    x="Budget Target",           # <--- x invece di y per orientamento orizzontale
-                    points="all", 
-                    hover_name="Ragione Sociale",
-                    title="Distribuzione Budget Target (€)",
-                    color_discrete_sequence=['#2ecc71']
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "Budget Target", "Distribuzione Budget Target (€)", "#2ecc71"),
+                    use_container_width=True
                 )
-                fig_budget.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(fig_budget, use_container_width=True)
 
                 # --- GRAFICO 2: NUMERO AIUTI TARGET ---
-                fig_aiuti = px.box(
-                    df_plot, 
-                    x="Aiuti Target", 
-                    points="all",
-                    hover_name="Ragione Sociale",
-                    title="Distribuzione Numero Aiuti Target",
-                    color_discrete_sequence=['#9b59b6']
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "Aiuti Target", "Distribuzione Numero Aiuti Target", "#9b59b6"),
+                    use_container_width=True
                 )
-                fig_aiuti.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(fig_aiuti, use_container_width=True)
 
                 # --- GRAFICO 3: F1 ---
-                fig_f1 = px.box(
-                    df_plot, 
-                    x="F1", 
-                    points="all",
-                    hover_name="Ragione Sociale",
-                    title="Distribuzione F1: Intensità Target (%)",
-                    color_discrete_sequence=['#3498db']
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "F1", "Distribuzione F1: Intensità Target (%)", "#3498db"),
+                    use_container_width=True
                 )
-                fig_f1.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(fig_f1, use_container_width=True)
 
                 # --- GRAFICO 4: F2 ---
-                fig_f2 = px.box(
-                    df_plot, 
-                    x="F2", 
-                    points="all",
-                    hover_name="Ragione Sociale",
-                    title="Distribuzione F2: Rilevanza Target (%)",
-                    color_discrete_sequence=['#e67e22']
+                st.plotly_chart(
+                    crea_box_orizzontale(df_plot, "F2", "Distribuzione F2: Rilevanza Target (%)", "#e67e22"),
+                    use_container_width=True
                 )
-                fig_f2.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
-                st.plotly_chart(fig_f2, use_container_width=True)
 
         else:
             st.info("Nessun dato target disponibile per i grafici.")
