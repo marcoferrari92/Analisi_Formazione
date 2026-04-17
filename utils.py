@@ -142,8 +142,8 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
         # 3. Pulizia P.IVA nel database RNA
         # Creiamo una versione pulita per il confronto
-        df_rna['RNA_PIVA_CLEAN'] = (
-            df_rna['RNA_PIVA']
+        df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'] = (
+            df_rna['RNA_CODICE_FISCALE_BENEFICIARIO']
             .astype(str)
             .str.strip()
             .str.replace(' ', '')
@@ -151,7 +151,7 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
         # 4. Matching (Il confronto vero e proprio)
         # Se la P.IVA pulita è nella lista clienti -> CLIENTE, altrimenti PROSPECT
-        df_rna['STATO'] = df_rna['RNA_PIVA_CLEAN'].apply(
+        df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(
             lambda x: "🟢 CLIENTE" if x in lista_piva_clienti else "⚪ PROSPECT"
         )
         
