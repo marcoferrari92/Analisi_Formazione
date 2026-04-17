@@ -28,7 +28,7 @@ if uploaded_file is not None:
         # DATA LOADING ::::::::::::::::::::::::::
         @st.cache_data
         df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8-sig', low_memory=False)
-        
+    
         
         # CHECK CLIENTI vs PROSPECT :::::::::::::::::
         if uploaded_clienti is not None:
@@ -38,8 +38,7 @@ if uploaded_file is not None:
                 df['STATO'] = "⚪ PROSPECT"
         # :::::::::::::::::::::::::::::::::::::::::::
 
-        # Conversioni importo in numero
-        df['RNA_IMPORTO'] = pd.to_numeric(df['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
+        
         
         keywords = [k.strip().upper() for k in keywords_raw.split(',')]
         def is_target_row(row_text):
