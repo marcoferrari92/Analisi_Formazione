@@ -21,13 +21,17 @@ uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)
 st.sidebar.header("2. Filtri Target")
 default_kw = "formazione, competenze, corso, training"
 keywords_raw = st.sidebar.text_area("Parole chiave target", value=default_kw)
-st.sidebar.info("""
-**Metodo di ricerca:**
-Il sistema scansiona le parole chiave all'interno di:
-- Titolo della Misura
-- Titolo del Progetto
-- Descrizione del Progetto
-""", icon="🔍")
+with st.sidebar.popover("ℹ️ Info logica di ricerca"):
+    st.markdown("""
+    **Dove cerchiamo le parole chiave?**
+    
+    Il sistema analizza ogni riga del database RNA verificando la presenza delle tue keywords in queste colonne ufficiali:
+    1. `RNA_TITOLO_MISURA`
+    2. `RNA_DESCRIZIONE_PROGETTO`
+    3. `RNA_TITOLO_PROGETTO`
+    
+    *La ricerca non è case-sensitive (non distingue tra maiuscole e minuscole).*
+    """)
 
 btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
 
