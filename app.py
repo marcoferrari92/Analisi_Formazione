@@ -111,14 +111,29 @@ if uploaded_file is not None:
             st.metric("Budget Target",
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
-            st.metric("Aziende ATTIVE (nel settore target)", f"{n_aziende_target}", 
-                      delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
-            with st.container(border=True):
-                st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                st.caption("Budget medio nel settore target per le aziende attive in tale settore")
             
+        # --- RIGA 2: IL BOX UNICO PER I DATI PRO-CAPITE ---
+        # Creiamo una colonna vuota a sinistra per allinearci a m1, e una larga per il box
+        empty_col, box_col = st.columns([1, 2]) 
 
-        # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
+        with box_col:
+            with st.container(border=True):
+                st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'>📊 DATI MEDI PER AZIENDA</p>", unsafe_allow_html=True)
+        
+                # Sottocolonne interne al box per separare Totale e Target
+                sub_col1, sub_col2 = st.columns(2)
+        
+                with sub_col1:
+                    st.metric("Aziende Totali (Anagrafica)", f"{n_aziende}")
+                    st.metric("Budget Medio / Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.caption("Media calcolata su aziende LIVE")
+
+                with sub_col2:
+                    st.metric("Aziende ATTIVE (Target)", f"{n_aziende_target}")
+                    st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.caption("Media calcolata su aziende TARGET")
+
+            # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
         if 'STATO' in df.columns:
