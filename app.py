@@ -67,9 +67,11 @@ if uploaded_file is not None:
         aziende_off           = aziende_live - aziende_target
         
         n_aziende             = df['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
-        n_aziende_off         = len(aziende_off)
-        n_aziende_dead        = len(aziende_dead)
+        n_aziende_target      = len(aziende_target)
         n_aziende_live        = len(aziende_live)
+        n_aziende_dead        = len(aziende_dead)
+        n_aziende_off         = len(aziende_off)
+        
         n_aiuti_totali        = len(df)
         n_aiuti_target        = df['IS_TARGET'].sum()
         
@@ -78,7 +80,33 @@ if uploaded_file is not None:
         
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
-        
+
+        st.subheader("📋 Stato del Portafoglio")
+
+        # Creiamo 4 colonne per dare respiro a ogni famiglia
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.metric("Anagrafiche", f"{n_aziende}")
+            st.caption("Aziende uniche nel file")
+
+        with c2:
+            # Rappresentano il mercato "sano"
+            st.metric("Aziende LIVE", f"{n_aziende_live}")
+            st.caption("Hanno budget > 0€")
+
+        with c3:
+            # Il tuo gap commerciale: sono vive ma non nel target
+            st.metric("Aziende OFF", f"{n_aziende_off}", 
+                      delta=f"-{n_aziende_off}", delta_color="inverse")
+            st.caption("Potenziale da convertire")
+
+        with c4:
+            # I bug o le aziende inattive
+            st.metric("Aziende DEAD", f"{n_aziende_dead}")
+            st.caption("Budget totale nullo")
+
+        st.divider()
         
         # Periodo temporale (YYYY-MM-DD)
         df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'], errors='coerce')
