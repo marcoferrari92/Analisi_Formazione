@@ -87,48 +87,38 @@ if uploaded_file is not None:
         if 'STATO' in df.columns:
             col_raggruppamento.append('STATO')
 
-        report_aziende = df.groupby(col_raggruppamento).agg({
-            'RNA_TITOLO_MISURA': 'count',       # Totale Aiuti
-            'IS_TARGET': 'sum',                # Aiuti Target
-            'RNA_ELEMENTO_DI_AIUTO': 'sum',     # Budget Totale
-            'IMPORTO_TARGET': 'sum'            # Budget Target
+        # --- 1. PREPARAZIONE DATI ---
+        report_aziende = df.groupby(['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']).agg({
+            'RNA_TITOLO_MISURA': 'count',
+            'IS_TARGET': 'sum',
+            'RNA_ELEMENTO_DI_AIUTO': 'sum',
+            'IMPORTO_TARGET': 'sum'
         }).reset_index()
 
-        # Rinominiamo le colonne per renderle leggibili nella tabella
-        report_aziende = report_aziende.rename(columns={
-            'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA',
-            'RNA_TITOLO_MISURA': 'Aiuti',
-            'IS_TARGET': 'Aiuti Target',
-            'RNA_ELEMENTO_DI_AIUTO': 'Budget Totale (€)',
-            'IMPORTO_TARGET': 'Budget Target (€)'
-        })
+        # Rinominiamo le colonne
+        report_aziende.columns = ['P.IVA', 'Ragione Sociale', 'Aiuti', 'Aiuti Target', 'Budget', 'Budget Target']
 
-        # Ordinamento per Budget Target decrescente (i lead più interessanti in alto)
-        report_aziende = report_aziende.sort_values(by='Budget Target (€)', ascending=False)
+        # --- 2. FORMATTAZIONE MANUALE DEGLI IMPORTI (Stile XXX.XXX,XX) ---
+        def format_it(val):
+            # Formatta il numero con 2 decimali, usa la virgola per i decimali e il punto per le migliaia
+            return f"€ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 
-        # --- UI: TABELLA ---
-        st.subheader("📋 Analisi Dettagliata per Azienda")
+        # Creiamo una copia del dataframe per la visualizzazione formattata
+        report_visualizzazione = report_aziende.copy()
+        report_visualizzazione['Budget'] = report_visualizzazione['Budget'].apply(format_it)
+        report_visualizzazione['Budget Target'] = report_visualizzazione['Budget Target'].apply(format_it)
 
-        # Utilizziamo st.dataframe con configurazione delle colonne per formattare i numeri
+        # --- 3. VISUALIZZAZIONE ---
+
         st.dataframe(
-            report_aziende,
-            column_config={
-                "P.IVA": st.column_config.TextColumn("P.IVA"),
-                "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
-                "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
-                "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-                # Formattazione come importo valutario
-                "Budget": st.column_config.NumberColumn(
-                    "Budget (€)",
-                    format="€ %.2f", # Mostra il simbolo € e 2 decimali
-                ),
-                "Budget Target": st.column_config.NumberColumn(
-                    "Budget Target (€)",
-                    format="€ %.2f", # Mostra il simbolo € e 2 decimali
-                ),
-            },
+            report_visualizzazione,
             use_container_width=True,
-            hide_index=True
+            hide_index=True,
+            column_config={
+                "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
+                "Budget": st.column_config.TextColumn("Budget Totale"),
+                "Budget Target": st.column_config.TextColumn("Budget Target")
+            }
         )
         st.divider()
 
