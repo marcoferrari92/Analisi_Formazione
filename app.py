@@ -98,13 +98,6 @@ if uploaded_file is not None:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-            st.write("")
-            st.write("")
-            with st.container(border=True):
-                st.metric("Aziende", f"{n_aziende}")
-                st.write("")
-                st.write("")
-                st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             
         with m3:
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
@@ -112,24 +105,18 @@ if uploaded_file is not None:
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
             
-        # --- RIGA 2: IL BOX UNICO PER I DATI PRO-CAPITE ---
-        # Creiamo una colonna vuota a sinistra per allinearci a m1, e una larga per il box
         empty_col, box_col = st.columns([1, 2]) 
-
         with box_col:
             with st.container(border=True):
                 st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'>📊 DATI MEDI PER AZIENDA</p>", unsafe_allow_html=True)
-        
-                # Sottocolonne interne al box per separare Totale e Target
                 sub_col1, sub_col2 = st.columns(2)
-        
                 with sub_col1:
-                    st.metric("Aziende Totali (Anagrafica)", f"{n_aziende}")
+                    st.metric("Aziende", f"{n_aziende}")
                     st.metric("Budget Medio / Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.caption("Media calcolata su aziende LIVE")
 
                 with sub_col2:
-                    st.metric("Aziende ATTIVE (Target)", f"{n_aziende_target}")
+                    st.metric("Aziende Target", f"{n_aziende_target}")
                     st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.caption("Media calcolata su aziende TARGET")
 
