@@ -62,7 +62,7 @@ if uploaded_file is not None:
         data_min = df['RNA_DATA_CONCESSIONE'].min().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
         data_max = df['RNA_DATA_CONCESSIONE'].max().strftime('%d/%m/%Y') if not df['RNA_DATA_CONCESSIONE'].dropna().empty else "N/D"
 
-        st.subheader("📌 Panoramica dell'Analisi del Settore Target")
+        st.subheader("🎯 Panoramica Settore Target")
         #st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
         m1, m2, m3 = st.columns(3)
         
