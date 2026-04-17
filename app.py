@@ -45,29 +45,9 @@ if uploaded_file is not None:
                 df['STATO'] = "⚪ PROSPECT"
 
 
-        # --- GENERAZIONE REPORT ---
-        col_escluse = ['RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'RNA_STRUMENTO', 'is_target', 'importo_target']
-        col_ana = [c for c in df.columns if c not in col_escluse and c != 'RAGIONE SOCIALE']
-        
-        report = df.groupby('RAGIONE SOCIALE').agg({
-            **{c: 'first' for c in col_ana},
-            'RNA_MISURA': 'count',
-            'RNA_IMPORTO': 'sum',
-            'is_target': 'sum',
-            'importo_target': 'sum'
-        }).reset_index().rename(columns={
-            'RNA_MISURA': 'N_TOT_AIUTI', 'RNA_IMPORTO': 'VALORE_TOTALE_€',
-            'is_target': 'N_AIUTI_TARGET', 'importo_target': 'VALORE_TARGET_€'
-        })
+      
 
-        report['INCIDENZA_VOL_TARGET_%'] = (report['VALORE_TARGET_€'] / report['VALORE_TOTALE_€'] * 100).fillna(0)
-        report = report.sort_values(by=sort_options[sort_choice], ascending=False)
-
-        st.divider()
-        st.subheader("📋 Report Riepilogativo")
-        st.dataframe(report.style.apply(colora_clienti, axis=1), use_container_width=True, hide_index=True)
-
-        # --- DETTAGLIO AZIENDA (RIORDINATO SECONDO SCREENSHOT) ---
+       
         # --- RICERCA AZIENDA E DETTAGLIO ---
         st.divider()
         st.subheader("🎯 Analisi Dettagliata per Azienda")
