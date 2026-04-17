@@ -59,14 +59,26 @@ if uploaded_file is not None:
         
         # RIEPILOGO
         
-        # Metriche
+        # Famiglie di aziende
+        aziende_totali        = set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
+        aziende_target        = set(df[df['IS_TARGET'] == 1]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
+        aziende_live          = set(df[df['RNA_ELEMENTO_DI_AIUTO'] > 0]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
+        aziende_dead          = aziende_totali - aziende_live
+        aziende_off           = aziende_live - aziende_target
+        
         n_aziende             = df['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+        n_aziende_off         = len(aziende_off)
+        n_aziende_dead        = len(aziende_dead)
+        n_aziende_live        = len(aziende_live)
         n_aiuti_totali        = len(df)
         n_aiuti_target        = df['IS_TARGET'].sum()
+        
         budget_totale         = df['RNA_ELEMENTO_DI_AIUTO'].sum()
         budget_target         = df['IMPORTO_TARGET'].sum()
+        
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
+        
         
         # Periodo temporale (YYYY-MM-DD)
         df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'], errors='coerce')
