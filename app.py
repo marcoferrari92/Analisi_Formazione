@@ -151,6 +151,54 @@ if uploaded_file is not None:
         <small>**Nota:** F1 = % aiuti target su tot. aiuti | F2 = % budget target su budget totale</small>
         """, unsafe_allow_html=True)      
 
+        # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
+        # Usiamo il report_aziende creato precedentemente
+        df_benchmark = report_aziende[report_aziende['Budget Target'] > 0]
+
+        if not df_benchmark.empty:
+            # Medie
+            avg_budget = df_benchmark['Budget Target'].mean()
+            avg_aiuti = df_benchmark['Aiuti Target'].mean()
+            avg_f1 = df_benchmark['F1'].mean()
+            avg_f2 = df_benchmark['F2'].mean()
+    
+            # Mediane
+            med_budget = df_benchmark['Budget Target'].median()
+            med_aiuti = df_benchmark['Aiuti Target'].median()
+            med_f1 = df_benchmark['F1'].median()
+            med_f2 = df_benchmark['F2'].median()
+
+            # --- 2. UI: RIQUADRO BENCHMARK ---
+            st.subheader("🏆 Benchmark Settore Target")
+            st.caption("Valori medi e mediani calcolati esclusivamente sulle aziende che hanno ottenuto aiuti nei settori ricercati.")
+    
+            # Creiamo un contenitore con bordo (stile card)
+            with st.container(border=True):
+                col1, col2, col3, col4 = st.columns(4)
+        
+                with col1:
+                    st.write("**Budget Target**")
+                    st.metric("Media", f"€ {avg_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            
+                with col2:
+                    st.write("**N. Aiuti Target**")
+                    st.metric("Media", f"{avg_aiuti:.1f}")
+                    st.metric("Mediana", f"{med_aiuti:.1f}")
+            
+                with col3:
+                    st.write("**Fattore F1**")
+                    st.metric("Media", f"{avg_f1:.1f}%".replace('.', ','))
+                    st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
+            
+                with col4:
+                    st.write("**Fattore F2**")
+                    st.metric("Media", f"{avg_f2:.1f}%".replace('.', ','))
+                    st.metric("Mediana", f"{med_f2:.1f}%".replace('.', ','))
+
+        else:
+            st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
+    
         st.divider()
 
        
