@@ -97,7 +97,7 @@ if uploaded_file is not None:
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.markdown("<br>", unsafe_allow_html=True)
-            st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             st.write("")
             st.write("")
             st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
@@ -105,9 +105,10 @@ if uploaded_file is not None:
         with m3:
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
             st.metric("Budget Target",
-                      f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                      f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
-            st.metric("Budget Medio Target per Azienda Attiva", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.metric("Budget Medio Target", f"€ {budget_target/n_aziende_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            t.caption("Budget medio nel settore target per le aziende attive in tale settore")
             st.metric("Aziende ATTIVE (nel settore target)", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
 
