@@ -227,7 +227,7 @@ if uploaded_file is not None:
                 )
                 # GRAFICO: F1
                 st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "F1", "Distribuzione F1", "#3498db"),
+                    crea_box_orizzontale(df_plot, "F1", "Distribuzione Fattore F1", "#3498db"),
                     use_container_width=True
                 )
                 # GRAFICO: BUDGET TARGET
@@ -237,7 +237,7 @@ if uploaded_file is not None:
                 )
                 # GRAFICO: F2
                 st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "F2", "Distribuzione F2", "#e67e22"),
+                    crea_box_orizzontale(df_plot, "F2", "Distribuzione Fattore F2", "#e67e22"),
                     use_container_width=True
                 )
                 
