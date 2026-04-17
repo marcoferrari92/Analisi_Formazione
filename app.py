@@ -123,7 +123,7 @@ if uploaded_file is not None:
                     st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
                     st.metric("Budget Medio Target", f"€ {budget_target_medio:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                             delta=f"{(budget_target_medio/budget_medio)*100:.1f}% del budget medio", delta_color = "normal"))
+                             delta=f"{(budget_target_medio/budget_medio)*100:.1f}% del budget medio", delta_color = "normal")
                     st.caption("Budget medio per il settore target delle aziende attive in quel settore (budget target > 0€)")
 
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
