@@ -32,9 +32,9 @@ if uploaded_file is not None:
         df = load_rna_data(uploaded_file)
 
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
-        keywords_raw     = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
-        keywords         = [k.strip().upper() for k in keywords_raw.split(',')]
-        df['IS_TARGET']  = df.apply(lambda row: is_target_row(row, keywords), axis=1)
+        keywords_raw         = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
+        keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
+        df['IS_TARGET']      = df.apply(lambda row: is_target_row(row, keywords), axis=1)
         df['IMPORTO_TARGET'] = df.apply(lambda x: x['RNA_ELEMENTO_DI_AIUTO'] if x['IS_TARGET'] else 0, axis=1)
         
         # CHECK CLIENTI vs PROSPECT 
