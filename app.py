@@ -95,11 +95,11 @@ if uploaded_file is not None:
             'IMPORTO_TARGET': 'sum'
         }).reset_index()
 
-        # --- 3. CALCOLO F1 e F2 (Prima di rinominare le colonne!) ---
+        # --- 3. CALCOLO F1 e F2  ---
         report_aziende['F1'] = (report_aziende['IS_TARGET'] / report_aziende['RNA_TITOLO_MISURA'] * 100).fillna(0)
         report_aziende['F2'] = (report_aziende['IMPORTO_TARGET'] / report_aziende['RNA_ELEMENTO_DI_AIUTO'] * 100).fillna(0)
 
-        # --- 4. RINOMINA ROBUSTA (Evita il Length Mismatch) ---
+        # --- 4. RINOMINA ---
         # Usiamo rename invece di .columns = [...]
         mappa_nomi = {
             'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA',
@@ -111,6 +111,8 @@ if uploaded_file is not None:
         }
         report_aziende = report_aziende.rename(columns=mappa_nomi)
 
+        # --- 5. TABELLA  ---
+        st.write("")
         st.dataframe(
             report_aziende.style.apply(colora_clienti, axis=1),
             use_container_width=True,
