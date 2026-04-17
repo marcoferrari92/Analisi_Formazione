@@ -112,8 +112,10 @@ if uploaded_file is not None:
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
                     st.metric("Aziende", f"{n_aziende}")
-                    st.metric("Budget Medio / Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                    st.caption("Media calcolata su aziende LIVE")
+                    st.write("")
+                    st.write("")
+                    st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.caption("Calcolato sulle aziende attive (budget aiuti > 0€)")
 
                 with sub_col2:
                     st.metric("Aziende Target", f"{n_aziende_target}", 
