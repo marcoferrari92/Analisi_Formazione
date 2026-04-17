@@ -92,19 +92,19 @@ if uploaded_file is not None:
 
         with c2:
             # Rappresentano il mercato "sano"
-            st.metric("Aziende LIVE", f"{n_aziende_live}")
-            st.caption("Attive (budget aiuti > 0€)")
+            st.metric("Aziende ATTIVE", f"{n_aziende_live}")
+            st.caption("Budget aiuti > 0€")
 
         with c3:
             # Il tuo gap commerciale: sono vive ma non nel target
-            st.metric("Aziende OFF", f"{n_aziende_off}", 
+            st.metric("Aziende INATTIVE", f"{n_aziende_off}", 
                       delta=f"-{n_aziende_off}", delta_color="inverse")
             st.caption("Attive ma non nel target")
 
         with c4:
             # I bug o le aziende inattive
-            st.metric("Aziende DEAD", f"{n_aziende_dead}")
-            st.caption("Budget totale nullo")
+            st.metric("Aziende MORTE", f"{n_aziende_dead}")
+            st.caption("Budget aiuti nullo")
 
         st.divider()
         
