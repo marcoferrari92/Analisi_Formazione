@@ -12,7 +12,7 @@ st.markdown("Analisi strategica e qualificazione lead basata sui dati integrali 
 
 # --- SIDEBAR ---
 st.sidebar.header("1. Caricamento Dati")
-uploaded_file = st.sidebar.file_uploader("Carica file RNA (Integrale)", type=["csv"])
+uploaded_file = st.sidebar.file_uploader("Carica file RNA", type=["csv"])
 uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)", type=["csv"])
 
 st.sidebar.header("2. Filtri Target")
@@ -21,62 +21,39 @@ keywords_raw = st.sidebar.text_area("Parole chiave target", value=default_kw)
 
 btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
 
-st.sidebar.header("3. Ordinamento Report")
-sort_options = {
-    "Numero Aiuti Target": "N_AIUTI_TARGET",
-    "Valore Aiuti Target (€)": "VALORE_TARGET_€",
-    "Incidenza Volume (%)": "INCIDENZA_VOL_TARGET_%",
-    "Valore Totale (€)": "VALORE_TOTALE_€"
-}
-sort_choice = st.sidebar.selectbox("Ordina tabella per:", list(sort_options.keys()), index=0)
-
 # --- LOGICA DI ELABORAZIONE ---
 if uploaded_file is not None:
     try:
 
         # DATA LOADING ::::::::::::::::::::::::::
         @st.cache_data
-        def load_data(file):
-            df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
-
-            # MAPPING Nomi RNA -> Nomi App
-            mapping = {
-                'RNA_TITOLO_MISURA': 'RNA_MISURA',
-                'RNA_DATA_CONCESSIONE': 'RNA_DATA',
-                'RNA_CODICE_FISCALE_BENEFICIARIO': 'RNA_PIVA',
-                'RNA_ELEMENTO_DI_AIUTO': 'RNA_IMPORTO',
-                'RNA_DES_STRUMENTO': 'RNA_STRUMENTO' 
-            }
-            df = df.rename(columns={k: v for k, v in mapping.items() if k in df.columns})
-            return df
-        # :::::::::::::::::::::::::::::::::::
+        df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8-sig', low_memory=False)
         
         
         # CHECK CLIENTI vs PROSPECT :::::::::::::::::
-        df_raw = load_data(uploaded_file)
         if uploaded_clienti is not None:
-            df_raw = verifica_stato_clienti(df_raw, uploaded_clienti)
+            df = verifica_stato_clienti(df, uploaded_clienti)
         else:
-            if 'STATO' not in df_raw.columns:
-                df_raw['STATO'] = "⚪ PROSPECT"
+            if 'STATO' not in df.columns:
+                df['STATO'] = "⚪ PROSPECT"
         # :::::::::::::::::::::::::::::::::::::::::::
 
         # Conversioni importo in numero
-        df_raw['RNA_IMPORTO'] = pd.to_numeric(df_raw['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
+        df['RNA_IMPORTO'] = pd.to_numeric(df['RNA_IMPORTO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
         
         keywords = [k.strip().upper() for k in keywords_raw.split(',')]
         def is_target_row(row_text):
             text = str(row_text).upper()
             return any(k in text for k in keywords)
 
-        df_raw['is_target'] = df_raw['RNA_MISURA'].astype(str).apply(is_target_row)
-        df_raw['importo_target'] = df_raw.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
+        df['is_target'] = df['RNA_MISURA'].astype(str).apply(is_target_row)
+        df['importo_target'] = df.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
         # --- GENERAZIONE REPORT ---
         col_escluse = ['RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'RNA_STRUMENTO', 'is_target', 'importo_target']
-        col_ana = [c for c in df_raw.columns if c not in col_escluse and c != 'RAGIONE SOCIALE']
+        col_ana = [c for c in df.columns if c not in col_escluse and c != 'RAGIONE SOCIALE']
         
-        report = df_raw.groupby('RAGIONE SOCIALE').agg({
+        report = df.groupby('RAGIONE SOCIALE').agg({
             **{c: 'first' for c in col_ana},
             'RNA_MISURA': 'count',
             'RNA_IMPORTO': 'sum',
@@ -101,7 +78,7 @@ if uploaded_file is not None:
         search_txt = st.text_input("Inserisci Ragione Sociale per visualizzare i dettagli")
 
         if search_txt:
-            azienda_details = df_raw[df_raw['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
+            azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
             
             if not azienda_details.empty:
                 
