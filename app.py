@@ -79,7 +79,7 @@ if uploaded_file is not None:
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
             st.metric("Budget Target",
                       f"€ {budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                     delta=f"{perc_budget_target:.1f}% del budget")
+                     delta=f"{perc_budget_target:.1f}% del budget totale")
 
         st.divider()
 
