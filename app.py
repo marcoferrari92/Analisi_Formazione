@@ -111,7 +111,7 @@ if uploaded_file is not None:
                 st.markdown("<p style='text-align:center; font-weight:bold; color:gray;'></p>", unsafe_allow_html=True)
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
-                    st.metric("Aziende", f"{n_aziende}")
+                    st.metric("Aziende Attive", f"{n_aziende_live}")
                     st.write("")
                     st.write("")
                     st.metric("Budget Medio per Azienda", f"€ {budget_totale/n_aziende_live:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
