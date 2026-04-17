@@ -53,6 +53,8 @@ if uploaded_file is not None:
         n_aiuti_target    = df['IS_TARGET'].sum()
         budget_totale     = df['RNA_ELEMENTO_DI_AIUTO'].sum()
         budget_target     = df['IMPORTO_TARGET'].sum()
+        perc_aiuti_target = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
+        perc_budget_target = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
         
         # Periodo temporale (YYYY-MM-DD)
         df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'], errors='coerce')
