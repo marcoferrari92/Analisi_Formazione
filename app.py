@@ -81,25 +81,25 @@ if uploaded_file is not None:
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
 
-        st.subheader("📋 Stato del Portafoglio")
+        st.subheader("📋 Anagrafica")
 
         # Creiamo 4 colonne per dare respiro a ogni famiglia
         c1, c2, c3, c4 = st.columns(4)
 
         with c1:
-            st.metric("Anagrafiche", f"{n_aziende}")
-            st.caption("Aziende uniche nel file")
+            st.metric("Aziende", f"{n_aziende}")
+            st.caption("Aziende uniche nel database RNA")
 
         with c2:
             # Rappresentano il mercato "sano"
             st.metric("Aziende LIVE", f"{n_aziende_live}")
-            st.caption("Hanno budget > 0€")
+            st.caption("Attive (budget aiuti > 0€)")
 
         with c3:
             # Il tuo gap commerciale: sono vive ma non nel target
             st.metric("Aziende OFF", f"{n_aziende_off}", 
                       delta=f"-{n_aziende_off}", delta_color="inverse")
-            st.caption("Potenziale da convertire")
+            st.caption("Attive ma non nel target")
 
         with c4:
             # I bug o le aziende inattive
