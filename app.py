@@ -225,10 +225,10 @@ if uploaded_file is not None:
                     sotto_med_f2 = len(df_benchmark[df_benchmark['F2'] < med_f2])
                     st.caption(f"📉 {sotto_med_f2} aziende sotto mediana")
                     
-        else:
-            st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
+        
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
+        df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
             st.write("---")
             st.subheader("🎯 Analisi di Posizionamento: Specializzazione vs Operatività")
