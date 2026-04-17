@@ -173,7 +173,10 @@ if uploaded_file is not None:
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
             st.caption("Valori medi e mediani calcolati esclusivamente sulle aziende che hanno ottenuto aiuti nei settori ricercati.")
-    
+            st.info("""
+            > 💡 **Strategia Lead Generation:** Le aziende che si posizionano **sotto la mediana** rappresentano il potenziale di mercato più interessante. 
+            > Un valore inferiore alla media del settore indica spesso un'azienda che non sta sfruttando appieno gli incentivi disponibili o che ha margini di crescita nella pianificazione finanziaria agevolata rispetto ai suoi competitor.
+            """)
             # Creiamo un contenitore con bordo (stile card)
             with st.container(border=True):
                 col1, col2, col3, col4 = st.columns(4)
