@@ -69,7 +69,7 @@ if uploaded_file is not None:
         
         with m1:
             st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
-            st.markdown("<br>", unsafe_allow_html=True)
+            #st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Aziende", f"{n_aziende}")
             
         with m2:
