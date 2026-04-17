@@ -72,6 +72,7 @@ if uploaded_file is not None:
             
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
+            st.metric()
             st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
         with m3:
