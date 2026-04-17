@@ -134,8 +134,8 @@ if uploaded_file is not None:
             hide_index=True,
             column_config={
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
-                "F1": st.column_config.TextColumn("F1 (%)"),
-                "F2": st.column_config.TextColumn("F2 (%)")
+                "F1": st.column_config.TextColumn("F1"),
+                "F2": st.column_config.TextColumn("F2")
             }
         )
 
