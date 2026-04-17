@@ -98,6 +98,8 @@ if uploaded_file is not None:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.markdown("<br>", unsafe_allow_html=True)
             st.metric("Budget Totale", f"€ {budget_totale:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.write("")
+            st.write("")
             st.metric("Aziende", f"{n_aziende}")
         with m3:
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
