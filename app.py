@@ -111,18 +111,21 @@ if uploaded_file is not None:
 
         # Utilizziamo st.dataframe con configurazione delle colonne per formattare i numeri
         st.dataframe(
-            report_aziende.style.apply(colora_clienti, axis=1) if 'colora_clienti' in globals() else report_aziende,
+            report_aziende,
             column_config={
-                "Budget Totale (€)": st.column_config.NumberColumn(
-                    "Budget Totale (€)",
-                    format="%.2f €",
-                ),
-                "Budget Target (€)": st.column_config.NumberColumn(
-                    "Budget Target (€)",
-                    format="%.2f €",
-                ),
+                "P.IVA": st.column_config.TextColumn("P.IVA"),
+                "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
                 "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
                 "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
+                # Formattazione come importo valutario
+                "Budget": st.column_config.NumberColumn(
+                    "Budget (€)",
+                    format="€ %.2f", # Mostra il simbolo € e 2 decimali
+                ),
+                "Budget Target": st.column_config.NumberColumn(
+                    "Budget Target (€)",
+                    format="€ %.2f", # Mostra il simbolo € e 2 decimali
+                ),
             },
             use_container_width=True,
             hide_index=True
