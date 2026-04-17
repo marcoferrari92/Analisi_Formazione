@@ -5,7 +5,7 @@ import plotly.express as px
 
 # Caricamenti
 from setting import DEFAULT_KEYWORDS
-from utils import render_database_misure, verifica_stato_clienti, colora_clienti, load_rna_data
+from utils import  load_rna_data, is_target_row, render_database_misure, verifica_stato_clienti, colora_clienti
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
