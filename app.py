@@ -100,6 +100,7 @@ if uploaded_file is not None:
             st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             st.write("")
             st.write("")
+            with st.container(border=True):
             st.metric("Aziende", f"{n_aziende}")
             st.write("")
             st.write("")
