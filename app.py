@@ -228,6 +228,73 @@ if uploaded_file is not None:
         else:
             st.warning("Nessun dato disponibile per generare il benchmark con le keyword attuali.")
 
+        # --- SCATTER PLOTS DI POSIZIONAMENTO ---
+        if not df_plot.empty:
+            st.write("---")
+            st.subheader("🎯 Analisi di Posizionamento: Specializzazione vs Operatività")
+    
+            col_graf_1, col_graf_2 = st.columns(2)
+
+            # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
+            with col_graf_1:
+                # Pendenza basata sulla Mediana F2
+                pendenza_f2 = med_f2 / 100 
+                max_x_budget = df_plot["Budget"].max()
+        
+                fig_budget_scatter = px.scatter(
+                    df_plot,
+                    x="Budget",
+                    y="Budget Target",
+                    hover_name="Ragione Sociale",
+                    color="F2",
+                    title="Specializzazione Economica (Budget)",
+                    labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
+                    color_continuous_scale="Viridis"
+                )
+        
+                # Linea Mediana F2
+                fig_budget_scatter.add_shape(
+                    type="line", x0=0, y0=0, x1=max_x_budget, y1=max_x_budget * pendenza_f2,
+                    line=dict(color="Red", width=2, dash="dash")
+                )
+        
+                fig_budget_scatter.update_layout(height=450, showlegend=False)
+                st.plotly_chart(fig_budget_scatter, use_container_width=True)
+                st.caption(f"La linea tratteggiata rappresenta la Mediana F2 ({med_f2:.1f}%)")
+
+            # --- GRAFICO 2: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
+            with col_graf_2:
+                # Pendenza basata sulla Mediana F1
+                pendenza_f1 = med_f1 / 100
+                max_x_aiuti = df_plot["Aiuti"].max()
+        
+                fig_aiuti_scatter = px.scatter(
+                    df_plot,
+                    x="Aiuti",
+                    y="Aiuti Target",
+                    hover_name="Ragione Sociale",
+                    color="F1",
+                    title="Specializzazione Operativa (N. Aiuti)",
+                    labels={"Aiuti": "Totale Aiuti", "Aiuti Target": "Aiuti Target"},
+                    color_continuous_scale="Plasma"
+                )
+        
+                # Linea Mediana F1
+                fig_aiuti_scatter.add_shape(
+                    type="line", x0=0, y0=0, x1=max_x_aiuti, y1=max_x_aiuti * pendenza_f1,
+                    line=dict(color="Red", width=2, dash="dash")
+                )
+        
+                fig_aiuti_scatter.update_layout(height=450, showlegend=False)
+                st.plotly_chart(fig_aiuti_scatter, use_container_width=True)
+                st.caption(f"La linea tratteggiata rappresenta la Mediana F1 ({med_f1:.1f}%)")
+
+            st.info("""
+            **Interpretazione dei quadranti:**
+            - **Sopra la linea rossa:** Aziende "Focalizzate" (agiscono sul target più della media dei competitor).
+            - **Sotto la linea rossa:** Aziende "Diversificate" (il target è solo una componente minoritaria della loro attività).
+            """)
+    
         # --- GRAFICI ---
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
