@@ -8,7 +8,9 @@ import io
 # LOADING 
 # *********
 
-"""Carica i dati RNA e pulisce la colonna importi (rendendoli numeri)."""
+"""
+Carica i dati RNA e pulisce la colonna importi (rendendoli numeri).
+"""
 
 @st.cache_data
 def load_rna_data(file):
@@ -24,7 +26,31 @@ def load_rna_data(file):
         ).fillna(0)
         
     return df
-# *****************************************************************************
+
+
+
+# ****************
+# RICERCA TARGETS
+# ****************
+"""
+Controlla se almeno una keyword è presente in una delle colonne 
+definite nei settings per la riga data.
+"""
+
+# Importiamo la configurazione
+from settings import COLONNE_RICERCA 
+
+def is_target_row(row, keywords):
+
+    # Creiamo un unico testo che unisce il contenuto delle colonne scelte
+    testo_da_analizzare = " ".join([
+        str(row[col]).upper() 
+        for col in COLONNE_RICERCA 
+        if col in row
+    ])
+    
+    return any(k in testo_da_analizzare for k in keywords)
+
 
 
 
