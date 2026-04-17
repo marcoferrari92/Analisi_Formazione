@@ -27,47 +27,23 @@ btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=Tru
 # ANALISI
 if uploaded_file is not None:
     try:
+        
+        # Loading dei dati
         df = load_rna_data(uploaded_file)
-    
-        # Prendi le keyword dall'area di testo
-        keywords_raw = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
-        keywords = [k.strip().upper() for k in keywords_raw.split(',')]
 
-        # APPLICAZIONE RICERCA MULTI-COLONNA
-        # Usiamo axis=1 perché la funzione ora deve leggere l'intera riga
-        df['IS_TARGET'] = df.apply(lambda row: is_target_row(row, keywords), axis=1)
-    
-        # Calcolo importi (rimane uguale)
+        # RICERCA KEYWORDs NEL DATASET (e relativi importi)
+        keywords_raw     = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
+        keywords         = [k.strip().upper() for k in keywords_raw.split(',')]
+        df['IS_TARGET']  = df.apply(lambda row: is_target_row(row, keywords), axis=1)
         df['IMPORTO_TARGET'] = df.apply(lambda x: x['RNA_ELEMENTO_DI_AIUTO'] if x['IS_TARGET'] else 0, axis=1)
         
-        
-        # CHECK CLIENTI vs PROSPECT :::::::::::::::::
+        # CHECK CLIENTI vs PROSPECT 
         if uploaded_clienti is not None:
             df = verifica_stato_clienti(df, uploaded_clienti)
         else:
             if 'STATO' not in df.columns:
                 df['STATO'] = "⚪ PROSPECT"
 
-
-        
-        # Estrapolazione keywords dal campo di testo
-        keywords = [k.strip().upper() for k in keywords_raw.split(',')]
-        
-        # 1. Definiamo le colonne su cui vogliamo fare la ricerca
-        colonne_ricerca = ['RNA_TITOLO_MISURA', 'RNA_DESCRIZIONE_PROGETTO', 'RNA_TITOLO_PROGETTO']
-
-        # 2. Modifichiamo la funzione di controllo
-        def is_target_row(row):
-            # Uniamo il testo di tutte le colonne scelte in un'unica stringa maiuscola
-            testo_completo = " ".join([str(row[col]) for col in colonne_ricerca if col in row]).upper()
-    
-            # Controlliamo se almeno una keyword è presente in questo "super-testo"
-            return any(k in testo_completo for k in keywords)
-
-# 3. Applichiamo la funzione a tutto il DataFrame (axis=1 significa "per riga")
-df['IS_TARGET'] = df.apply(is_target_row, axis=1)
-        
-        df['importo_target'] = df.apply(lambda x: x['RNA_IMPORTO'] if x['is_target'] else 0, axis=1)
 
         # --- GENERAZIONE REPORT ---
         col_escluse = ['RNA_DATA', 'RNA_MISURA', 'RNA_IMPORTO', 'RNA_STRUMENTO', 'is_target', 'importo_target']
