@@ -83,6 +83,9 @@ if uploaded_file is not None:
         
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
+
+
+        # PANORAMICA SETTORE TARGET ******************************
         
         # Periodo temporale (YYYY-MM-DD)
         df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'], errors='coerce')
@@ -109,12 +112,10 @@ if uploaded_file is not None:
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
 
-        # Creazione delle colonne per i grafici
-        c1, c2, c3 = st.columns(3)
-
-        # Configurazione colori: Verde per Target, Rosso per il resto
+        
+        # GRAFICI A TORTA 
+        
         colors = ['#27ae60', '#e74c3c'] 
-
         # --- 1. Grafico Aziende ---
         fig_aziende = go.Figure(data=[go.Pie(
             labels=['Target', 'Altre'],
@@ -123,11 +124,8 @@ if uploaded_file is not None:
             marker_colors=colors,
             textinfo='percent'
         )])
-        fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
-
-        with c1:
-            st.plotly_chart(fig_aziende, use_container_width=True)
-
+        fig_aziende.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
+        
         # --- 2. Grafico Aiuti ---
         fig_aiuti = go.Figure(data=[go.Pie(
             labels=['Target', 'Altri'],
@@ -136,11 +134,8 @@ if uploaded_file is not None:
             marker_colors=colors,
             textinfo='percent'
         )])
-        fig_aiuti.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
-
-        with c2:
-            st.plotly_chart(fig_aiuti, use_container_width=True)
-
+        fig_aiuti.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
+        
         # --- 3. Grafico Budget ---
         fig_budget = go.Figure(data=[go.Pie(
             labels=['Target', 'Altro'],
@@ -149,8 +144,13 @@ if uploaded_file is not None:
             marker_colors=colors,
             textinfo='percent'
         )])
-        fig_budget.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
-
+        fig_budget.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
+        
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.plotly_chart(fig_aziende, use_container_width=True)
+        with c2:
+            st.plotly_chart(fig_aiuti, use_container_width=True)
         with c3:
             st.plotly_chart(fig_budget, use_container_width=True)
 
