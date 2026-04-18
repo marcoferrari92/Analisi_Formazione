@@ -203,10 +203,7 @@ if uploaded_file is not None:
                 fig_targ.update_layout(title_x=0.25)
                 st.plotly_chart(apply_italy_full_style(fig_targ), use_container_width=True)
             
-            # --- TREEMAP ORIZZONTALE SOTTO ---
-            st.write("---")
-            st.subheader("📊 Distribuzione Gerarchica del Budget Target")
-            
+            # --- TREEMAP ORIZZONTALE SOTTO ---         
             # Mostriamo solo le regioni che hanno effettivamente dati target
             df_tree = df_mappe[df_mappe['RNA_ELEMENTO_DI_AIUTO_Targ'] > 0]
             fig_tree = px.treemap(
@@ -215,7 +212,8 @@ if uploaded_file is not None:
                 values='RNA_ELEMENTO_DI_AIUTO_Targ', 
                 color='RNA_ELEMENTO_DI_AIUTO_Targ',
                 color_continuous_scale='Viridis',
-                hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'}
+                hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'},
+                title = "Distribuzione Gerarchica del Budget Target"
             )
             fig_tree.update_layout(margin=dict(t=0, l=0, r=0, b=0), height=350)
             st.plotly_chart(fig_tree, use_container_width=True)
