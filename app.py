@@ -176,56 +176,50 @@ if uploaded_file is not None:
                     st.caption("La dimensione dei rettangoli indica il volume economico erogato nel target.")
 
                 with g2:
-                    # 1. Recupero GeoJSON e analisi dei nomi corretti
-                    repo_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
+                    # 1. Scarichiamo il GeoJSON (URL di Stefano Cudini che hai testato)
+                    geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
                     try:
-                        resp = requests.get(repo_url)
+                        resp = requests.get(geojson_url)
                         geojson_data = resp.json()
+                
+                        # 2. Normalizzazione CRITICA per questo file:
+                        # Il file vuole i nomi TUTTI MINUSCOLI (piemonte, lazio, veneto...)
+                        df_geo['Regione_Match'] = df_geo['Regione'].str.strip().str.lower()
                         
-                        # 2. Prepariamo i dati delle regioni dal tuo DF
-                        # Creiamo un set di nomi puliti per il match
-                        df_geo['Regione_Match'] = df_geo['Regione'].str.strip().str.title()
-                        
-                        # Correzioni manuali basate sui nomi precisi di questo GeoJSON (OpenPolis)
-                        # IMPORTANTE: In questo file "Friuli-Venezia Giulia" ha il trattino e la "V" maiuscola
-                        mapping_geo = {
-                            "Friuli-Venezia Giulia": "Friuli-Venezia Giulia",
-                            "Valle D'Aosta": "Valle d'Aosta",
-                            "Trentino-Alto Adige": "Trentino-Alto Adige",
-                            "Emilia-Romagna": "Emilia-Romagna"
+                        # Correzione nomi composti per matchare il file di Cudini
+                        mapping_speciali = {
+                            "friuli-venezia giulia": "friuli venezia giulia", # Tolto il trattino
+                            "trentino-alto adige": "trentino-alto adige/südtirol",
+                            "valle d'aosta": "valle d'aosta/vallée d'aoste"
                         }
-                        df_geo['Regione_Match'] = df_geo['Regione_Match'].replace(mapping_geo)
+                        df_geo['Regione_Match'] = df_geo['Regione_Match'].replace(mapping_speciali)
                 
                         # 3. Creazione Mappa
                         fig_map = px.choropleth(
                             df_geo,
                             geojson=geojson_data,
                             locations='Regione_Match',
-                            featureidkey="properties.reg_name", # Chiave specifica per OpenPolis
+                            featureidkey="properties.name", # <--- 'name' come visto nel tuo snippet
                             color='Budget_Target',
                             color_continuous_scale="Reds",
-                            title="Distribuzione Regionale Budget Target",
-                            scope="europe"
+                            title="Distribuzione Regionale Budget Target"
                         )
                 
-                        # 4. Zoom forzato sull'Italia (latitudine e longitudine)
-                        fig_map.update_geos(
-                            fitbounds="locations", 
-                            visible=False,
-                            projection_type='mercator'
+                        # 4. Zoom e Layout
+                        fig_map.update_geos(fitbounds="locations", visible=False)
+                        fig_map.update_layout(
+                            margin={"r":0,"t":40,"l":0,"b":0}, 
+                            height=500,
+                            paper_bgcolor='rgba(0,0,0,0)'
                         )
-                        
-                        fig_map.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=500)
                 
                         st.plotly_chart(fig_map, use_container_width=True)
                         
                     except Exception as e:
-                        st.error(f"Errore nel caricamento della mappa: {e}")
+                        st.error(f"Errore tecnico nella mappa: {e}")
                 
-                    # DEBUG VISIVO: Scommenta le righe sotto per vedere se i nomi matchano
-                    names_in_geojson = [f['properties']['reg_name'] for f in geojson_data['features']]
-                    st.write("Nomi attesi dal GeoJSON:", names_in_geojson)
-                    st.write("Nomi presenti nel tuo file:", df_geo['Regione_Match'].unique().tolist())
+                    # DEBUG FINALE (se ancora non vedi colore, guarda questa tabella sotto il grafico)
+                    # st.write("Verifica Match:", df_geo[['Regione', 'Regione_Match']])
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
         
