@@ -229,7 +229,7 @@ if uploaded_file is not None:
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    st.write("**N. Aiuti Target**")
+                    st.write("**Numero Aiuti**")
                     st.metric("N. Aiuti Medio", f"{med_aiuti:.1f}")
                     st.metric("N. Aiuti Target Medio", f"{med_aiuti_target:.1f}",
                                 delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color = "normal")
