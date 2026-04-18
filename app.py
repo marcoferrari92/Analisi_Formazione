@@ -307,7 +307,7 @@ if uploaded_file is not None:
             
             # --- 1. GRAFICO INCIDENZA % (Sopra) ---
             fig_norm = px.area(
-                df_time_plot, x='Periodo', y='Incidenza Target %',
+                df_time_plot, x='Periodo', y='Quota Target (%)',
                 title="Quota di Mercato del Settore Target (%)",
                 template="plotly_white", line_shape="spline", markers=True
             )
