@@ -382,7 +382,8 @@ if uploaded_file is not None:
         st.divider()
         st.subheader("🎯 Analisi Dettagliata per Azienda")
         search_txt = st.text_input("Inserisci Ragione Sociale per visualizzare i dettagli")
-
+        st.write("")
+        
         if search_txt:
             # Filtro per Ragione Sociale
             azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False, na=False)].copy()
@@ -404,7 +405,6 @@ if uploaded_file is not None:
                       delta_color="normal")
             
                 with b2:
-                    # Formattazione euro per il delta
                     diff_budget = row['Budget Target'] - med_budget_target
                     st.metric("Budget Target", f"€ {row['Budget Target']:,.0f}".replace(',', '.'), 
                       delta=f"€ {diff_budget:+.0f}".replace(',', '.'), 
@@ -469,7 +469,7 @@ if uploaded_file is not None:
             else:
                 st.warning(f"Nessuna azienda trovata per: {search_txt}")
 
-        # Sostituisci 'report' con il nome corretto del tuo DataFrame finale (probabilmente 'report_aziende')
+        
         try:
             # Verifichiamo quale DataFrame usare per il download
             df_da_scaricare = report_aziende if 'report_aziende' in locals() else df
