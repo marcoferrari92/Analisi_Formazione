@@ -239,9 +239,10 @@ if uploaded_file is not None:
         
                 with col2:
                     st.write("**Fattore F1**")
-                    #st.metric("Media", f"{avg_f1:.1f}%".replace('.', ','))
-                    #st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
-                    # Calcolo aziende sotto la mediana
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
                     sotto_med_f1 = len(df_benchmark_1[df_benchmark_1['F1'] < med_f1])
                     st.caption(f"📉 {sotto_med_f1} aziende sotto mediana")
         
