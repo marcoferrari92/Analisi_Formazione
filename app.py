@@ -184,22 +184,20 @@ if uploaded_file is not None:
             col_map1, col_map2 = st.columns(2)
             
             with col_map1:
-                st.markdown("<h4 style='text-align: center;'>💰 Mercato Totale</h4>", unsafe_allow_html=True)
                 fig_tot = px.choropleth(
                     df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
                     color='RNA_ELEMENTO_DI_AIUTO_Tot', 
                     color_continuous_scale="Blues", # Scala Blu per il generale
-                    title=None
+                    title="💰 Mercato Totale"
                 )
                 st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
             
             with col_map2:
-                st.markdown("<h4 style='text-align: center;'>🎯 Mercato Target</h4>", unsafe_allow_html=True)
                 fig_targ = px.choropleth(
                     df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
                     color='RNA_ELEMENTO_DI_AIUTO_Targ', 
                     color_continuous_scale="Reds", # Scala Rossa per il target
-                    title=None
+                    title="🎯 Mercato Target"
                 )
                 st.plotly_chart(apply_italy_full_style(fig_targ), use_container_width=True)
             
