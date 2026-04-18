@@ -98,15 +98,6 @@ if uploaded_file is not None:
             st.metric("Aziende Attive", f"{n_aziende_live}")
             st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
-            colors = ['#27ae60', '#e74c3c']
-            fig_aziende = go.Figure(data=[go.Pie(
-            labels=['Target', 'Altre'],
-            values=[n_aziende_target, n_aziende - n_aziende_target],
-            hole=.4,
-            marker_colors=colors,
-            textinfo='percent'
-        )])
-        fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
@@ -117,6 +108,52 @@ if uploaded_file is not None:
             st.metric("Budget Target",
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
+
+        # Creazione delle colonne per i grafici
+        c1, c2, c3 = st.columns(3)
+
+        # Configurazione colori: Verde per Target, Rosso per il resto
+        colors = ['#27ae60', '#e74c3c'] 
+
+        # --- 1. Grafico Aziende ---
+        fig_aziende = go.Figure(data=[go.Pie(
+            labels=['Target', 'Altre'],
+            values=[n_aziende_target, n_aziende - n_aziende_target],
+            hole=.4,
+            marker_colors=colors,
+            textinfo='percent'
+        )])
+        fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
+
+        with c1:
+            st.plotly_chart(fig_aziende, use_container_width=True)
+
+        # --- 2. Grafico Aiuti ---
+        fig_aiuti = go.Figure(data=[go.Pie(
+            labels=['Target', 'Altri'],
+            values=[n_aiuti_target, n_aiuti_totali - n_aiuti_target],
+            hole=.4,
+            marker_colors=colors,
+            textinfo='percent'
+        )])
+        fig_aiuti.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
+
+        with c2:
+            st.plotly_chart(fig_aiuti, use_container_width=True)
+
+        # --- 3. Grafico Budget ---
+        fig_budget = go.Figure(data=[go.Pie(
+            labels=['Target', 'Altro'],
+            values=[budget_target, budget_totale - budget_target],
+            hole=.4,
+            marker_colors=colors,
+            textinfo='percent'
+        )])
+        fig_budget.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
+
+        with c3:
+            st.plotly_chart(fig_budget, use_container_width=True)
+
         
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
