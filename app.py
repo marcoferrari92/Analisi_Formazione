@@ -340,9 +340,9 @@ if uploaded_file is not None:
                 yaxis_title="Budget (€)"
             )
             
-            # Visualizzazione
-            st.plotly_chart(fig_norm, use_container_width=True)
-            st.plotly_chart(fig_line, use_container_width=True)
+            # Visualizzazione con chiavi univoche per evitare conflitti di ID
+            st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
+            st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto")
 
             # --- AGGIUNGI QUESTA RIGA PER EVITARE L'EFFETTO SOMMA ---
             #fig_line.update_layout(barmode='overlay') 
