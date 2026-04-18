@@ -331,13 +331,8 @@ if uploaded_file is not None:
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
       
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-            
-            # ordiniamo gli anni dal più grande al più piccolo
             df_heat_data = df_heat_data.sort_values(by='Anno', ascending=False)
-            
             pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
-            
-            # Re-indicizziamo per essere sicuri che l'ordine delle righe sia 2026 -> 2023
             pivot_heat = pivot_heat.sort_index(ascending=False)
             
             # Mapping nomi mesi (rimane uguale)
@@ -359,7 +354,7 @@ if uploaded_file is not None:
                 margin=dict(l=0, r=0, t=30, b=0),
                 yaxis=dict(
                     type='category', 
-                    autorange=True # Ora che i dati sono già ordinati nel DF, lasciamo True
+                    autorange="reversed" # Ora che i dati sono già ordinati nel DF, lasciamo True
                 )
             )
             
