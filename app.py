@@ -137,6 +137,8 @@ if uploaded_file is not None:
         
 
         # --- ANALISI GEOGRAFICA ---
+        st.write("")
+        st.write("")
         with st.expander("🗺️ Distribuzione Geografica Budget Target"):
 
             # Verifichiamo la colonna nel tuo file (RNA_REGIONE_BENEFICIARIO)
@@ -235,6 +237,9 @@ if uploaded_file is not None:
                     # st.write("Verifica Match:", df_geo[['Regione', 'Regione_Match']])
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
+        st.write("")
+        st.write("")
+
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
