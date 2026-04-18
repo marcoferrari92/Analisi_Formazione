@@ -386,7 +386,42 @@ if uploaded_file is not None:
         if search_txt:
             # Filtro per Ragione Sociale
             azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False, na=False)].copy()
-    
+            azienda_stats = report_aziende[report_aziende['Ragione Sociale'].str.contains(search_txt, case=False, na=False)]
+            
+            if not azienda_stats.empty:
+                # Prendiamo la prima occorrenza (in caso di nomi simili)
+                row = azienda_stats.iloc[0]
+        
+                st.markdown(f"#### 📊 Performance vs Benchmark: **{row['Ragione Sociale']}**")
+        
+                # Creiamo 4 colonne per il confronto diretto
+                b1, b2, b3, b4 = st.columns(4)
+        
+                with b1:
+                    diff_aiuti = row['Aiuti Target'] - med_aiuti_target
+                    st.metric("Aiuti Target", f"{row['Aiuti Target']}", 
+                      delta=f"{diff_aiuti:+.1f} vs mediana", 
+                      delta_color="normal")
+            
+                with b2:
+                    # Formattazione euro per il delta
+                    diff_budget = row['Budget Target'] - med_budget_target
+                    st.metric("Budget Target", f"€ {row['Budget Target']:,.0f}".replace(',', '.'), 
+                      delta=f"€ {diff_budget:+.0f}".replace(',', '.'), 
+                      delta_color="normal")
+            
+                with b3:
+                    diff_fo = row['Fo'] - med_Fo
+                    st.metric("Fattore Fo", f"{row['Fo']:.1f}%", 
+                      delta=f"{diff_fo:+.1f}% vs mediana")
+            
+                with b4:
+                    diff_fe = row['Fe'] - med_Fe
+                    st.metric("Fattore Fe", f"{row['Fe']:.1f}%", 
+                      delta=f"{diff_fe:+.1f}% vs mediana")
+        
+                st.divider()
+                
             if not azienda_details.empty:
                 # 1. Mapping di sicurezza (se i nomi nel DF sono diversi da quelli desiderati per la tabella)
                 # Assicuriamoci che le colonne esistano prima di rinominare o usare
