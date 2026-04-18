@@ -5,7 +5,7 @@ import plotly.express as px
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
 from analisi import create_centered_pie
 
@@ -222,29 +222,7 @@ if uploaded_file is not None:
 
             # Menu a scomparsa con la spiegazione tecnica e metodologica
             with st.expander("📖 Guida alla lettura e Metodologia"):
-                st.markdown("""
-                    Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo (mediana)"** del mercato di riferimento. 
-
-                    ### 📊 Cos'è la Mediana?
-                    A differenza della media (che può essere influenzata da pochi valori estremi, come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
-                    Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti.
-
-                    ### 🌍 Indicatori del Mercato (Potenziale)
-                    Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponibili.
-                    * **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno ricevuto mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati.
-                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse (target) sono mediamente più ricchi o più poveri rispetto al mercato generale.
-                        * *Esempio:* Se il rapporto tra Mediana Target e Mediana Totale è il **25%**, significa che il finanziamento tipico nel settore target è grande un quarto rispetto a un finanziamento generico. Questo ci dice se il settore target è composto da piccoli contributi o da grandi investimenti.
-                    
-                    ### 🏢 Indicatori dell'Azienda (Specializzazione)
-                    Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche della singola impresa.
-                    * **Fattore Fo (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite per un'azienda media. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
-                    * **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
-                        * *Esempio:* Se la **Mediana di F2 è il 15%**, significa che metà delle aziende analizzate dedica al settore target meno del 15% del proprio budget totale di aiuti, mentre l'altra metà di più. 
-                        * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel sistema.
-                    
-                    ---
-                    💡 **Strategia:** Le aziende sotto mediana rappresentano il segmento con il più alto potenziale di crescita per nuove pianificazioni finanziarie o investimenti mirati.
-                    """)
+                st.markdown(GUIDA_BENCHMARK)
                 
             # Creiamo un contenitore con bordo (stile card)
             with st.container(border=True):
