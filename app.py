@@ -142,6 +142,7 @@ if uploaded_file is not None:
         with st.expander("🗺️ Distribuzione Geografica Budget Target"):
 
             st.header("🌍 Analisi Geografica del Mercato")
+            st.write("")
             # 1. Preparazione Dati
             df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
             df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
@@ -256,8 +257,7 @@ if uploaded_file is not None:
             df_reg_tabella = df_reg_tabella.sort_values(by='Budget Target', ascending=False)
             
             # --- VISUALIZZAZIONE STREAMLIT ---
-            st.write("### 📊 Riepilogo Performance per Regione")
-            
+            st.write("")
             st.dataframe(
                 df_reg_tabella,
                 use_container_width=True,
