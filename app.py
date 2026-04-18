@@ -234,12 +234,6 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
         
                 with col2:
-                    st.write("**Fattore Fo**")
-                    st.metric("Mediana", f"{med_Fo:.1f}%".replace('.', ','))
-                    sotto_med_Fo = len(df_benchmark_1[df_benchmark_1['Fo'] < med_Fo])
-                    st.caption(f"📉 {sotto_med_Fo} aziende sotto mediana")
-        
-                with col3:
                     st.write("**Budget per Azienda**")
                     st.metric("Mediana Totale", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana Target", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
@@ -247,6 +241,12 @@ if uploaded_file is not None:
                     # Calcolo aziende sotto la mediana
                     sotto_med_budget_target = len(df_benchmark_1[df_benchmark_1['Budget Target'] < med_budget_target])
                     st.caption(f"📉 {sotto_med_budget_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
+        
+                with col3:
+                    st.write("**Fattore Fo**")
+                    st.metric("Mediana", f"{med_Fo:.1f}%".replace('.', ','))
+                    sotto_med_Fo = len(df_benchmark_1[df_benchmark_1['Fo'] < med_Fo])
+                    st.caption(f"📉 {sotto_med_Fo} aziende sotto mediana")
                     
                 with col4:
                     st.write("**Fattore Fe**")
