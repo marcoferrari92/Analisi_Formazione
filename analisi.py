@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.express as px
-
+import plotly.graph_objects as go
 
 colors = ['#27ae60', '#e74c3c'] 
 def create_centered_pie(values):
