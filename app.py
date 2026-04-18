@@ -257,7 +257,6 @@ if uploaded_file is not None:
                     
                 with col4:
                     st.write("**Fattore F2**")
-                    st.metric("Media", f"{avg_f2:.1f}%".replace('.', ','))
                     st.metric("Mediana", f"{med_f2:.1f}%".replace('.', ','))
                     # Calcolo aziende sotto la mediana
                     sotto_med_f2 = len(df_benchmark_1[df_benchmark_1['F2'] < med_f2])
