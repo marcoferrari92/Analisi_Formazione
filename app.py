@@ -321,8 +321,8 @@ if uploaded_file is not None:
             )
             
             # --- AGGIUNGI QUESTA RIGA PER EVITARE L'EFFETTO SOMMA ---
-            fig_line.update_layout(barmode='overlay') 
-            #fig_line.update_traces(stackgroup=None)
+            #fig_line.update_layout(barmode='overlay') 
+            fig_line.update_traces(stackgroup=None)
             st.plotly_chart(fig_line, use_container_width=True)
         
             st.divider()
