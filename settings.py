@@ -15,6 +15,7 @@ CSV_SEP = ';'
 CSV_ENCODING = 'utf-8-sig'
 
 
+
 GUIDA_BENCHMARK = """
 Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo (mediana)"** del mercato di riferimento. 
 
