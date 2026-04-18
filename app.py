@@ -329,25 +329,7 @@ if uploaded_file is not None:
         
             # --- HEATMAP (STAGIONALITÀ) ---
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
-            
-            # Matrice per il Settore Target
-            df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-            pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
-            
-            # Mapping nomi mesi in italiano
-            mesi_ita = {1:'Gen', 2:'Feb', 3:'Mar', 4:'Apr', 5:'Mag', 6:'Giu', 7:'Lug', 8:'Ago', 9:'Set', 10:'Ott', 11:'Nov', 12:'Dic'}
-            pivot_heat.columns = [mesi_ita[c] for c in pivot_heat.columns]
-        
-            fig_heat = px.imshow(
-                pivot_heat,
-                labels=dict(x="Mese", y="Anno", color="Budget (€)"),
-                x=pivot_heat.columns,
-                y=pivot_heat.index,
-                color_continuous_scale="Reds",
-                text_auto=".2s"
-            )
-            
-            # --- PREPARAZIONE DATI ---
+      
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             
             # ordiniamo gli anni dal più grande al più piccolo
