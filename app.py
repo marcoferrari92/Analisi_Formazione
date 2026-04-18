@@ -2,11 +2,12 @@ import streamlit as st
 import pandas as pd
 import io
 import plotly.express as px
-import plotly.graph_objects as go
+
 
 # Caricamenti
 from settings import DEFAULT_KEYWORDS
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
+from analisi.py import create_centered_pie
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
