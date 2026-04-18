@@ -450,5 +450,5 @@ if uploaded_file is not None:
         except NameError:
             st.sidebar.error("⚠️ Errore: DataFrame per il download non trovato.")
 
-else:
-    st.info("👋 Carica il file per iniziare.")
+    else:
+        st.info("👋 Carica il file per iniziare.")
