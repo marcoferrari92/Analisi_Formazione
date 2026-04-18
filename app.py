@@ -420,6 +420,7 @@ if uploaded_file is not None:
             st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
             with st.expander("📖 Guida alla lettura e Metodologia"):
                 st.markdown(GUIDA_PARETO)
+                
             # 1. Preparazione dati (già ordinati per budget decrescente)
             df_pareto = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
@@ -491,7 +492,8 @@ if uploaded_file is not None:
             )
             
             st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_intersezione")
-        
+        st.write("")
+        st.write("")
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
