@@ -133,6 +133,72 @@ if uploaded_file is not None:
                     config={'displayModeBar': False})
 
         
+
+        # --- ANALISI GEOGRAFICA ---
+        st.subheader("🗺️ Distribuzione Geografica Budget Target")
+
+        # Verifichiamo la colonna nel tuo file (RNA_REGIONE_BENEFICIARIO)
+        col_regione = 'RNA_REGIONE_BENEFICIARIO'
+
+        if col_regione in df.columns:
+            # 1. Preparazione Dati: sommiamo il budget target per regione
+            df_geo = df[df['IMPORTO_TARGET'] > 0].groupby(col_regione).agg({
+                'IMPORTO_TARGET': 'sum',
+                'RNA_CODICE_FISCALE_BENEFICIARIO': 'nunique'
+            }).reset_index()
+    
+            df_geo.columns = ['Regione', 'Budget_Target', 'N_Aziende']
+    
+            # Pulizia nomi (per matchare il GeoJSON)
+            # Es. "Valle d'Aosta/Vallée d'Aoste" -> "Valle d'Aosta"
+            df_geo['Regione'] = df_geo['Regione'].str.split('/').str[0].str.strip()
+
+            # Creazione delle due colonne per i grafici
+            g1, g2 = st.columns([1, 1.2])
+
+            with g1:
+                # --- TREEMAP ---
+                # Poiché non abbiamo la provincia, usiamo Regione e opzionalmente 
+                # possiamo aggiungere il settore o lo strumento come sottolivello
+                fig_tree = px.treemap(
+                    df_geo,
+                    path=[px.Constant("Italia"), 'Regione'],
+                    values='Budget_Target',
+                    color='Budget_Target',
+                    color_continuous_scale='Viridis',
+                    hover_data=['N_Aziende'],
+                    title="Peso Economico per Regione"
+                )
+                fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10))
+                st.plotly_chart(fig_tree, use_container_width=True)
+                st.caption("La dimensione dei rettangoli indica il volume economico erogato nel target.")
+
+            with g2:
+                # --- CHOROPLETH MAP (ITALIA) ---
+                # Utilizziamo un GeoJSON pubblico delle regioni italiane
+                repo_url = "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.json"
+        
+                fig_map = px.choropleth(
+                    df_geo,
+                    geojson=repo_url,
+                    locations='Regione',
+                    featureidkey="properties.reg_name", # Chiave standard del GeoJSON openpolis
+                    color='Budget_Target',
+                    color_continuous_scale="Reds",
+                    labels={'Budget_Target': 'Budget (€)'},
+                    title="Intensità Investimenti nel Target"
+                )
+        
+                # Centriamo la mappa sull'Italia
+                fig_map.update_geos(fitbounds="locations", visible=False)
+                fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0}, height=450)
+        
+                st.plotly_chart(fig_map, use_container_width=True)
+                st.caption("Mappa di calore: le regioni più scure sono quelle con più fondi erogati.")
+
+        else:
+            st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
+        
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
