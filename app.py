@@ -494,7 +494,74 @@ if uploaded_file is not None:
             st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_intersezione")
         st.write("")
         st.write("")
+
+
+        # --- SEZIONE ANALISI BANDI E MISURE ---
+        with st.expander("📜 Analisi dei Bandi e delle Misure"):
         
+            # 1. Preparazione Dati: Top Misure per Budget Target
+            # Usiamo la colonna DES_STRUMENTO_AIUTO (o quella che contiene il nome del bando nel tuo dataset)
+            # Nota: verifica se nel tuo file la colonna si chiama 'DES_STRUMENTO_AIUTO' o 'TITOLO_MISURA'
+            col_misura = 'DES_STRUMENTO_AIUTO' 
+            
+            df_bandi = df[df['IS_TARGET'] == 1].groupby(col_misura)['RNA_ELEMENTO_DI_AIUTO'].agg(['sum', 'count']).reset_index()
+            df_bandi.columns = ['Misura', 'Budget_Totale', 'Numero_Concessioni']
+            
+            # Ordiniamo per budget e prendiamo i primi 10
+            df_bandi_top = df_bandi.sort_values(by='Budget_Totale', ascending=False).head(10)
+        
+            # --- BAR CHART ORIZZONTALE (TOP BANDI) ---
+            st.subheader("💰 I 10 Bandi più generosi per il Settore Target")
+            
+            fig_bandi = px.bar(
+                df_bandi_top,
+                x='Budget_Totale',
+                y='Misura',
+                orientation='h',
+                text_auto='.2s',
+                color='Budget_Totale',
+                color_continuous_scale='Reds',
+                hover_data={'Numero_Concessioni': True, 'Budget_Totale': ':,.2f'},
+                labels={'Budget_Totale': 'Budget Erogato (€)', 'Misura': 'Nome del Bando/Misura'}
+            )
+            
+            fig_bandi.update_layout(
+                yaxis={'categoryorder': 'total ascending'},
+                coloraxis_showscale=False,
+                margin=dict(l=0, r=20, t=30, b=0),
+                height=500
+            )
+            st.plotly_chart(fig_bandi, use_container_width=True, key="bar_top_bandi")
+        
+            # --- INSIGHTS SUI BANDI ---
+            top_bando_nome = df_bandi_top.iloc[0]['Misura']
+            top_bando_peso = (df_bandi_top.iloc[0]['Budget_Totale'] / df[df['IS_TARGET'] == 1]['RNA_ELEMENTO_DI_AIUTO'].sum()) * 100
+        
+            st.divider()
+        
+            # 2. Analisi "Taglio Medio" del bando
+            st.subheader("📊 Analisi del 'Ticket Medio' per Bando")
+            
+            df_bandi_top['Ticket_Medio'] = df_bandi_top['Budget_Totale'] / df_bandi_top['Numero_Concessioni']
+            
+            fig_ticket = px.scatter(
+                df_bandi_top,
+                x='Numero_Concessioni',
+                y='Ticket_Medio',
+                size='Budget_Totale',
+                color='Misura',
+                hover_name='Misura',
+                title="Volume Concessioni vs Valore Medio",
+                labels={'Ticket_Medio': 'Importo Medio per Azienda (€)', 'Numero_Concessioni': 'N. Aziende Agevolate'}
+            )
+            
+            fig_ticket.update_layout(showlegend=False, height=400)
+            st.plotly_chart(fig_ticket, use_container_width=True, key="scatter_ticket_medio")
+
+
+
+
+    
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
