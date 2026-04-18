@@ -213,10 +213,17 @@ if uploaded_file is not None:
                 values='RNA_ELEMENTO_DI_AIUTO_Targ', 
                 color='RNA_ELEMENTO_DI_AIUTO_Targ',
                 color_continuous_scale='Viridis',
-                hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'},
-                title = "Distribuzione Gerarchica del Budget Target"
+                title="Distribuzione Gerarchica del Budget Target",
+                hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'}
+                )
+
+            # 2. Centra il titolo e regola i margini
+            fig_tree.update_layout(
+                title_x=0.5, 
+                margin=dict(t=50, l=10, r=10, b=10), # Aumentato il margine superiore (t) per far spazio al titolo
+                height=400,
+                coloraxis_colorbar_title_text=""
             )
-            fig_tree.update_layout(margin=dict(t=0, l=0, r=0, b=0), height=350, coloraxis_colorbar_title_text="")
             st.plotly_chart(fig_tree, use_container_width=True)
                 
             # --- TABELLA ---
