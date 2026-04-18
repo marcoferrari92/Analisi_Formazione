@@ -126,7 +126,7 @@ if uploaded_file is not None:
                 hoverinfo='label+percent',
                 direction='clockwise',
                 rotation=0,
-                domain={'x': [0, 0.6], 'y': [0, 1]}
+                domain={'x': [0, 0.4], 'y': [0, 1]}
             )])
     
             fig.update_layout(
