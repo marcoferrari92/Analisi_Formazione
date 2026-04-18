@@ -106,7 +106,7 @@ if uploaded_file is not None:
             marker_colors=colors,
             textinfo='percent'
         )])
-fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
+        fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
