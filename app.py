@@ -311,12 +311,18 @@ if uploaded_file is not None:
                 line_shape="spline"
             )
             
-            fig_line.update_layout(
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(l=0, r=0, t=30, b=0),
-                xaxis_title="Mese di Concessione",
-                yaxis_title="Budget (€)"
+            fig_line = px.area(
+                df_time_plot, 
+                x='Periodo', 
+                y=['Mercato Totale', 'Settore Target'],
+                color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
+                template="plotly_white",
+                line_shape="spline"
             )
+            
+            # --- AGGIUNGI QUESTA RIGA PER EVITARE L'EFFETTO SOMMA ---
+            fig_line.update_layout(barmode='overlay') 
+            #fig_line.update_traces(stackgroup=None)
             st.plotly_chart(fig_line, use_container_width=True)
         
             st.divider()
