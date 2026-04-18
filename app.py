@@ -278,6 +278,77 @@ if uploaded_file is not None:
         st.write("")
         st.write("")
 
+
+
+        # --- SEZIONE TEMPORALE DENTRO EXPANDER ---
+        with st.expander("📅 Distribuzione Temporale Settore Target"):
+            
+            # 1. Preparazione Dati
+            # Assicurati che la data sia in formato datetime
+            df['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df['RNA_DATA_CONCESSIONE'])
+            
+            # Creiamo le colonne di supporto per l'aggregazione
+            df['AnnoMonth'] = df['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
+            df['Anno'] = df['RNA_DATA_CONCESSIONE'].dt.year
+            df['Mese_Num'] = df['RNA_DATA_CONCESSIONE'].dt.month
+            
+            # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
+            st.subheader("📈 Evoluzione del Budget nel Tempo")
+            
+            # Aggreghiamo Totale e Target
+            df_time_tot = df.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            df_time_targ = df[df['IS_TARGET'] == 1].groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            
+            df_time_plot = pd.merge(df_time_tot, df_time_targ, on='AnnoMonth', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
+            df_time_plot.columns = ['Periodo', 'Mercato Totale', 'Settore Target']
+        
+            fig_line = px.area(
+                df_time_plot, 
+                x='Periodo', 
+                y=['Mercato Totale', 'Settore Target'],
+                color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
+                template="plotly_white",
+                line_shape="spline"
+            )
+            
+            fig_line.update_layout(
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                margin=dict(l=0, r=0, t=30, b=0),
+                xaxis_title="Mese di Concessione",
+                yaxis_title="Budget (€)"
+            )
+            st.plotly_chart(fig_line, use_container_width=True)
+        
+            st.divider()
+        
+            # --- HEATMAP (STAGIONALITÀ) ---
+            st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
+            
+            # Matrice per il Settore Target
+            df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
+            
+            # Mapping nomi mesi in italiano
+            mesi_ita = {1:'Gen', 2:'Feb', 3:'Mar', 4:'Apr', 5:'Mag', 6:'Giu', 7:'Lug', 8:'Ago', 9:'Set', 10:'Ott', 11:'Nov', 12:'Dic'}
+            pivot_heat.columns = [mesi_ita[c] for c in pivot_heat.columns]
+        
+            fig_heat = px.imshow(
+                pivot_heat,
+                labels=dict(x="Mese", y="Anno", color="Budget (€)"),
+                x=pivot_heat.columns,
+                y=pivot_heat.index,
+                color_continuous_scale="Reds",
+                text_auto=".2s" # Mostra i valori abbreviati (es. 1.2M)
+            )
+            
+            fig_heat.update_layout(
+                coloraxis_colorbar_title_text="",
+                margin=dict(l=0, r=0, t=30, b=0)
+            )
+            st.plotly_chart(fig_heat, use_container_width=True)
+            
+            st.info("💡 **Consiglio Commerciale:** I mesi con i quadrati più scuri indicano quando le aziende ricevono liquidità. È il momento migliore per proporre nuovi investimenti.")
+
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
