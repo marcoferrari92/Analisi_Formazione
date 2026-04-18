@@ -247,7 +247,7 @@ if uploaded_file is not None:
         
                 with col3:
                     st.write("**Budget**")
-                   st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana Target", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                               delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", delta_color = "normal")
                     # Calcolo aziende sotto la mediana
