@@ -115,29 +115,6 @@ if uploaded_file is not None:
 
         
         # GRAFICI A TORTA 
-        
-        colors = ['#27ae60', '#e74c3c'] 
-        def create_centered_pie(values):
-            fig = go.Figure(data=[go.Pie(
-                values=values,
-                hole=.4,
-                marker_colors=['#27ae60', '#e74c3c'],
-                textinfo='percent', 
-                insidetextorientation='horizontal',
-                hoverinfo='label+percent',
-                direction='clockwise',
-                rotation=0,
-                domain={'x': [0, 0.4], 'y': [0, 1]}
-            )])
-    
-            fig.update_layout(
-                height=150,      
-                margin=dict(t=0, b=0, l=0, r=0), 
-                showlegend=False,
-                paper_bgcolor='rgba(0,0,0,0)',
-            )
-            return fig
-            
         with m1:
             st.write("")
             st.plotly_chart(create_centered_pie([n_aziende_target, n_aziende - n_aziende_target]), 
