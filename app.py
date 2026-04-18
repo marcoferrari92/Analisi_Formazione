@@ -344,11 +344,6 @@ if uploaded_file is not None:
             st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
             st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto")
 
-            # --- AGGIUNGI QUESTA RIGA PER EVITARE L'EFFETTO SOMMA ---
-            #fig_line.update_layout(barmode='overlay') 
-            #fig_line.update_traces(stackgroup=None)
-            #st.plotly_chart(fig_line, use_container_width=True)
-        
             st.divider()
         
             # --- HEATMAP (STAGIONALITÀ) ---
