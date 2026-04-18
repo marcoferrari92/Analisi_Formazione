@@ -480,8 +480,8 @@ if uploaded_file is not None:
             ))
             
             fig_pareto.update_layout(
-                xaxis_title="Numero di Aziende (Ordinate)",
-                yaxis_title="Budget Singolo (€)",
+                xaxis_title="Numero di Aziende (Ordinate per Budget Target)",
+                yaxis_title="Budget Target della Singola Azienda (€)",
                 yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
                 legend=dict(orientation="h", y=1.15),
                 margin=dict(l=0, r=0, t=60, b=0),
@@ -498,6 +498,7 @@ if uploaded_file is not None:
             st.info(f"""
             **🔍 Insight di Mercato:**
             L'**80% del budget** è concentrato nelle mani di **{aziende_80} aziende** (pari al **{perc_aziende_80:.1f}%** del totale).
+            
             *Se la percentuale è vicina al 20%, il mercato è dominato da pochi. Se è più alta, il mercato è democratico e frammentato.*
             """)
         
