@@ -177,7 +177,7 @@ if uploaded_file is not None:
 
                 with g2:
                     # 1. Recupero GeoJSON e analisi dei nomi corretti
-                    geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
+                    repo_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
                     try:
                         resp = requests.get(repo_url)
                         geojson_data = resp.json()
