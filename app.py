@@ -402,11 +402,11 @@ if uploaded_file is not None:
                 text_auto='.2s',
                 color='RNA_ELEMENTO_DI_AIUTO',
                 color_continuous_scale='Reds',
-                labels={'RNA_ELEMENTO_DI_AIUTO': 'Budget Totale (€)', 'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda'}
+                labels={'RNA_ELEMENTO_DI_AIUTO': 'Budget Target Totale (€)', 'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda'}
             )
             
             fig_top.update_layout(
-                yaxis={'categoryorder': 'total ascending'}, # Mette l'azienda più ricca in alto
+                yaxis={'categoryorder': 'total ascending'}, 
                 coloraxis_showscale=False,
                 margin=dict(l=0, r=20, t=30, b=0),
                 height=450
