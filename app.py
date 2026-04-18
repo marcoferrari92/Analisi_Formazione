@@ -139,7 +139,7 @@ if uploaded_file is not None:
         # --- ANALISI GEOGRAFICA ---
         st.write("")
         st.write("")
-        with st.expander("🗺️ Distribuzione Geografica Budget Target"):
+        with st.expander("🗺️ Distribuzione Geografica Settore Target"):
             
             st.write("")
             # 1. Preparazione Dati
