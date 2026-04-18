@@ -415,34 +415,34 @@ if uploaded_file is not None:
         
             st.divider()
         
-            # --- ANALISI DI PARETO (80/20) ---
+            # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
             st.subheader("📉 Analisi di Concentrazione (Pareto)")
             
-            # Preparazione dati Pareto
+            # 1. Preparazione dati (già ordinati per budget decrescente)
             df_pareto = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
             
-            # Calcolo percentuale cumulata
             df_pareto['Cumsum'] = df_pareto['RNA_ELEMENTO_DI_AIUTO'].cumsum()
             total_budget = df_pareto['RNA_ELEMENTO_DI_AIUTO'].sum()
             df_pareto['Percentage'] = (df_pareto['Cumsum'] / total_budget) * 100
-            
-            # Creiamo un indice per contare le aziende (asse X)
             df_pareto['N_Aziende_Count'] = range(1, len(df_pareto) + 1)
-            df_pareto['Perc_Aziende'] = (df_pareto['N_Aziende_Count'] / len(df_pareto)) * 100
-        
-        
+            
+            # 2. Trova il punto di intersezione per l'80%
+            # Cerchiamo la prima azienda che fa superare la soglia dell'80%
+            intersezione = df_pareto[df_pareto['Percentage'] >= 80].iloc[0]
+            x_intersezione = intersezione['N_Aziende_Count']
+                      
             fig_pareto = go.Figure()
-        
+            
             # Barre: Budget per singola azienda
             fig_pareto.add_trace(go.Bar(
                 x=df_pareto['N_Aziende_Count'],
                 y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
                 name="Budget Azienda",
                 marker_color='#3498db',
-                opacity=0.5
+                opacity=0.4
             ))
-        
+            
             # Linea: Percentuale cumulata
             fig_pareto.add_trace(go.Scatter(
                 x=df_pareto['N_Aziende_Count'],
@@ -451,21 +451,44 @@ if uploaded_file is not None:
                 line=dict(color='#e74c3c', width=3),
                 yaxis="y2"
             ))
-        
+            
+            # --- AGGIUNTA RETTE DI INTERSEZIONE ---
+            
+            # Retta Orizzontale (Soglia 80%)
+            fig_pareto.add_hline(
+                y=80, yref="y2", 
+                line_dash="dash", line_color="gray", 
+                annotation_text="Soglia 80%", annotation_position="top left"
+            )
+            
+            # Retta Verticale (Punto di caduta su Asse X)
+            fig_pareto.add_vline(
+                x=x_intersezione, 
+                line_dash="dot", line_color="black", line_width=2,
+                annotation_text=f" {int(x_intersezione)} Aziende", 
+                annotation_position="top right"
+            )
+            
+            # Punto di intersezione (opzionale, per evidenziare il nodo)
+            fig_pareto.add_trace(go.Scatter(
+                x=[x_intersezione], y=[80],
+                mode='markers',
+                marker=dict(color='black', size=10, symbol='circle'),
+                yaxis="y2",
+                showlegend=False,
+                hoverinfo='skip'
+            ))
+            
             fig_pareto.update_layout(
-                title="Curva di Pareto: Concentrazione del Budget",
-                xaxis_title="Numero di Aziende (Ordinate per Budget)",
+                xaxis_title="Numero di Aziende (Ordinate)",
                 yaxis_title="Budget Singolo (€)",
                 yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
-                legend=dict(orientation="h", y=1.1),
-                margin=dict(l=0, r=0, t=50, b=0),
-                height=500
+                legend=dict(orientation="h", y=1.15),
+                margin=dict(l=0, r=0, t=60, b=0),
+                height=550
             )
-        
-            # Aggiungiamo la linea guida dell'80%
-            fig_pareto.add_hline(y=80, line_dash="dash", line_color="gray", annotation_text="Soglia 80%", yref="y2")
-        
-            st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_chart")
+            
+            st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_intersezione")
         
             # --- INSIGHTS ---
             # Calcoliamo quante aziende fanno l'80% del budget
