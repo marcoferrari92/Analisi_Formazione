@@ -118,7 +118,7 @@ if uploaded_file is not None:
             st.plotly_chart(create_centered_pie([n_aziende_target, n_aziende - n_aziende_target]), 
                     use_container_width=True, 
                     config={'displayModeBar': False})
-            st.caption("Aziende attive nel settore target (budget target > 0€)")
+            st.caption("**Aziende Target**: Aziende attive nel settore target (budget target > 0€)")
 
         with m2:
             st.write("")
