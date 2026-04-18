@@ -175,7 +175,7 @@ if uploaded_file is not None:
                 fig.update_layout(
                     margin={"r":0,"t":40,"l":0,"b":0}, 
                     height=450,
-                    coloraxis_showscale=True
+                    coloraxis_showscale=True,
                     coloraxis_colorbar_title_text=""
                 )
                 return fig
