@@ -310,14 +310,20 @@ if uploaded_file is not None:
                 template="plotly_white",
                 line_shape="spline"
             )
-            
-            fig_line = px.area(
-                df_time_plot, 
-                x='Periodo', 
-                y=['Mercato Totale', 'Settore Target'],
-                color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
-                template="plotly_white",
-                line_shape="spline"
+
+            fig_line.update_layout(
+                # SPOSTAMENTO LEGENDA: la mettiamo in alto orizzontale
+                legend=dict(
+                    orientation="h", 
+                    yanchor="bottom", 
+                    y=1.02, 
+                    xanchor="right", 
+                    x=1
+                ),
+                margin=dict(l=60, r=20, t=50, b=50), 
+                height=350,
+                xaxis_title="Periodo",
+                yaxis_title="Budget (€)"
             )
 
             # --- PREPARAZIONE DATI NORMALIZZATI ---
