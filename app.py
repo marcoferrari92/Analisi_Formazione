@@ -119,10 +119,11 @@ if uploaded_file is not None:
         def create_centered_pie(values):
             fig = go.Figure(data=[go.Pie(
                 values=values,
-                hole=.6,
+                hole=.4,
                 marker_colors=['#27ae60', '#e74c3c'],
-                textinfo='none',
-                hoverinfo='percent',
+                textinfo='percent', 
+                insidetextorientation='horizontal',
+                hoverinfo='label+percent',
                 direction='clockwise',
                 rotation=0 
             )])
