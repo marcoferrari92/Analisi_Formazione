@@ -223,7 +223,7 @@ if uploaded_file is not None:
             # Menu a scomparsa con la spiegazione tecnica e metodologica
             with st.expander("📖 Guida alla lettura e Metodologia"):
                 st.markdown("""
-                    Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo"** del mercato di riferimento. 
+                    Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo (mediana)"** del mercato di riferimento. 
 
                     ### 📊 Cos'è la Mediana?
                     A differenza della media (che può essere influenzata da pochi valori estremi, come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
