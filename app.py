@@ -199,20 +199,33 @@ if uploaded_file is not None:
                             df_geo,
                             geojson=geojson_data,
                             locations='Regione_Match',
-                            featureidkey="properties.name", # <--- 'name' come visto nel tuo snippet
+                            featureidkey="properties.name",
                             color='Budget_Target',
                             color_continuous_scale="Reds",
                             title="Distribuzione Regionale Budget Target"
                         )
-                
-                        # 4. Zoom e Layout
-                        fig_map.update_geos(fitbounds="locations", visible=False)
+                    
+                        # 4. Modifica per vedere tutta l'Italia
+                        fig_map.update_geos(
+                            visible=True,           # Rende visibili i confini geografici di base
+                            resolution=50,          # Dettaglio della mappa
+                            showcountries=True,
+                            showcoastlines=True,
+                            projection_type='mercator',
+                            # Impostiamo manualmente le coordinate per centrare l'Italia
+                            lataxis_range=[35, 47.5], 
+                            lonaxis_range=[6, 19]
+                        )
+                        
+                        # Rimuoviamo fitbounds="locations" (è lui che "taglia" la mappa)
+                        # fig_map.update_geos(fitbounds="locations") <--- ELIMINA O COMMENTA QUESTA RIGA
+                    
                         fig_map.update_layout(
                             margin={"r":0,"t":40,"l":0,"b":0}, 
                             height=500,
                             paper_bgcolor='rgba(0,0,0,0)'
                         )
-                
+                    
                         st.plotly_chart(fig_map, use_container_width=True)
                         
                     except Exception as e:
