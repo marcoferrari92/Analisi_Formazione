@@ -321,7 +321,7 @@ if uploaded_file is not None:
                     x=1
                 ),
                 margin=dict(l=60, r=20, t=50, b=50), 
-                height=350,
+                height=400,
                 xaxis_title="Periodo",
                 yaxis_title="Budget (€)"
             )
@@ -347,7 +347,7 @@ if uploaded_file is not None:
                 yaxis_title="Incidenza su Totale Mensile",
                 yaxis_ticksuffix="%", 
                 hovermode="x unified",
-                margin=dict(l=0, r=0, t=50, b=0),
+                margin=dict(l=60, r=20, t=50, b=50),
                 height=400
             )
             
