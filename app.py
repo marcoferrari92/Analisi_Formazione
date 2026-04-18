@@ -197,10 +197,7 @@ if uploaded_file is not None:
                     help="Incidenza budget target"
                 )
             }
-        )
-        st.markdown("""
-        <small>**Nota:** Fo = % aiuti target su tot. aiuti | Fe = % budget target su budget totale</small>
-        """, unsafe_allow_html=True)      
+        )     
         st.write("")
 
         
