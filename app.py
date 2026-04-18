@@ -382,6 +382,101 @@ if uploaded_file is not None:
             st.info("💡 **Consiglio Commerciale:** I mesi con i quadrati più scuri indicano quando le aziende ricevono liquidità. È il momento migliore per proporre nuovi investimenti.")
         st.write("")
         st.write("")
+
+        # --- SEZIONE RANKING E ANALISI PARETO ---
+        with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
+        
+            # 1. Preparazione Dati: Top 10 Beneficiari
+            df_top_10 = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            df_top_10 = df_top_10.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False).head(10)
+        
+            # --- BAR CHART ORIZZONTALE (TOP 10) ---
+            st.subheader("🔝 Top 10 Big Player del Settore")
+            
+            fig_top = px.bar(
+                df_top_10,
+                x='RNA_ELEMENTO_DI_AIUTO',
+                y='RNA_DENOMINAZIONE_BENEFICIARIO',
+                orientation='h',
+                text_auto='.2s',
+                color='RNA_ELEMENTO_DI_AIUTO',
+                color_continuous_scale='Reds',
+                labels={'RNA_ELEMENTO_DI_AIUTO': 'Budget Totale (€)', 'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda'}
+            )
+            
+            fig_top.update_layout(
+                yaxis={'categoryorder': 'total ascending'}, # Mette l'azienda più ricca in alto
+                coloraxis_showscale=False,
+                margin=dict(l=0, r=20, t=30, b=0),
+                height=450
+            )
+            st.plotly_chart(fig_top, use_container_width=True, key="bar_top_10")
+        
+            st.divider()
+        
+            # --- ANALISI DI PARETO (80/20) ---
+            st.subheader("📉 Analisi di Concentrazione (Pareto)")
+            
+            # Preparazione dati Pareto
+            df_pareto = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
+            
+            # Calcolo percentuale cumulata
+            df_pareto['Cumsum'] = df_pareto['RNA_ELEMENTO_DI_AIUTO'].cumsum()
+            total_budget = df_pareto['RNA_ELEMENTO_DI_AIUTO'].sum()
+            df_pareto['Percentage'] = (df_pareto['Cumsum'] / total_budget) * 100
+            
+            # Creiamo un indice per contare le aziende (asse X)
+            df_pareto['N_Aziende_Count'] = range(1, len(df_pareto) + 1)
+            df_pareto['Perc_Aziende'] = (df_pareto['N_Aziende_Count'] / len(df_pareto)) * 100
+        
+        
+            fig_pareto = go.Figure()
+        
+            # Barre: Budget per singola azienda
+            fig_pareto.add_trace(go.Bar(
+                x=df_pareto['N_Aziende_Count'],
+                y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
+                name="Budget Azienda",
+                marker_color='#3498db',
+                opacity=0.5
+            ))
+        
+            # Linea: Percentuale cumulata
+            fig_pareto.add_trace(go.Scatter(
+                x=df_pareto['N_Aziende_Count'],
+                y=df_pareto['Percentage'],
+                name="% Cumulata Budget",
+                line=dict(color='#e74c3c', width=3),
+                yaxis="y2"
+            ))
+        
+            fig_pareto.update_layout(
+                title="Curva di Pareto: Concentrazione del Budget",
+                xaxis_title="Numero di Aziende (Ordinate per Budget)",
+                yaxis_title="Budget Singolo (€)",
+                yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
+                legend=dict(orientation="h", y=1.1),
+                margin=dict(l=0, r=0, t=50, b=0),
+                height=500
+            )
+        
+            # Aggiungiamo la linea guida dell'80%
+            fig_pareto.add_hline(y=80, line_dash="dash", line_color="gray", annotation_text="Soglia 80%", yref="y2")
+        
+            st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_chart")
+        
+            # --- INSIGHTS ---
+            # Calcoliamo quante aziende fanno l'80% del budget
+            aziende_80 = df_pareto[df_pareto['Percentage'] <= 80].shape[0]
+            perc_aziende_80 = (aziende_80 / len(df_pareto)) * 100
+        
+            st.info(f"""
+            **🔍 Insight di Mercato:**
+            L'**80% del budget** è concentrato nelle mani di **{aziende_80} aziende** (pari al **{perc_aziende_80:.1f}%** del totale).
+            
+            *Se la percentuale è vicina al 20%, il mercato è dominato da pochi. Se è più alta, il mercato è democratico e frammentato.*
+            """)
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
