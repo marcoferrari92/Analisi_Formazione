@@ -261,7 +261,7 @@ if uploaded_file is not None:
             ).fillna(0)
             
             # Rinominiamo per chiarezza
-            df_reg_final.columns = ['Regione', 'Totale Aiuti', 'Budget Totale', 'Aiuti Target', 'Budget Target']
+            df_reg_final.columns = ['Regione', 'Aiuti', 'Aiuti Target', 'Budget','Budget Target']
             
             # Ordiniamo per Budget Target decrescente
             df_reg_final = df_reg_final.sort_values(by='Budget Target', ascending=False)
