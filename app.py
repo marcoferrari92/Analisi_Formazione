@@ -223,9 +223,9 @@ if uploaded_file is not None:
                         st.error(f"Errore nel caricamento della mappa: {e}")
                 
                     # DEBUG VISIVO: Scommenta le righe sotto per vedere se i nomi matchano
-                    # names_in_geojson = [f['properties']['reg_name'] for f in geojson_data['features']]
-                    # st.write("Nomi attesi dal GeoJSON:", names_in_geojson)
-                    # st.write("Nomi presenti nel tuo file:", df_geo['Regione_Match'].unique().tolist())
+                    names_in_geojson = [f['properties']['reg_name'] for f in geojson_data['features']]
+                    st.write("Nomi attesi dal GeoJSON:", names_in_geojson)
+                    st.write("Nomi presenti nel tuo file:", df_geo['Regione_Match'].unique().tolist())
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
         
