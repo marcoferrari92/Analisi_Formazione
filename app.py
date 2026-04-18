@@ -303,7 +303,7 @@ if uploaded_file is not None:
             df_time_plot = pd.merge(df_time_tot, df_time_targ, on='AnnoMonth', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
             df_time_plot.columns = ['Periodo', 'Mercato Totale', 'Settore Target']
 
-            df_time_plot['Incidenza Target %'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale'] * 100).fillna(0)
+            df_time_plot['Quota Target (%)'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale'] * 100).fillna(0)
             
             # --- 1. GRAFICO INCIDENZA % (Sopra) ---
             fig_norm = px.area(
