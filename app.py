@@ -187,7 +187,7 @@ if uploaded_file is not None:
                     df_geo['Regione_Clean'] = df_geo['Regione_Clean'].replace(mapping_speciali)
 
                     # 2. URL GeoJSON (usiamo quello di OpenPolis che è molto affidabile)
-                    geojson_url = "https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.json"
+                    geojson_url = "https://raw.githubusercontent.com/isellsoap/deutschland.geojson/master/italy_regions.json"
     
                     fig_map = px.choropleth(
                         df_geo,
