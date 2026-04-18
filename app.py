@@ -190,6 +190,7 @@ if uploaded_file is not None:
                     color_continuous_scale="Blues", # Scala Blu per il generale
                     title="💰 Mercato Totale"
                 )
+                fig_tot.update_layout(title_x=0.5) 
                 st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
             
             with col_map2:
@@ -217,8 +218,7 @@ if uploaded_file is not None:
                 hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'}
             )
             fig_tree.update_layout(margin=dict(t=0, l=0, r=0, b=0), height=350)
-            fig_tot.update_layout(title_x=0.5) 
-            st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
+            st.plotly_chart(fig_tree, use_container_width=True)
                 
             # --- TABELLA ---
             # 1. Calcolo i totali per Regione (Mercato Generale)
