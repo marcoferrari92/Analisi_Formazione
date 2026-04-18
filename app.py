@@ -219,8 +219,6 @@ if uploaded_file is not None:
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
-            Python
-            st.subheader("📈 Benchmark Settore Target")
 
             # Menu a scomparsa con la spiegazione tecnica e metodologica
             with st.expander("📖 Guida alla lettura e Metodologia"):
