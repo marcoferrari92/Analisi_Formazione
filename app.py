@@ -95,10 +95,9 @@ if uploaded_file is not None:
 
         st.subheader("🎯 Panoramica Settore Target")
         st.info(f"📅 **Periodo Analizzato:** dal {data_min} al {data_max}")
-        m1, m2, m3 = st.columns(3)
         
+        m1, m2, m3 = st.columns(3)
         with m1:
-            #st.metric("Periodo Analizzato", f"{data_max}", delta=f"dal {data_min}", delta_color="off")
             st.metric("Aziende Attive", f"{n_aziende_live}")
             st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
@@ -113,7 +112,6 @@ if uploaded_file is not None:
                       f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
 
-        
         # GRAFICI A TORTA 
         with m1:
             st.write("")
@@ -134,7 +132,7 @@ if uploaded_file is not None:
                     config={'displayModeBar': False})
 
         
-            # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
+        # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
         col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
         if 'STATO' in df.columns:
@@ -211,13 +209,6 @@ if uploaded_file is not None:
         df_benchmark_2 = report_aziende[report_aziende['Budget'] > 0]
 
         if not df_benchmark_1.empty:
-            # Medie
-            avg_budget = df_benchmark_1['Budget Target'].mean()
-            avg_aiuti = df_benchmark_1['Aiuti Target'].mean()
-            avg_f1 = df_benchmark_1['F1'].mean()
-            avg_f2 = df_benchmark_1['F2'].mean()
-    
-            # Mediane
             med_aiuti              = df_benchmark_2['Aiuti'].median()
             med_budget             = df_benchmark_2['Budget'].median()
             med_budget_target      = df_benchmark_1['Budget Target'].median()
@@ -239,12 +230,8 @@ if uploaded_file is not None:
                 
                 with col1:
                     st.write("**N. Aiuti Target**")
-                    #st.metric("Media", f"{avg_aiuti:.1f}")
-                    #st.metric("Mediana", f"{med_aiuti_target:.1f}")
                     st.metric("N. Aiuti Medio", f"{med_aiuti:.1f}")
                     st.metric("N. Aiuti Target Medio", f"{med_aiuti_target:.1f}")
-                    
-                    # Calcolo aziende sotto la mediana
                     sotto_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] < med_aiuti_target])
                     st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana")
         
