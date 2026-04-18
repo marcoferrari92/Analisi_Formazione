@@ -230,7 +230,7 @@ if uploaded_file is not None:
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    st.write("**Numero Aiuti**")
+                    st.write("**Numero Aiuti per Azienda**")
                     st.metric("Mediana", f"{med_aiuti:.1f}")
                     st.metric("Mediana Target", f"{med_aiuti_target:.1f}",
                                 delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color = "normal")
@@ -246,7 +246,7 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_f1} aziende sotto mediana")
         
                 with col3:
-                    st.write("**Budget**")
+                    st.write("**Budget per Azienda**")
                     st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana Target", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                               delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", delta_color = "normal")
