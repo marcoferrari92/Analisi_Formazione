@@ -190,7 +190,7 @@ if uploaded_file is not None:
                     color_continuous_scale="Blues", # Scala Blu per il generale
                     title="💰 Mercato Totale"
                 )
-                fig_tot.update_layout(title_x=0.5) 
+                fig_tot.update_layout(title_x=0.25) 
                 st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
             
             with col_map2:
@@ -200,7 +200,7 @@ if uploaded_file is not None:
                     color_continuous_scale="Reds", # Scala Rossa per il target
                     title="🎯 Mercato Target"
                 )
-                fig_targ.update_layout(title_x=0.5)
+                fig_targ.update_layout(title_x=0.25)
                 st.plotly_chart(apply_italy_full_style(fig_targ), use_container_width=True)
             
             # --- TREEMAP ORIZZONTALE SOTTO ---
