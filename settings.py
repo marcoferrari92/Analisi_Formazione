@@ -20,7 +20,7 @@ Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è
 
 1.  **Le Barre Blu**: Rappresentano il budget ottenuto da ogni singola azienda nel settore target. Sono ordinate dalla più grande alla più piccola.
 2.  **La Linea Rossa**: È la "Percentuale Cumulata". Sale man mano che sommiamo i budget delle aziende. Quando tocca l'80%, incrocia la nostra linea guida grigia.
-3.  **L'Intersezione**: La linea tratteggiata verticale indica che **solo {int(x_intersezione)} aziende** controllano l'80% dei fondi totali del settore.
+3.  **L'Intersezione**: La linea tratteggiata verticale indica quante aziende controllano l'80% dei fondi totali del settore.
 
 **Cosa significa per te?**
 * **Se la retta verticale è molto a sinistra (poche aziende):** Il mercato è concentrato. Ti basta acquisire pochi "Big Client" per dominare il settore, ma la competizione su questi sarà altissima.
