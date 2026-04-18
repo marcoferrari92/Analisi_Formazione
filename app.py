@@ -125,7 +125,8 @@ if uploaded_file is not None:
                 insidetextorientation='horizontal',
                 hoverinfo='label+percent',
                 direction='clockwise',
-                rotation=0 
+                rotation=0,
+                domain={'x': [0, 1], 'y': [0, 1]}
             )])
     
             fig.update_layout(
