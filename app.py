@@ -212,7 +212,7 @@ if uploaded_file is not None:
                 path=[px.Constant("Italia"), 'RNA_REGIONE_BENEFICIARIO'],
                 values='RNA_ELEMENTO_DI_AIUTO_Targ', 
                 color='RNA_ELEMENTO_DI_AIUTO_Targ',
-                color_continuous_scale='Viridis',
+                color_continuous_scale='Reds',
                 title="Distribuzione Gerarchica del Budget Target",
                 hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'}
                 )
