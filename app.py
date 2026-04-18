@@ -200,8 +200,8 @@ if uploaded_file is not None:
                     color_continuous_scale="Reds", # Scala Rossa per il target
                     title="🎯 Mercato Target"
                 )
-                fig_tot.update_layout(title_x=0.5) 
-                st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
+                fig_targ.update_layout(title_x=0.5)
+                st.plotly_chart(apply_italy_full_style(fig_targ), use_container_width=True)
             
             # --- TREEMAP ORIZZONTALE SOTTO ---
             st.write("---")
