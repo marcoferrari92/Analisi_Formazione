@@ -230,8 +230,8 @@ if uploaded_file is not None:
                     Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti.
 
                     ### 🔍 I Parametri Analizzati
-                    * **Numero Aiuti (Frequenza Operativa):** Indica quanti progetti di finanza agevolata l'azienda riesce a gestire. Una mediana alta indica un settore dinamico con molti bandi accessibili.
-                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse sono mediamente più ricchi o più poveri rispetto al mercato generale.
+                    * **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno gestito mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati.
+                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse sono mediamente più ricchi o più poveri rispetto al mercato generale.
                     * **Fattore F1 (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
                     * **Fattore F2 (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
     
