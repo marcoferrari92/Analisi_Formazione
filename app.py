@@ -238,53 +238,53 @@ if uploaded_file is not None:
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
                 
-            # --- PREPARAZIONE DATI PER TABELLA REGIONALE COMPLETA ---
-            # Raggruppiamo i dati globali per regione
-            df_reg_totale = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
+            # --- TABELLA ---
+            # 1. Calcolo i totali per Regione (Mercato Generale)
+            df_reg_tot = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
                 'RNA_TITOLO_MISURA': 'count',
                 'RNA_ELEMENTO_DI_AIUTO': 'sum'
             }).reset_index()
             
-            # Raggruppiamo i dati target per regione
-            df_reg_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
+            # 2. Calcolo i totali per Regione (Solo Target)
+            df_reg_targ = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
                 'RNA_TITOLO_MISURA': 'count',
                 'RNA_ELEMENTO_DI_AIUTO': 'sum'
             }).reset_index()
             
-            # Uniamo le due tabelle
-            df_reg_final = pd.merge(
-                df_reg_totale, 
-                df_reg_target, 
+            # 3. Unione e pulizia
+            df_reg_tabella = pd.merge(
+                df_reg_tot, 
+                df_reg_targ, 
                 on='RNA_REGIONE_BENEFICIARIO', 
-                how='left', 
-                suffixes=('_Tot', '_Target')
+                how='left'
             ).fillna(0)
             
-            # Rinominiamo per chiarezza
-            df_reg_final.columns = ['Regione', 'Aiuti', 'Aiuti Target', 'Budget','Budget Target']
+            # 4. Rinomina e Ordine Colonne richiesto
+            df_reg_tabella.columns = ['Regione', 'Aiuti', 'Budget', 'Aiuti Target', 'Budget Target']
+            ordine_richiesto = ['Regione', 'Aiuti', 'Aiuti Target', 'Budget', 'Budget Target']
+            df_reg_tabella = df_reg_tabella[ordine_richiesto]
             
-            # Ordiniamo per Budget Target decrescente
-            df_reg_final = df_reg_final.sort_values(by='Budget Target', ascending=False)
+            # 5. Ordinamento per importanza economica
+            df_reg_tabella = df_reg_tabella.sort_values(by='Budget Target', ascending=False)
             
-            # --- VISUALIZZAZIONE ---
-            st.write("### 🏢 Analisi Comparativa Regionale (Mercato vs Target)")
+            # --- VISUALIZZAZIONE STREAMLIT ---
+            st.write("### 📊 Riepilogo Performance per Regione")
             
             st.dataframe(
-                df_reg_final,
+                df_reg_tabella,
                 use_container_width=True,
                 hide_index=True,
                 column_config={
                     "Regione": st.column_config.TextColumn("Regione"),
-                    "Totale Aiuti": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
+                    "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
                     "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-                    "Budget Totale": st.column_config.NumberColumn(
-                        "Budget Totale (€)", 
+                    "Budget": st.column_config.NumberColumn(
+                        "Budget (€)", 
                         format="€ %,.0f"
                     ),
                     "Budget Target": st.column_config.NumberColumn(
                         "Budget Target (€)", 
-                        format="€ %,.0f",
-                        help="Volume economico focalizzato sulle parole chiave selezionate"
+                        format="€ %,.0f"
                     ),
                 }
             )
