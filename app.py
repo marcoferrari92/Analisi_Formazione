@@ -116,43 +116,39 @@ if uploaded_file is not None:
         # GRAFICI A TORTA 
         
         colors = ['#27ae60', '#e74c3c'] 
-        # --- 1. Grafico Aziende ---
-        fig_aziende = go.Figure(data=[go.Pie(
-            labels=['Target', 'Altre'],
-            values=[n_aziende_target, n_aziende - n_aziende_target],
-            hole=.4,
-            marker_colors=colors,
-            textinfo='percent'
-        )])
-        fig_aziende.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
-        
-        # --- 2. Grafico Aiuti ---
-        fig_aiuti = go.Figure(data=[go.Pie(
-            labels=['Target', 'Altri'],
-            values=[n_aiuti_target, n_aiuti_totali - n_aiuti_target],
-            hole=.4,
-            marker_colors=colors,
-            textinfo='percent'
-        )])
-        fig_aiuti.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
-        
-        # --- 3. Grafico Budget ---
-        fig_budget = go.Figure(data=[go.Pie(
-            labels=['Target', 'Altro'],
-            values=[budget_target, budget_totale - budget_target],
-            hole=.4,
-            marker_colors=colors,
-            textinfo='percent'
-        )])
-        fig_budget.update_layout(showlegend=False, height=180, margin=dict(t=0, b=0, l=0, r=0))
-        
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.plotly_chart(fig_aziende, use_container_width=True)
-        with c2:
-            st.plotly_chart(fig_aiuti, use_container_width=True)
-        with c3:
-            st.plotly_chart(fig_budget, use_container_width=True)
+        def create_centered_pie(values):
+            fig = go.Figure(data=[go.Pie(
+                values=values,
+                hole=.6,
+                marker_colors=['#27ae60', '#e74c3c'],
+                textinfo='none',
+                hoverinfo='percent',
+                direction='clockwise',
+                rotation=0 
+            )])
+    
+            fig.update_layout(
+                height=150,      
+                margin=dict(t=0, b=0, l=0, r=0), 
+                showlegend=False,
+                paper_bgcolor='rgba(0,0,0,0)',
+            )
+            return fig
+            
+        with m1:
+            st.plotly_chart(create_centered_pie([n_aziende_target, n_aziende - n_aziende_target]), 
+                    use_container_width=True, 
+                    config={'displayModeBar': False})
+
+        with m2:
+            st.plotly_chart(create_centered_pie([n_aiuti_target, n_aiuti_totali - n_aiuti_target]), 
+                    use_container_width=True, 
+                    config={'displayModeBar': False})
+
+        with m3:
+            st.plotly_chart(create_centered_pie([budget_target, budget_totale - budget_target]), 
+                    use_container_width=True, 
+                    config={'displayModeBar': False})
 
         
             # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
