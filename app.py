@@ -140,8 +140,7 @@ if uploaded_file is not None:
         st.write("")
         st.write("")
         with st.expander("🗺️ Distribuzione Geografica Budget Target"):
-
-            st.header("🌍 Analisi Geografica del Mercato")
+            
             st.write("")
             # 1. Preparazione Dati
             df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
