@@ -176,36 +176,47 @@ if uploaded_file is not None:
                     st.caption("La dimensione dei rettangoli indica il volume economico erogato nel target.")
 
                 with g2:
-                    # 1. Pulizia e Normalizzazione nomi regioni
-                    # Questo assicura che "VENETO" o "veneto" diventino "Veneto"
-                    df_geo['Regione_Clean'] = df_geo['Regione'].str.title().str.strip()
-    
-                    # Casi particolari che il .title() sbaglia per l'Italia
-                    mapping_speciali = {
-                        "Valle D'Aosta": "Valle d'Aosta",
-                        "Puglia": "Puglia", # A volte nei CSV è "Apulia"
-                        "Friuli-Venezia Giulia": "Friuli-Venezia Giulia"
-                    }
-                    df_geo['Regione_Clean'] = df_geo['Regione_Clean'].replace(mapping_speciali)
-
-                    # 2. URL GeoJSON (usiamo quello di OpenPolis che è molto affidabile)
+                    # 1. Recupero GeoJSON e analisi dei nomi corretti
                     geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
-    
+                    response = requests.get(geojson_url)
+                    geojson_data = response.json()
+                
+                    # 2. Normalizzazione del tuo DataFrame
+                    # Portiamo tutto a formato "Titolo" (es: VENETO -> Veneto)
+                    df_geo['Regione_Clean'] = df_geo['Regione'].str.title().str.strip()
+                
+                    # 3. Correzioni manuali per i nomi "difficili" 
+                    # (Devono corrispondere esattamente a quelli del file di Stefano Cudini)
+                    mapping_nomi = {
+                        "Valle D'Aosta": "Valle d'Aosta",
+                        "Friuli-Venezia Giulia": "Friuli-Venezia Giulia",
+                        "Trentino-Alto Adige": "Trentino-Alto Adige",
+                        "Emilia-Romagna": "Emilia-Romagna",
+                        "Sicilia": "Sicilia",
+                        "Sardegna": "Sardegna"
+                    }
+                    df_geo['Regione_Clean'] = df_geo['Regione_Clean'].replace(mapping_nomi)
+                
+                    # 4. Creazione del grafico
                     fig_map = px.choropleth(
                         df_geo,
-                        geojson=geojson_url,
-                        locations='Regione_Clean',      # Usiamo la colonna pulita
-                        featureidkey="properties.reg_name", # Nome della proprietà nel GeoJSON
+                        geojson=geojson_data,        # Passiamo l'oggetto scaricato direttamente
+                        locations='Regione_Clean',   # Colonna pulita
+                        featureidkey="properties.name", # Proprietà del GeoJSON di Cudini
                         color='Budget_Target',
                         color_continuous_scale="Reds",
-                        title="Intensità Investimenti nel Target",
-                        hover_data={'Regione_Clean': False, 'Budget_Target': ':,.2f'}
+                        title="Mappa Calore Budget Target",
+                        hover_data={'Regione_Clean': True, 'Budget_Target': ':,.2f'}
                     )
-    
+                
+                    # 5. Zoom automatico sull'Italia
                     fig_map.update_geos(fitbounds="locations", visible=False)
-                    fig_map.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
-    
+                    fig_map.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=500)
+                
                     st.plotly_chart(fig_map, use_container_width=True)
+                
+                    # DEBUG: Se non vedi nulla, scommenta la riga sotto per vedere cosa non trova
+                    # st.write("Nomi nel tuo file:", df_geo['Regione_Clean'].unique())
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
         
