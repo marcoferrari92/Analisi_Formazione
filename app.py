@@ -101,6 +101,7 @@ if uploaded_file is not None:
             st.metric("Aziende Attive", f"{n_aziende_live}")
             st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
+            st.caption("Aziende attive nel settore target (budget target > 0€)")
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
