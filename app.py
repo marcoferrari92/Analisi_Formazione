@@ -230,8 +230,8 @@ if uploaded_file is not None:
                 
                 with col1:
                     st.write("**Numero Aiuti**")
-                    st.metric("N. Aiuti Medio", f"{med_aiuti:.1f}")
-                    st.metric("N. Aiuti Target Medio", f"{med_aiuti_target:.1f}",
+                    st.metric("Mediana", f"{med_aiuti:.1f}")
+                    st.metric("Mediana Target", f"{med_aiuti_target:.1f}",
                                 delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color = "normal")
                     sotto_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] < med_aiuti_target])
                     st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana")
