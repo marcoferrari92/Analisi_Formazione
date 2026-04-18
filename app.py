@@ -141,25 +141,17 @@ if uploaded_file is not None:
         st.write("")
         with st.expander("🗺️ Distribuzione Geografica Budget Target"):
 
-            # --- SEZIONE GEOGRAFICA: LAYOUT DOPPIA MAPPA + TREEMAP ---
+            # --- SEZIONE GEOGRAFICA: LAYOUT SINCRONIZZATO ---
             st.header("🌍 Analisi Geografica del Mercato")
             
-            # 1. Preparazione Dati Unificata
-            df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
-                'RNA_TITOLO_MISURA': 'count',
-                'RNA_ELEMENTO_DI_AIUTO': 'sum'
-            }).reset_index()
+            # 1. Preparazione Dati
+            df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
+            df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
             
-            df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
-                'RNA_TITOLO_MISURA': 'count',
-                'RNA_ELEMENTO_DI_AIUTO': 'sum'
-            }).reset_index()
-            
-            # Unione per avere un solo DF pronto
             df_mappe = pd.merge(df_geo_all, df_geo_target, on='RNA_REGIONE_BENEFICIARIO', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
             df_mappe['Regione_Match'] = df_mappe['RNA_REGIONE_BENEFICIARIO'].str.strip().str.lower()
             
-            # Mapping per matchare il GeoJSON (Cudini)
+            # Mapping per GeoJSON
             mapping_geo = {
                 "friuli-venezia giulia": "friuli venezia giulia",
                 "trentino-alto adige": "trentino-alto adige/südtirol",
@@ -167,46 +159,61 @@ if uploaded_file is not None:
             }
             df_mappe['Regione_Match'] = df_mappe['Regione_Match'].replace(mapping_geo)
             
+            # 2. Calcolo del MASSIMO GLOBALE per sincronizzare i colori
+            # Questo assicura che il "rosso scuro" rappresenti la stessa cifra su entrambe le mappe
+            max_budget_globale = df_mappe[['RNA_ELEMENTO_DI_AIUTO_Tot', 'RNA_ELEMENTO_DI_AIUTO_Targ']].max().max()
+            
             # Scarico GeoJSON
             geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
             geojson_data = requests.get(geojson_url).json()
             
-            # --- DISPOSIZIONE IN COLONNE DELLE DUE MAPPE ---
+            # Funzione di formattazione per vedere tutta l'Italia
+            def apply_italy_style(fig):
+                fig.update_geos(
+                    visible=True, 
+                    showland=True, 
+                    landcolor="#f0f0f0", # Regioni senza dati
+                    showcoastlines=True, 
+                    projection_type='mercator',
+                    lataxis_range=[35, 47.5], 
+                    lonaxis_range=[6, 19]
+                )
+                fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
+                return fig
+            
+            # --- LAYOUT COLONNE ---
             col_map1, col_map2 = st.columns(2)
             
             with col_map1:
-                st.subheader("💰 Budget Totale")
+                st.markdown("<h4 style='text-align: center;'>💰 Budget Totale</h4>", unsafe_allow_html=True)
                 fig_tot = px.choropleth(
                     df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
-                    color='RNA_ELEMENTO_DI_AIUTO_Tot', color_continuous_scale="Blues",
+                    color='RNA_ELEMENTO_DI_AIUTO_Tot', 
+                    color_continuous_scale="Reds", 
+                    range_color=[0, max_budget_globale] # SINCRONIZZAZIONE
                 )
-                fig_tot.update_geos(lataxis_range=[35, 47.5], lonaxis_range=[6, 19], visible=False)
-                fig_tot.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=400, coloraxis_showscale=False)
-                st.plotly_chart(fig_tot, use_container_width=True)
+                st.plotly_chart(apply_italy_style(fig_tot), use_container_width=True)
             
             with col_map2:
-                st.subheader("🎯 Budget Target")
+                st.markdown("<h4 style='text-align: center;'>🎯 Budget Target</h4>", unsafe_allow_html=True)
                 fig_targ = px.choropleth(
                     df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
-                    color='RNA_ELEMENTO_DI_AIUTO_Targ', color_continuous_scale="Reds",
+                    color='RNA_ELEMENTO_DI_AIUTO_Targ', 
+                    color_continuous_scale="Reds", 
+                    range_color=[0, max_budget_globale] # SINCRONIZZAZIONE
                 )
-                fig_targ.update_geos(lataxis_range=[35, 47.5], lonaxis_range=[6, 19], visible=False)
-                fig_targ.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=400, coloraxis_showscale=False)
-                st.plotly_chart(fig_targ, use_container_width=True)
+                st.plotly_chart(apply_italy_style(fig_targ), use_container_width=True)
             
             # --- TREEMAP ORIZZONTALE SOTTO ---
             st.write("---")
             st.subheader("📊 Distribuzione Gerarchica del Budget Target")
-            
+            df_tree = df_mappe[df_mappe['RNA_ELEMENTO_DI_AIUTO_Targ'] > 0]
             fig_tree = px.treemap(
-                df_mappe[df_mappe['RNA_ELEMENTO_DI_AIUTO_Targ'] > 0],
-                path=[px.Constant("Italia"), 'RNA_REGIONE_BENEFICIARIO'],
-                values='RNA_ELEMENTO_DI_AIUTO_Targ',
-                color='RNA_ELEMENTO_DI_AIUTO_Targ',
-                color_continuous_scale='Viridis',
-                title=None
+                df_tree, path=[px.Constant("Italia"), 'RNA_REGIONE_BENEFICIARIO'],
+                values='RNA_ELEMENTO_DI_AIUTO_Targ', color='RNA_ELEMENTO_DI_AIUTO_Targ',
+                color_continuous_scale='Viridis'
             )
-            fig_tree.update_layout(margin=dict(t=0, l=0, r=0, b=0), height=350)
+            fig_tree.update_layout(margin=dict(t=10, l=10, r=10, b=10), height=350)
             st.plotly_chart(fig_tree, use_container_width=True)
                 
             # --- TABELLA ---
