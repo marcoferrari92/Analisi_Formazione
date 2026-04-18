@@ -19,8 +19,8 @@ GUIDA_BENCHMARK = """
 Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo (mediana)"** del mercato di riferimento. 
 
 ### 📊 Cos'è la Mediana?
-A differenza della media (che può essere influenzata da pochi valori estremi (**outlier**), come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
-Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti.
+A differenza della media (che può essere influenzata da pochi valori estremi - **outlier** - come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
+Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti (sia grandi che piccoli).
 
 ### 🌍 Indicatori del Mercato (Potenziale)
 Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponibili.
