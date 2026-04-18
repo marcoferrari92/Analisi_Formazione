@@ -1,6 +1,30 @@
 import streamlit as st
 import plotly.express as px
 
+
+colors = ['#27ae60', '#e74c3c'] 
+def create_centered_pie(values):
+    fig = go.Figure(data=[go.Pie(
+                values=values,
+                hole=.4,
+                marker_colors=['#27ae60', '#e74c3c'],
+                textinfo='percent', 
+                insidetextorientation='horizontal',
+                hoverinfo='label+percent',
+                direction='clockwise',
+                rotation=0,
+                domain={'x': [0, 0.4], 'y': [0, 1]}
+    )])
+    
+    fig.update_layout(
+                height=150,      
+                margin=dict(t=0, b=0, l=0, r=0), 
+                showlegend=False,
+                paper_bgcolor='rgba(0,0,0,0)',
+    )
+    return fig
+
+
 def analisi_incidenza(df_report):
     """
     Funzione per visualizzare l'istogramma dell'incidenza di volume
