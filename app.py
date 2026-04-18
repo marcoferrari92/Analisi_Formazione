@@ -348,7 +348,8 @@ if uploaded_file is not None:
             st.plotly_chart(fig_heat, use_container_width=True)
             
             st.info("💡 **Consiglio Commerciale:** I mesi con i quadrati più scuri indicano quando le aziende ricevono liquidità. È il momento migliore per proporre nuovi investimenti.")
-
+        st.write("")
+        st.write("")
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
