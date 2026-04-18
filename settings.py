@@ -16,7 +16,6 @@ CSV_ENCODING = 'utf-8-sig'
 
 
 GUIDA_PARETO = """
-### 💡 Come leggere questo grafico:
 Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è "democratico" o "oligarchico" il tuo settore target:
 
 1.  **Le Barre Blu**: Rappresentano il budget ottenuto da ogni singola azienda nel settore target. Sono ordinate dalla più grande alla più piccola.
