@@ -216,7 +216,7 @@ if uploaded_file is not None:
                     st.plotly_chart(fig_map, use_container_width=True)
                 
                     # DEBUG: Se non vedi nulla, scommenta la riga sotto per vedere cosa non trova
-                    # st.write("Nomi nel tuo file:", df_geo['Regione_Clean'].unique())
+                    st.write("Nomi nel tuo file:", df_geo['Regione_Clean'].unique())
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
         
