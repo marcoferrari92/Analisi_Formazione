@@ -135,8 +135,7 @@ if uploaded_file is not None:
         
 
         # --- ANALISI GEOGRAFICA ---
-        with st.expander("📈 Analisi Outliers"):
-            st.subheader("🗺️ Distribuzione Geografica Budget Target")
+        with st.expander("🗺️ Distribuzione Geografica Budget Target"):
 
             # Verifichiamo la colonna nel tuo file (RNA_REGIONE_BENEFICIARIO)
             col_regione = 'RNA_REGIONE_BENEFICIARIO'
