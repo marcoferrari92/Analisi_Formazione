@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
 from analisi import create_centered_pie
 
@@ -417,7 +417,8 @@ if uploaded_file is not None:
         
             # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
             st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
-            
+            with st.expander("📖 Guida alla lettura e Metodologia"):
+                st.markdown(GUIDA_PARETO)
             # 1. Preparazione dati (già ordinati per budget decrescente)
             df_pareto = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
@@ -490,17 +491,6 @@ if uploaded_file is not None:
             
             st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_intersezione")
         
-            # --- INSIGHTS ---
-            # Calcoliamo quante aziende fanno l'80% del budget
-            aziende_80 = df_pareto[df_pareto['Percentage'] <= 80].shape[0]
-            perc_aziende_80 = (aziende_80 / len(df_pareto)) * 100
-        
-            st.info(f"""
-            **🔍 Insight di Mercato:**
-            L'**80% del budget** è concentrato nelle mani di **{aziende_80} aziende** (pari al **{perc_aziende_80:.1f}%** del totale).
-            
-            *Se la percentuale è vicina al 20%, il mercato è dominato da pochi. Se è più alta, il mercato è democratico e frammentato.*
-            """)
         
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
