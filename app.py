@@ -301,58 +301,7 @@ if uploaded_file is not None:
             
             df_time_plot = pd.merge(df_time_tot, df_time_targ, on='AnnoMonth', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
             df_time_plot.columns = ['Periodo', 'Mercato Totale', 'Settore Target']
-            """
-            fig_line = px.area(
-                df_time_plot, 
-                x='Periodo', 
-                y=['Mercato Totale', 'Settore Target'],
-                color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
-                template="plotly_white",
-                line_shape="spline"
-            )
 
-            fig_line.update_layout(
-                # SPOSTAMENTO LEGENDA: la mettiamo in alto orizzontale
-                legend=dict(
-                    orientation="h", 
-                    yanchor="bottom", 
-                    y=1.02, 
-                    xanchor="right", 
-                    x=1
-                ),
-                margin=dict(l=60, r=20, t=50, b=50), 
-                height=400,
-                xaxis_title="Periodo",
-                yaxis_title="Budget (€)"
-            )
-
-            # --- PREPARAZIONE DATI NORMALIZZATI ---
-            df_time_plot['Incidenza Target %'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale']) * 100
-            
-            # Creiamo il grafico a linee per l'incidenza
-            fig_norm = px.line(
-                df_time_plot, 
-                x='Periodo', 
-                y='Incidenza Target %',
-                title="Quota di Mercato del Settore Target (%)",
-                template="plotly_white",
-                line_shape="spline",
-                markers=True # Aggiunge i puntini per vedere i mesi esatti
-            )
-            
-            # Miglioriamo l'estetica e l'asse Y
-            fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy') # Colore rosso con riempimento verso il basso
-            
-            fig_norm.update_layout(
-                yaxis_title="Incidenza su Totale Mensile",
-                yaxis_ticksuffix="%", 
-                hovermode="x unified",
-                margin=dict(l=60, r=20, t=50, b=50),
-                height=400
-            )
-            
-            st.plotly_chart(fig_norm, use_container_width=True)
-            """
             # --- 1. GRAFICO INCIDENZA % (Sopra) ---
             fig_norm = px.area(
                 df_time_plot, x='Periodo', y='Incidenza Target %',
