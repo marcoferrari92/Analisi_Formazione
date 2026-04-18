@@ -141,102 +141,73 @@ if uploaded_file is not None:
         st.write("")
         with st.expander("🗺️ Distribuzione Geografica Budget Target"):
 
-            # Verifichiamo la colonna nel tuo file (RNA_REGIONE_BENEFICIARIO)
-            col_regione = 'RNA_REGIONE_BENEFICIARIO'
-
-            if col_regione in df.columns:
-                # 1. Preparazione Dati: sommiamo il budget target per regione
-                df_geo = df[df['IMPORTO_TARGET'] > 0].groupby(col_regione).agg({
-                    'IMPORTO_TARGET': 'sum',
-                    'RNA_CODICE_FISCALE_BENEFICIARIO': 'nunique'
-                }).reset_index()
-    
-                df_geo.columns = ['Regione', 'Budget_Target', 'N_Aziende']
-    
-                # Pulizia nomi (per matchare il GeoJSON)
-                # Es. "Valle d'Aosta/Vallée d'Aoste" -> "Valle d'Aosta"
-                df_geo['Regione'] = df_geo['Regione'].str.split('/').str[0].str.strip()
-
-                # Creazione delle due colonne per i grafici
-                g1, g2 = st.columns([1, 1.2])
-
-                with g1:
-                    # --- TREEMAP ---
-                    # Poiché non abbiamo la provincia, usiamo Regione e opzionalmente 
-                    # possiamo aggiungere il settore o lo strumento come sottolivello
-                    fig_tree = px.treemap(
-                        df_geo,
-                        path=[px.Constant("Italia"), 'Regione'],
-                        values='Budget_Target',
-                        color='Budget_Target',
-                        color_continuous_scale='Viridis',
-                        hover_data=['N_Aziende'],
-                        title="Peso Economico per Regione"
-                    )
-                    fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10))
-                    st.plotly_chart(fig_tree, use_container_width=True)
-                    st.caption("La dimensione dei rettangoli indica il volume economico erogato nel target.")
-
-                with g2:
-                    # 1. Scarichiamo il GeoJSON (URL di Stefano Cudini che hai testato)
-                    geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
-                    try:
-                        resp = requests.get(geojson_url)
-                        geojson_data = resp.json()
-                
-                        # 2. Normalizzazione CRITICA per questo file:
-                        # Il file vuole i nomi TUTTI MINUSCOLI (piemonte, lazio, veneto...)
-                        df_geo['Regione_Match'] = df_geo['Regione'].str.strip().str.lower()
-                        
-                        # Correzione nomi composti per matchare il file di Cudini
-                        mapping_speciali = {
-                            "friuli-venezia giulia": "friuli venezia giulia", # Tolto il trattino
-                            "trentino-alto adige": "trentino-alto adige/südtirol",
-                            "valle d'aosta": "valle d'aosta/vallée d'aoste"
-                        }
-                        df_geo['Regione_Match'] = df_geo['Regione_Match'].replace(mapping_speciali)
-                
-                        # 3. Creazione Mappa
-                        fig_map = px.choropleth(
-                            df_geo,
-                            geojson=geojson_data,
-                            locations='Regione_Match',
-                            featureidkey="properties.name",
-                            color='Budget_Target',
-                            color_continuous_scale="Reds",
-                            title="Distribuzione Regionale Budget Target"
-                        )
-                    
-                        # 4. Modifica per vedere tutta l'Italia
-                        fig_map.update_geos(
-                            visible=True,           # Rende visibili i confini geografici di base
-                            resolution=50,          # Dettaglio della mappa
-                            showcountries=True,
-                            showcoastlines=True,
-                            projection_type='mercator',
-                            # Impostiamo manualmente le coordinate per centrare l'Italia
-                            lataxis_range=[35, 47.5], 
-                            lonaxis_range=[6, 19]
-                        )
-                        
-                        # Rimuoviamo fitbounds="locations" (è lui che "taglia" la mappa)
-                        # fig_map.update_geos(fitbounds="locations") <--- ELIMINA O COMMENTA QUESTA RIGA
-                    
-                        fig_map.update_layout(
-                            margin={"r":0,"t":40,"l":0,"b":0}, 
-                            height=500,
-                            paper_bgcolor='rgba(0,0,0,0)'
-                        )
-                    
-                        st.plotly_chart(fig_map, use_container_width=True)
-                        
-                    except Exception as e:
-                        st.error(f"Errore tecnico nella mappa: {e}")
-                
-                    # DEBUG FINALE (se ancora non vedi colore, guarda questa tabella sotto il grafico)
-                    # st.write("Verifica Match:", df_geo[['Regione', 'Regione_Match']])
-            else:
-                st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
+            # --- SEZIONE GEOGRAFICA: LAYOUT DOPPIA MAPPA + TREEMAP ---
+            st.header("🌍 Analisi Geografica del Mercato")
+            
+            # 1. Preparazione Dati Unificata
+            df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
+                'RNA_TITOLO_MISURA': 'count',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum'
+            }).reset_index()
+            
+            df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
+                'RNA_TITOLO_MISURA': 'count',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum'
+            }).reset_index()
+            
+            # Unione per avere un solo DF pronto
+            df_mappe = pd.merge(df_geo_all, df_geo_target, on='RNA_REGIONE_BENEFICIARIO', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
+            df_mappe['Regione_Match'] = df_mappe['RNA_REGIONE_BENEFICIARIO'].str.strip().str.lower()
+            
+            # Mapping per matchare il GeoJSON (Cudini)
+            mapping_geo = {
+                "friuli-venezia giulia": "friuli venezia giulia",
+                "trentino-alto adige": "trentino-alto adige/südtirol",
+                "valle d'aosta": "valle d'aosta/vallée d'aoste"
+            }
+            df_mappe['Regione_Match'] = df_mappe['Regione_Match'].replace(mapping_geo)
+            
+            # Scarico GeoJSON
+            geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
+            geojson_data = requests.get(geojson_url).json()
+            
+            # --- DISPOSIZIONE IN COLONNE DELLE DUE MAPPE ---
+            col_map1, col_map2 = st.columns(2)
+            
+            with col_map1:
+                st.subheader("💰 Budget Totale")
+                fig_tot = px.choropleth(
+                    df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
+                    color='RNA_ELEMENTO_DI_AIUTO_Tot', color_continuous_scale="Blues",
+                )
+                fig_tot.update_geos(lataxis_range=[35, 47.5], lonaxis_range=[6, 19], visible=False)
+                fig_tot.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=400, coloraxis_showscale=False)
+                st.plotly_chart(fig_tot, use_container_width=True)
+            
+            with col_map2:
+                st.subheader("🎯 Budget Target")
+                fig_targ = px.choropleth(
+                    df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
+                    color='RNA_ELEMENTO_DI_AIUTO_Targ', color_continuous_scale="Reds",
+                )
+                fig_targ.update_geos(lataxis_range=[35, 47.5], lonaxis_range=[6, 19], visible=False)
+                fig_targ.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=400, coloraxis_showscale=False)
+                st.plotly_chart(fig_targ, use_container_width=True)
+            
+            # --- TREEMAP ORIZZONTALE SOTTO ---
+            st.write("---")
+            st.subheader("📊 Distribuzione Gerarchica del Budget Target")
+            
+            fig_tree = px.treemap(
+                df_mappe[df_mappe['RNA_ELEMENTO_DI_AIUTO_Targ'] > 0],
+                path=[px.Constant("Italia"), 'RNA_REGIONE_BENEFICIARIO'],
+                values='RNA_ELEMENTO_DI_AIUTO_Targ',
+                color='RNA_ELEMENTO_DI_AIUTO_Targ',
+                color_continuous_scale='Viridis',
+                title=None
+            )
+            fig_tree.update_layout(margin=dict(t=0, l=0, r=0, b=0), height=350)
+            st.plotly_chart(fig_tree, use_container_width=True)
                 
             # --- TABELLA ---
             # 1. Calcolo i totali per Regione (Mercato Generale)
