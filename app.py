@@ -322,6 +322,7 @@ if uploaded_file is not None:
             fig_line = px.line(
                 df_time_plot, x='Periodo', y=['Mercato Totale', 'Settore Target'],
                 color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
+                title="Evoluzione Temporale del Mercato",
                 template="plotly_white", line_shape="spline"
             )
             
