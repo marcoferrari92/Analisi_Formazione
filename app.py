@@ -319,7 +319,34 @@ if uploaded_file is not None:
                 template="plotly_white",
                 line_shape="spline"
             )
+
+            # --- PREPARAZIONE DATI NORMALIZZATI ---
+            df_time_plot['Incidenza Target %'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale']) * 100
             
+            # Creiamo il grafico a linee per l'incidenza
+            fig_norm = px.line(
+                df_time_plot, 
+                x='Periodo', 
+                y='Incidenza Target %',
+                title="Quota di Mercato del Settore Target (%)",
+                template="plotly_white",
+                line_shape="spline",
+                markers=True # Aggiunge i puntini per vedere i mesi esatti
+            )
+            
+            # Miglioriamo l'estetica e l'asse Y
+            fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy') # Colore rosso con riempimento verso il basso
+            
+            fig_norm.update_layout(
+                yaxis_title="Incidenza su Totale Mensile",
+                yaxis_ticksuffix="%", 
+                hovermode="x unified",
+                margin=dict(l=0, r=0, t=50, b=0),
+                height=400
+            )
+            
+            st.plotly_chart(fig_norm, use_container_width=True)
+
             # --- AGGIUNGI QUESTA RIGA PER EVITARE L'EFFETTO SOMMA ---
             #fig_line.update_layout(barmode='overlay') 
             fig_line.update_traces(stackgroup=None)
