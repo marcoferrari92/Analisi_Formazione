@@ -219,12 +219,28 @@ if uploaded_file is not None:
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
-            st.caption("Valori medi e mediani calcolati esclusivamente sulle aziende che hanno ottenuto aiuti nei settori ricercati.")
-            with st.popover("💡Possibile Strategia"): 
-                st.info("""
-            > Aziende che si posizionano **sotto la mediana** rappresentano un mercato interessante. 
-            > Sono aziende che non stanno sfruttando appieno gli incentivi disponibili o che hanno maggiori margini di crescita nella pianificazione finanziaria agevolata rispetto ai competitor.
-            """)
+            Python
+            st.subheader("📈 Benchmark Settore Target")
+
+            # Menu a scomparsa con la spiegazione tecnica e metodologica
+            with st.expander("📖 Guida alla lettura e Metodologia"):
+                st.markdown("""
+                    Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo"** del mercato di riferimento. 
+
+                    ### 📊 Cos'è la Mediana?
+                    A differenza della media (che può essere influenzata da pochi valori estremi, come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
+                    Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti.
+
+                    ### 🔍 I Parametri Analizzati
+                    * **Numero Aiuti (Frequenza Operativa):** Indica quanti progetti di finanza agevolata l'azienda riesce a gestire. Una mediana alta indica un settore dinamico con molti bandi accessibili.
+                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse sono mediamente più ricchi o più poveri rispetto al mercato generale.
+                    * **Fattore F1 (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
+                    * **Fattore F2 (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
+    
+                    ---
+                    💡 **Strategia:** Le aziende sotto mediana rappresentano il segmento con il più alto potenziale di crescita per nuove pianificazioni finanziarie o investimenti mirati.
+                    """)
+                
             # Creiamo un contenitore con bordo (stile card)
             with st.container(border=True):
                 col1, col2, col3, col4 = st.columns(4)
