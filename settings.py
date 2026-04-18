@@ -18,9 +18,9 @@ CSV_ENCODING = 'utf-8-sig'
 GUIDA_PARETO = """
 Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è "oligarchico" il tuo settore target:
 
-1.  **Le Barre Blu**: Rappresentano il budget di aiuti ottenuto da ogni singola azienda nel settore target. Sono ordinate dalla più grande alla più piccola.
-2.  **La Linea Rossa**: È la "Percentuale Cumulata". Sale man mano che sommiamo i budget delle aziende. Quando tocca l'80%, incrocia la "soglia di Pareto" (linea tratteggiata grigia).
-3.  **L'Intersezione**: La linea tratteggiata verticale indica quante aziende controllano l'80% dei fondi totali del settore.
+1.  **Barre Blu**: Budget di aiuti ottenuto da ogni singola azienda nel settore target. Ordinate dalla maggiore alla minore.
+2.  **Linea Rossa**: È la "Percentuale Cumulata". Sale man mano che sommiamo i budget delle aziende fino a intersecare la soglia dell'80%.
+3.  **Intersezione**: La linea tratteggiata verticale indica quante aziende controllano l'80% dei fondi totali del settore.
 
 **Cosa significa per te?**
 * **Retta verticale molto a sinistra:** Il mercato è concentrato. Ti basta acquisire pochi "Big Client" per dominare il settore, ma la competizione sarà maggiore.
