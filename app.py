@@ -147,9 +147,9 @@ if uploaded_file is not None:
             'IMPORTO_TARGET': 'sum'
         }).reset_index()
 
-        # --- 3. CALCOLO F1 e F2  ---
-        report_aziende['F1'] = (report_aziende['IS_TARGET'] / report_aziende['RNA_TITOLO_MISURA'] * 100).fillna(0)
-        report_aziende['F2'] = (report_aziende['IMPORTO_TARGET'] / report_aziende['RNA_ELEMENTO_DI_AIUTO'] * 100).fillna(0)
+        # --- 3. CALCOLO Fo e Fe  ---
+        report_aziende['Fo'] = (report_aziende['IS_TARGET'] / report_aziende['RNA_TITOLO_MISURA'] * 100).fillna(0)
+        report_aziende['Fe'] = (report_aziende['IMPORTO_TARGET'] / report_aziende['RNA_ELEMENTO_DI_AIUTO'] * 100).fillna(0)
 
         # --- 4. RINOMINA ---
         # Usiamo rename invece di .columns = [...]
@@ -185,21 +185,21 @@ if uploaded_file is not None:
                     format="%.2f",
                 ),
         
-                # Formattazione Percentuali F1 e F2
-                "F1": st.column_config.NumberColumn(
-                    "F1 (%)",
+                # Formattazione Percentuali Fo e Fe
+                "Fo": st.column_config.NumberColumn(
+                    "Fo (%)",
                     format="%.1f%%", # Aggiunge il simbolo % ma resta un numero per il sorting
                     help="Incidenza numero aiuti target"
                 ),
-                "F2": st.column_config.NumberColumn(
-                    "F2 (%)",
+                "Fe": st.column_config.NumberColumn(
+                    "Fe (%)",
                     format="%.1f%%",
                     help="Incidenza budget target"
                 )
             }
         )
         st.markdown("""
-        <small>**Nota:** F1 = % aiuti target su tot. aiuti | F2 = % budget target su budget totale</small>
+        <small>**Nota:** Fo = % aiuti target su tot. aiuti | Fe = % budget target su budget totale</small>
         """, unsafe_allow_html=True)      
         st.write("")
 
@@ -214,8 +214,8 @@ if uploaded_file is not None:
             med_budget             = df_benchmark_2['Budget'].median()
             med_budget_target      = df_benchmark_1['Budget Target'].median()
             med_aiuti_target       = df_benchmark_1['Aiuti Target'].median()
-            med_f1                 = df_benchmark_1['F1'].median()
-            med_f2                 = df_benchmark_1['F2'].median()
+            med_Fo                 = df_benchmark_1['Fo'].median()
+            med_Fe                 = df_benchmark_1['Fe'].median()
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
@@ -229,11 +229,15 @@ if uploaded_file is not None:
                     A differenza della media (che può essere influenzata da pochi valori estremi, come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
                     Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti.
 
-                    ### 🔍 I Parametri Analizzati
-                    * **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno gestito mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati.
-                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse sono mediamente più ricchi o più poveri rispetto al mercato generale.
-                    * **Fattore F1 (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
-                    * **Fattore F2 (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
+                    ### 🌍 Indicatori del Mercato (Potenziale)
+                    Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponibili.
+                    * **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno ricevuto mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati.
+                    * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse (target) sono mediamente più ricchi o più poveri rispetto al mercato generale.
+                    
+                    ### 🏢 Indicatori dell'Azienda (Specializzazione)
+                    Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche della singola impresa.
+                    * **Fattore Fo (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite per un'azienda media. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
+                    * **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
     
                     ---
                     💡 **Strategia:** Le aziende sotto mediana rappresentano il segmento con il più alto potenziale di crescita per nuove pianificazioni finanziarie o investimenti mirati.
@@ -252,13 +256,13 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
         
                 with col2:
-                    st.write("**Fattore F1**")
+                    st.write("**Fattore Fo**")
                     st.write("")
                     st.write("")
                     st.write("")
-                    st.metric("Mediana", f"{med_f1:.1f}%".replace('.', ','))
-                    sotto_med_f1 = len(df_benchmark_1[df_benchmark_1['F1'] < med_f1])
-                    st.caption(f"📉 {sotto_med_f1} aziende sotto mediana")
+                    st.metric("Mediana", f"{med_Fo:.1f}%".replace('.', ','))
+                    sotto_med_Fo = len(df_benchmark_1[df_benchmark_1['Fo'] < med_Fo])
+                    st.caption(f"📉 {sotto_med_Fo} aziende sotto mediana")
         
                 with col3:
                     st.write("**Budget per Azienda**")
@@ -270,11 +274,11 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_budget_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
                     
                 with col4:
-                    st.write("**Fattore F2**")
-                    st.metric("Mediana", f"{med_f2:.1f}%".replace('.', ','))
+                    st.write("**Fattore Fe**")
+                    st.metric("Mediana", f"{med_Fe:.1f}%".replace('.', ','))
                     # Calcolo aziende sotto la mediana
-                    sotto_med_f2 = len(df_benchmark_1[df_benchmark_1['F2'] < med_f2])
-                    st.caption(f"📉 {sotto_med_f2} aziende sotto mediana")
+                    sotto_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] < med_Fe])
+                    st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
         
 
@@ -287,8 +291,8 @@ if uploaded_file is not None:
             
             # --- GRAFICO 2: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
             with col_graf_1:
-                # Pendenza basata sulla Mediana F1
-                pendenza_f1 = med_f1 / 100
+                # Pendenza basata sulla Mediana Fo
+                pendenza_Fo = med_Fo / 100
                 max_x_aiuti = df_plot["Aiuti"].max()
         
                 fig_aiuti_scatter = px.scatter(
@@ -296,21 +300,21 @@ if uploaded_file is not None:
                     x="Aiuti",
                     y="Aiuti Target",
                     hover_name="Ragione Sociale",
-                    color="F1",
+                    color="Fo",
                     title="Specializzazione Operativa (N. Aiuti)",
                     labels={"Aiuti": "Totale Aiuti", "Aiuti Target": "Aiuti Target"},
                     color_continuous_scale="Plasma"
                 )
         
-                # Linea Mediana F1
+                # Linea Mediana Fo
                 fig_aiuti_scatter.add_shape(
-                    type="line", x0=0, y0=0, x1=max_x_aiuti, y1=max_x_aiuti * pendenza_f1,
+                    type="line", x0=0, y0=0, x1=max_x_aiuti, y1=max_x_aiuti * pendenza_Fo,
                     line=dict(color="Red", width=2, dash="dash")
                 )
         
                 fig_aiuti_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_aiuti_scatter, use_container_width=True)
-                st.caption(f"La linea tratteggiata rappresenta la Mediana F1 ({med_f1:.1f}%)")
+                st.caption(f"La linea tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
                 
             # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
             with col_graf_2:
@@ -321,7 +325,7 @@ if uploaded_file is not None:
                 log_x=True, 
                 log_y=True,
                 hover_name="Ragione Sociale",
-                color="F2",
+                color="Fe",
                 title="Specializzazione Economica (Scala Log)",
                 labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
                 color_continuous_scale="Viridis"
@@ -335,15 +339,15 @@ if uploaded_file is not None:
                 fig_budget_scatter.add_shape(
                     type="line",
                     x0=x_min, 
-                    y0=x_min * (med_f2 / 100),
+                    y0=x_min * (med_Fe / 100),
                     x1=x_max, 
-                    y1=x_max * (med_f2 / 100),
+                    y1=x_max * (med_Fe / 100),
                     line=dict(color="Red", width=3, dash="dash")
                 )
 
                 fig_budget_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_budget_scatter, use_container_width=True)
-                st.caption(f"La linea tratteggiata rappresenta la Mediana F2 ({med_f2:.1f}%)")
+                st.caption(f"La linea tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
             
             st.info("""
             **Interpretazione dei quadranti:**
@@ -377,9 +381,9 @@ if uploaded_file is not None:
                     crea_box_orizzontale(df_plot, "Aiuti Target", "Distribuzione Numero Aiuti Target", "#9b59b6"),
                     use_container_width=True
                 )
-                # GRAFICO: F1
+                # GRAFICO: Fo
                 st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "F1", "Distribuzione Fattore F1", "#3498db"),
+                    crea_box_orizzontale(df_plot, "Fo", "Distribuzione Fattore Fo", "#3498db"),
                     use_container_width=True
                 )
                 # GRAFICO: BUDGET TARGET
@@ -387,9 +391,9 @@ if uploaded_file is not None:
                     crea_box_orizzontale(df_plot, "Budget Target", "Distribuzione Budget Target (€)", "#2ecc71"),
                     use_container_width=True
                 )
-                # GRAFICO: F2
+                # GRAFICO: Fe
                 st.plotly_chart(
-                    crea_box_orizzontale(df_plot, "F2", "Distribuzione Fattore F2", "#e67e22"),
+                    crea_box_orizzontale(df_plot, "Fe", "Distribuzione Fattore Fe", "#e67e22"),
                     use_container_width=True
                 )
                 
