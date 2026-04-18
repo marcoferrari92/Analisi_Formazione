@@ -347,14 +347,37 @@ if uploaded_file is not None:
                 text_auto=".2s"
             )
             
+            # --- PREPARAZIONE DATI ---
+            df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+            
+            # ordiniamo gli anni dal più grande al più piccolo
+            df_heat_data = df_heat_data.sort_values(by='Anno', ascending=False)
+            
+            pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
+            
+            # Re-indicizziamo per essere sicuri che l'ordine delle righe sia 2026 -> 2023
+            pivot_heat = pivot_heat.sort_index(ascending=False)
+            
+            # Mapping nomi mesi (rimane uguale)
+            mesi_ita = {1:'Gen', 2:'Feb', 3:'Mar', 4:'Apr', 5:'Mag', 6:'Giu', 7:'Lug', 8:'Ago', 9:'Set', 10:'Ott', 11:'Nov', 12:'Dic'}
+            pivot_heat.columns = [mesi_ita.get(c, c) for c in pivot_heat.columns]
+            
+            # --- GRAFICO ---
+            fig_heat = px.imshow(
+                pivot_heat,
+                labels=dict(x="Mese", y="Anno", color="Budget (€)"),
+                x=pivot_heat.columns,
+                y=[str(a) for a in pivot_heat.index], # Trasformiamo gli anni in stringhe per l'asse categorico
+                color_continuous_scale="Reds",
+                text_auto=".2s"
+            )
+            
             fig_heat.update_layout(
                 coloraxis_colorbar_title_text="",
                 margin=dict(l=0, r=0, t=30, b=0),
                 yaxis=dict(
-                    autorange="reversed",  # Mette l'anno più recente in alto
-                    tickmode='linear',     # Forza Plotly a seguire i nostri numeri
-                    dtick=1,               # Mostra un tick ogni 1 unità (niente più 2023.5)
-                    type='category'        # Tratta l'anno come etichetta, risolvendo ogni problema di tick
+                    type='category', 
+                    autorange=True # Ora che i dati sono già ordinati nel DF, lasciamo True
                 )
             )
             
