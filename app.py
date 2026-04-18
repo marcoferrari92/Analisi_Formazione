@@ -392,7 +392,7 @@ if uploaded_file is not None:
             df_top_10 = df_top_10.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False).head(10)
         
             # --- BAR CHART ORIZZONTALE (TOP 10) ---
-            st.subheader("🔝 Top 10 Big Player del Settore")
+            st.subheader("🔝 Top 10 Player del Settore Target")
             
             fig_top = px.bar(
                 df_top_10,
@@ -416,7 +416,7 @@ if uploaded_file is not None:
             st.divider()
         
             # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
-            st.subheader("📉 Analisi di Concentrazione (Pareto)")
+            st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
             
             # 1. Preparazione dati (già ordinati per budget decrescente)
             df_pareto = df[df['IS_TARGET'] == 1].groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -498,7 +498,6 @@ if uploaded_file is not None:
             st.info(f"""
             **🔍 Insight di Mercato:**
             L'**80% del budget** è concentrato nelle mani di **{aziende_80} aziende** (pari al **{perc_aziende_80:.1f}%** del totale).
-            
             *Se la percentuale è vicina al 20%, il mercato è dominato da pochi. Se è più alta, il mercato è democratico e frammentato.*
             """)
         
