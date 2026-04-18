@@ -344,13 +344,20 @@ if uploaded_file is not None:
                 x=pivot_heat.columns,
                 y=pivot_heat.index,
                 color_continuous_scale="Reds",
-                text_auto=".2s" # Mostra i valori abbreviati (es. 1.2M)
+                text_auto=".2s"
             )
             
             fig_heat.update_layout(
                 coloraxis_colorbar_title_text="",
-                margin=dict(l=0, r=0, t=30, b=0)
+                margin=dict(l=0, r=0, t=30, b=0),
+                yaxis=dict(
+                    autorange="reversed",  # Mette l'anno più recente in alto
+                    tickmode='linear',     # Forza Plotly a seguire i nostri numeri
+                    dtick=1,               # Mostra un tick ogni 1 unità (niente più 2023.5)
+                    type='category'        # Tratta l'anno come etichetta, risolvendo ogni problema di tick
+                )
             )
+            
             st.plotly_chart(fig_heat, use_container_width=True)
             
             st.info("💡 **Consiglio Commerciale:** I mesi con i quadrati più scuri indicano quando le aziende ricevono liquidità. È il momento migliore per proporre nuovi investimenti.")
