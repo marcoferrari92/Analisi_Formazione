@@ -227,7 +227,7 @@ if uploaded_file is not None:
                 
                 with col1:
                     st.write("**Numero Aiuti per Azienda**")
-                    st.metric("Mediana", f"{med_aiuti:.1f}")
+                    st.metric("Mediana Totale", f"{med_aiuti:.1f}")
                     st.metric("Mediana Target", f"{med_aiuti_target:.1f}",
                                 delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color = "normal")
                     sotto_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] < med_aiuti_target])
@@ -241,7 +241,7 @@ if uploaded_file is not None:
         
                 with col3:
                     st.write("**Budget per Azienda**")
-                    st.metric("Mediana", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    st.metric("Mediana Totale", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                     st.metric("Mediana Target", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                               delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", delta_color = "normal")
                     # Calcolo aziende sotto la mediana
