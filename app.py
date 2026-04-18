@@ -384,57 +384,70 @@ if uploaded_file is not None:
         search_txt = st.text_input("Inserisci Ragione Sociale per visualizzare i dettagli")
 
         if search_txt:
-            azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False)].copy()
-            
+            # Filtro per Ragione Sociale
+            azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False, na=False)].copy()
+    
             if not azienda_details.empty:
-                
-                # 1. Definiamo l'ordine PRIORITARIO richiesto
+                # 1. Mapping di sicurezza (se i nomi nel DF sono diversi da quelli desiderati per la tabella)
+                # Assicuriamoci che le colonne esistano prima di rinominare o usare
+                map_colonne = {
+                    'RNA_DATA_CONCESSIONE': 'RNA_DATA',
+                    'RNA_TITOLO_MISURA': 'RNA_MISURA',
+                    'RNA_ELEMENTO_DI_AIUTO': 'RNA_IMPORTO',
+                    'IS_TARGET': 'is_target'
+                }
+        
+                # Rinominiamo solo quelle presenti per evitare errori
+                azienda_details = azienda_details.rename(columns={k: v for k, v in map_colonne.items() if k in azienda_details.columns})
+
+                # 2. Definizione Ordine
                 colonne_prioritarie = [
-                    'RNA_DATA',                 # Data (mappata da RNA_DATA_CONCESSIONE)
-                    'RNA_CAR',                  # CAR
-                    'RNA_MISURA',               # Titolo Misura (mappata da RNA_TITOLO_MISURA)
-                    'RNA_TITOLO_PROGETTO',      # Titolo Progetto
-                    'RNA_IMPORTO',              # Elemento Aiuto (mappata da RNA_ELEMENTO_DI_AIUTO)
-                    'is_target',                 # Spunta verde target
-                    'RAGIONE SOCIALE',
-                    'CF_TROVATO',
+                    'RNA_DATA', 'RNA_CAR', 'RNA_MISURA', 'RNA_TITOLO_PROGETTO', 
+                    'RNA_IMPORTO', 'is_target', 'RAGIONE SOCIALE', 'CF_TROVATO'
                 ]
-                
-                # 2. Identifichiamo tutte le altre colonne che iniziano con RNA_ per non perderle
-                altre_col_rna = [c for c in azienda_details.columns if c.startswith('RNA_') and c not in colonne_prioritarie]
-                
-                # 3. Costruiamo l'ordine finale: Priorità -> Altri dati RNA -> Eventuali altri campi
-                ordine_finale = [c for c in colonne_prioritarie if c in azienda_details.columns] + altre_col_rna
+        
+                # Filtriamo solo quelle che esistono davvero dopo il rinnovo
+                ordine_esistente = [c for c in colonne_prioritarie if c in azienda_details.columns]
+                altre_col_rna = [c for c in azienda_details.columns if c.startswith('RNA_') and c not in ordine_esistente]
+                ordine_finale = ordine_esistente + altre_col_rna
 
                 st.write(f"### Dettaglio estrazione: {azienda_details['RAGIONE SOCIALE'].iloc[0]}")
-                
-                # Visualizzazione Tabella
+        
+                # Visualizzazione Tabella con stile
                 st.dataframe(
                     azienda_details[ordine_finale].style.apply(
-                        lambda r: ['background-color: #d4edda' if r['is_target'] else ''] * len(r), axis=1
+                        lambda r: ['background-color: #d4edda' if r.get('is_target', 0) == 1 else ''] * len(r), axis=1
                     ),
                     column_config={
-                        "RNA_DATA": st.column_config.TextColumn("📅 Data"),
+                        "RNA_DATA": st.column_config.DateColumn("📅 Data", format="DD/MM/YYYY"),
                         "RNA_CAR": st.column_config.TextColumn("CAR"),
                         "RNA_MISURA": st.column_config.TextColumn("📜 Titolo Misura", width="large"),
                         "RNA_TITOLO_PROGETTO": st.column_config.TextColumn("🏗️ Titolo Progetto", width="medium"),
-                        "RNA_IMPORTO": st.column_config.NumberColumn("💰 Aiuto (€)", format="%.2f"),
+                        "RNA_IMPORTO": st.column_config.NumberColumn("💰 Aiuto (€)", format="€ %.2f"),
                         "is_target": st.column_config.CheckboxColumn("🎯 Target"),
                         "RNA_LINK_TRASPARENZA_NAZIONALE": st.column_config.LinkColumn("🔗 Link Trasparenza"),
-                        "RNA_LINK_TESTO_INTEGRALE_MISURA": st.column_config.LinkColumn("📄 Bando Originale"),
+                        "RNA_LINK_TESTO_INTEGRALE_MISURA": st.column_config.LinkColumn("📄 Bando"),
                     },
                     use_container_width=True, 
                     hide_index=True
                 )
             else:
-                st.warning("Nessuna azienda trovata con questa ragione sociale.")
+                st.warning(f"Nessuna azienda trovata per: {search_txt}")
 
-        # Download
-        csv_buffer = io.BytesIO()
-        report.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
-        st.sidebar.download_button("💾 Scarica Report (CSV)", csv_buffer.getvalue(), "Report_RNA.csv", "text/csv")
-
-    except Exception as e:
-        st.error(f"Errore: {e}")
+        # Sostituisci 'report' con il nome corretto del tuo DataFrame finale (probabilmente 'report_aziende')
+        try:
+            # Verifichiamo quale DataFrame usare per il download
+            df_da_scaricare = report_aziende if 'report_aziende' in locals() else df
+    
+            csv_buffer = io.BytesIO()
+            df_da_scaricare.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
+            st.sidebar.download_button(
+                label="💾 Scarica Report (CSV)",
+                data=csv_buffer.getvalue(),
+                file_name="Report_RNA.csv",
+                mime="text/csv"
+            )
+        except NameError:
+            st.sidebar.error("⚠️ Errore: DataFrame per il download non trovato.")
 else:
     st.info("👋 Carica il file per iniziare.")
