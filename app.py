@@ -237,6 +237,57 @@ if uploaded_file is not None:
                     # st.write("Verifica Match:", df_geo[['Regione', 'Regione_Match']])
             else:
                 st.error(f"Colonna '{col_regione}' non trovata nel file CSV.")
+                
+            # --- PREPARAZIONE DATI PER TABELLA REGIONALE COMPLETA ---
+            # Raggruppiamo i dati globali per regione
+            df_reg_totale = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
+                'RNA_TITOLO_MISURA': 'count',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum'
+            }).reset_index()
+            
+            # Raggruppiamo i dati target per regione
+            df_reg_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
+                'RNA_TITOLO_MISURA': 'count',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum'
+            }).reset_index()
+            
+            # Uniamo le due tabelle
+            df_reg_final = pd.merge(
+                df_reg_totale, 
+                df_reg_target, 
+                on='RNA_REGIONE_BENEFICIARIO', 
+                how='left', 
+                suffixes=('_Tot', '_Target')
+            ).fillna(0)
+            
+            # Rinominiamo per chiarezza
+            df_reg_final.columns = ['Regione', 'Totale Aiuti', 'Budget Totale', 'Aiuti Target', 'Budget Target']
+            
+            # Ordiniamo per Budget Target decrescente
+            df_reg_final = df_reg_final.sort_values(by='Budget Target', ascending=False)
+            
+            # --- VISUALIZZAZIONE ---
+            st.write("### 🏢 Analisi Comparativa Regionale (Mercato vs Target)")
+            
+            st.dataframe(
+                df_reg_final,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Regione": st.column_config.TextColumn("Regione"),
+                    "Totale Aiuti": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
+                    "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
+                    "Budget Totale": st.column_config.NumberColumn(
+                        "Budget Totale (€)", 
+                        format="€ %,.0f"
+                    ),
+                    "Budget Target": st.column_config.NumberColumn(
+                        "Budget Target (€)", 
+                        format="€ %,.0f",
+                        help="Volume economico focalizzato sulle parole chiave selezionate"
+                    ),
+                }
+            )
         st.write("")
         st.write("")
 
