@@ -385,6 +385,9 @@ if uploaded_file is not None:
         st.write("")
         st.write("")
 
+
+
+        
         # --- SEZIONE RANKING E ANALISI PARETO ---
         with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
         
@@ -496,14 +499,15 @@ if uploaded_file is not None:
         st.write("")
 
 
-        # --- SEZIONE ANALISI BANDI E MISURE ---
-        with st.expander("📜 Analisi dei Bandi e delle Misure"):
+
         
-            # 1. Preparazione Dati: Top Misure per Budget Target
-            # Usiamo la colonna DES_STRUMENTO_AIUTO (o quella che contiene il nome del bando nel tuo dataset)
-            # Nota: verifica se nel tuo file la colonna si chiama 'DES_STRUMENTO_AIUTO' o 'TITOLO_MISURA'
-            col_misura = 'DES_STRUMENTO_AIUTO' 
+        # --- SEZIONE ANALISI BANDI E MISURE ---
+        with st.expander("📜 Analisi dei Bandi e delle Misure (Opportunità)"):
+        
+            # 1. Definizione della colonna corretta identificata nel CSV
+            col_misura = 'RNA_TITOLO_MISURA' 
             
+            # Raggruppamento per bando
             df_bandi = df[df['IS_TARGET'] == 1].groupby(col_misura)['RNA_ELEMENTO_DI_AIUTO'].agg(['sum', 'count']).reset_index()
             df_bandi.columns = ['Misura', 'Budget_Totale', 'Numero_Concessioni']
             
@@ -531,15 +535,23 @@ if uploaded_file is not None:
                 margin=dict(l=0, r=20, t=30, b=0),
                 height=500
             )
-            st.plotly_chart(fig_bandi, use_container_width=True, key="bar_top_bandi")
+            st.plotly_chart(fig_bandi, use_container_width=True, key="bar_top_bandi_success")
         
             # --- INSIGHTS SUI BANDI ---
-            top_bando_nome = df_bandi_top.iloc[0]['Misura']
-            top_bando_peso = (df_bandi_top.iloc[0]['Budget_Totale'] / df[df['IS_TARGET'] == 1]['RNA_ELEMENTO_DI_AIUTO'].sum()) * 100
+            if not df_bandi_top.empty:
+                top_bando_nome = df_bandi_top.iloc[0]['Misura']
+                budget_target_tot = df[df['IS_TARGET'] == 1]['RNA_ELEMENTO_DI_AIUTO'].sum()
+                top_bando_peso = (df_bandi_top.iloc[0]['Budget_Totale'] / budget_target_tot) * 100
+        
+                st.success(f"""
+                **📌 Insight Strategico:**
+                Il bando **"{top_bando_nome}"** è il principale motore del settore, 
+                coprendo da solo il **{top_bando_peso:.1f}%** di tutto il budget target erogato.
+                """)
         
             st.divider()
         
-            # 2. Analisi "Taglio Medio" del bando
+            # 2. Analisi "Taglio Medio"
             st.subheader("📊 Analisi del 'Ticket Medio' per Bando")
             
             df_bandi_top['Ticket_Medio'] = df_bandi_top['Budget_Totale'] / df_bandi_top['Numero_Concessioni']
@@ -551,13 +563,12 @@ if uploaded_file is not None:
                 size='Budget_Totale',
                 color='Misura',
                 hover_name='Misura',
-                title="Volume Concessioni vs Valore Medio",
+                title="Volume Concessioni vs Valore Medio per Bando",
                 labels={'Ticket_Medio': 'Importo Medio per Azienda (€)', 'Numero_Concessioni': 'N. Aziende Agevolate'}
             )
             
             fig_ticket.update_layout(showlegend=False, height=400)
-            st.plotly_chart(fig_ticket, use_container_width=True, key="scatter_ticket_medio")
-
+            st.plotly_chart(fig_ticket, use_container_width=True, key="scatter_ticket_medio_success")
 
 
 
