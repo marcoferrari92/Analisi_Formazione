@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import plotly.express as px
+import plotly.graph_objects as go
 
 # Caricamenti
 from settings import DEFAULT_KEYWORDS
@@ -97,6 +98,15 @@ if uploaded_file is not None:
             st.metric("Aziende Attive", f"{n_aziende_live}")
             st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
+            colors = ['#27ae60', '#e74c3c']
+            fig_aziende = go.Figure(data=[go.Pie(
+            labels=['Target', 'Altre'],
+            values=[n_aziende_target, n_aziende - n_aziende_target],
+            hole=.4,
+            marker_colors=colors,
+            textinfo='percent'
+        )])
+fig_aziende.update_layout(showlegend=False, height=250, margin=dict(t=0, b=0, l=0, r=0))
         with m2:
             st.metric("Totale Aiuti", f"{n_aiuti_totali}")
             st.metric("Aiuti Target", f"{n_aiuti_target}",delta=f"{perc_aiuti_target:.1f}% del totale")
