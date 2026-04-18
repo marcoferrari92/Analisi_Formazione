@@ -138,16 +138,19 @@ if uploaded_file is not None:
             return fig
             
         with m1:
+            st.write("")
             st.plotly_chart(create_centered_pie([n_aziende_target, n_aziende - n_aziende_target]), 
                     use_container_width=True, 
                     config={'displayModeBar': False})
 
         with m2:
+            st.write("")
             st.plotly_chart(create_centered_pie([n_aiuti_target, n_aiuti_totali - n_aiuti_target]), 
                     use_container_width=True, 
                     config={'displayModeBar': False})
 
         with m3:
+            st.write("")
             st.plotly_chart(create_centered_pie([budget_target, budget_totale - budget_target]), 
                     use_container_width=True, 
                     config={'displayModeBar': False})
