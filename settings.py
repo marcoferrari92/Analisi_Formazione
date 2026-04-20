@@ -15,6 +15,7 @@ CSV_SEP = ';'
 CSV_ENCODING = 'utf-8-sig'
 
 
+
 GUIDA_PARETO = """
 Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è "oligarchico" il tuo settore target:
 
@@ -52,3 +53,30 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
 💡 **Strategia:** Le aziende sotto mediana rappresentano il segmento con il più alto potenziale di crescita per nuove pianificazioni finanziarie o investimenti mirati.
 """
 
+
+GUIDA_RICERCA = """
+    **Dove cerchiamo le parole chiave?**
+    
+    Il sistema analizza ogni riga del database RNA verificando la presenza delle tue keywords in queste colonne ufficiali:
+    1. `RNA_TITOLO_MISURA`
+    2. `RNA_DESCRIZIONE_PROGETTO`
+    3. `RNA_TITOLO_PROGETTO`
+    
+    *La ricerca non è case-sensitive (non distingue tra maiuscole e minuscole).*
+
+    L'elenco completo dei parametri nel database RNA:
+
+    'CAR', 'TITOLO_MISURA', 'DES_TIPO_MISURA', 'COD_CE_MISURA',
+    'BASE_GIURIDICA_NAZIONALE', 'LINK_TESTO_INTEGRALE_MISURA',
+    'IDENTIFICATIVO_UFFICIO', 'SOGGETTO_CONCEDENTE', 'COR',
+    'TITOLO_PROGETTO', 'DESCRIZIONE_PROGETTO',
+    'LINK_TRASPARENZA_NAZIONALE', 'DATA_CONCESSIONE', 'CUP',
+    'ATTO_CONCESSIONE', 'DENOMINAZIONE_BENEFICIARIO',
+    'CODICE_FISCALE_BENEFICIARIO', 'DES_TIPO_BENEFICIARIO',
+    'REGIONE_BENEFICIARIO', 'ID_COMPONENTE_AIUTO',
+    'COD_PROCEDIMENTO', 'DES_PROCEDIMENTO',
+    'COD_REGOLAMENTO', 'DES_REGOLAMENTO',
+    'COD_OBIETTIVO', 'DES_OBIETTIVO',
+    'SETTORE_ATTIVITA', 'ELEMENTO_DI_AIUTO',
+    'IMPORTO_NOMINALE', 'DES_STRUMENTO', 'COD_STRUMENTO'
+    """
