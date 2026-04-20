@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
 from analisi import create_centered_pie
 
