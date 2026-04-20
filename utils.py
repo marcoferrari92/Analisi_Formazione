@@ -37,11 +37,11 @@ Controlla se almeno una keyword è presente in una delle colonne
 definite nei settings per la riga data.
 """
 
-# Importiamo la configurazione
+import re
 from settings import COLONNE_RICERCA 
 
 def is_target_row(row, keywords):
-
+    
     # Creiamo un unico testo che unisce il contenuto delle colonne scelte
     testo_da_analizzare = " ".join([
         str(row[col]).upper() 
@@ -49,7 +49,15 @@ def is_target_row(row, keywords):
         if col in row
     ])
     
-    return any(k in testo_da_analizzare for k in keywords)
+    for k in keywords:
+        # Costruiamo il pattern: \bKEYWORD\b
+        # re.escape serve per evitare che caratteri speciali nella keyword (es. .) rompano la regex
+        pattern = rf"\b{re.escape(k)}\b"
+        
+        if re.search(pattern, testo_da_analizzare):
+            return True
+            
+    return False
 
 
 
