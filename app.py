@@ -24,8 +24,7 @@ uploaded_file = st.sidebar.file_uploader("Carica file RNA", type=["csv"])
 uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)", type=["csv"])
 
 st.sidebar.header("2. Filtri Target")
-default_kw = "formazione, competenze, corso, training"
-keywords_raw = st.sidebar.text_area("Parole chiave target", value=default_kw)
+keywords_raw = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
 with st.sidebar.popover("ℹ️ Info logica di ricerca"):
     st.markdown("""
     **Dove cerchiamo le parole chiave?**
@@ -48,7 +47,6 @@ if uploaded_file is not None:
         df = load_rna_data(uploaded_file)
 
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
-        keywords_raw         = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
         df['IS_TARGET']      = df.apply(lambda row: is_target_row(row, keywords), axis=1)
         df['IMPORTO_TARGET'] = df.apply(lambda x: x['RNA_ELEMENTO_DI_AIUTO'] if x['IS_TARGET'] else 0, axis=1)
