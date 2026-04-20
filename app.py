@@ -843,10 +843,18 @@ if uploaded_file is not None:
                       delta_color="normal")
             
                 with b2:
-                    diff_budget = row['Budget Target'] - med_budget_target
-                    st.metric("Budget Target", f"€ {row['Budget Target']:,.0f}".replace(',', '.'), 
-                      delta=f"€ {diff_budget:+.0f}".replace(',', '.'), 
-                      delta_color="normal")
+                    diff_budget = float(row['Budget Target'] - med_budget_target)
+                    
+                    # Formattazione per l'Italia (Punto per le migliaia)
+                    valore_mostrato = f"€ {row['Budget Target']:,.0f}".replace(',', '.')
+                    delta_mostrato = f"€ {diff_budget:,.0f}".replace(',', '.')
+                    
+                    st.metric(
+                        label="Budget Target", 
+                        value=valore_mostrato, 
+                        delta=delta_mostrato,
+                        delta_color="normal" # "normal": positivo=verde, negativo=rosso
+                    )
             
                 with b3:
                     diff_fo = row['Fo'] - med_Fo
