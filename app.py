@@ -843,17 +843,25 @@ if uploaded_file is not None:
                       delta_color="normal")
             
                 with b2:
+                    # 1. Calcolo numerico
                     diff_budget = float(row['Budget Target'] - med_budget_target)
                     
-                    # Formattazione per l'Italia (Punto per le migliaia)
+                    # 2. Formattazione Valore Principale (Punto per migliaia)
                     valore_mostrato = f"€ {row['Budget Target']:,.0f}".replace(',', '.')
-                    delta_mostrato = f"€ {diff_budget:,.0f}".replace(',', '.')
+                    
+                    # 3. Formattazione Delta: 
+                    # Usiamo il trucco di mettere il segno meno all'inizio se il numero è negativo
+                    if diff_budget >= 0:
+                        delta_mostrato = f"+€ {diff_budget:,.0f}".replace(',', '.')
+                    else:
+                        # Rimuoviamo il segno meno automatico per gestirlo manualmente prima dell'Euro
+                        delta_mostrato = f"-€ {abs(diff_budget):,.0f}".replace(',', '.')
                     
                     st.metric(
                         label="Budget Target", 
                         value=valore_mostrato, 
                         delta=delta_mostrato,
-                        delta_color="normal" # "normal": positivo=verde, negativo=rosso
+                        delta_color="normal"
                     )
             
                 with b3:
