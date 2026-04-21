@@ -639,11 +639,11 @@ if uploaded_file is not None:
                     format="€,.2f"),
                 "Fo": st.column_config.NumberColumn(
                     "Fo (%)",
-                    format=",.1f%%",
+                    format="%.1f%%",
                     help="Incidenza numero aiuti target"),
                 "Fe": st.column_config.NumberColumn(
                     "Fe (%)",
-                    format=",.1f%%",
+                    format="%.1f%%",
                     help="Incidenza budget target")
             }
         )
