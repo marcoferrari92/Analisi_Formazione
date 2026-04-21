@@ -625,6 +625,10 @@ if uploaded_file is not None:
         }
         report_aziende = report_aziende.rename(columns=mappa_nomi)
 
+        # Ordiniamo le colonne per assicurarci che la Regione sia dopo Ragione Sociale
+        ordine_colonne = ['P.IVA', 'Ragione Sociale', 'Regione'] + [c for c in report_aziende.columns if c not in ['P.IVA', 'Ragione Sociale', 'Regione']]
+        report_aziende = report_aziende[ordine_colonne]
+
         # --- 5. TABELLA ---
         st.write("")
         st.dataframe(
