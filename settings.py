@@ -15,6 +15,8 @@ CSV_SEP = ';'
 CSV_ENCODING = 'utf-8-sig'
 
 
+GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
+
 
 GUIDA_PARETO = """
 Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è "oligarchico" il tuo settore target:
