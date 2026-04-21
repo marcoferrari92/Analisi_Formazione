@@ -17,32 +17,35 @@ def load_rna_data(file):
     # 1. Caricamento file
     df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
     
-    # 2. NORMALIZZAZIONE COLONNE
-    # Definiamo un mapping: "Nome nel file": "Nome atteso dall'App"
+    # 2. NORMALIZZAZIONE COLONNE (Mapping)
+    # Rinominiamo subito per avere nomi standard su cui lavorare
     mapping = {
-        # Colonne per la Ragione Sociale
         'DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
         'RNA_DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
-        
-        # Colonne per il Codice Fiscale / P.IVA
         'CF_BENEFICIARIO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
         'CF_TROVATO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
-        
-        # Colonne per l'importo (se presenti nomi alternativi)
         'RNA_IMPORTO_NOMINALE': 'RNA_ELEMENTO_DI_AIUTO'
     }
-    
-    # Applichiamo il rinnovo (solo se la colonna esiste nel file caricato)
     df = df.rename(columns=mapping)
     
-    # 3. Pulizia colonna importo
-    # Ora usiamo sempre il nome standard 'RNA_ELEMENTO_DI_AIUTO'
+    # 3. PULIZIA COLONNA IMPORTO
+    # Verifichiamo che la colonna ESISTA prima di pulirla
     if 'RNA_ELEMENTO_DI_AIUTO' in df.columns:
-        df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(
-            df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.'), 
-            errors='coerce'
-        ).fillna(0)
+        # TRUCCO: Usiamo .astype(str) sulla COLONNA, non sul dataframe
+        df['RNA_ELEMENTO_DI_AIUTO'] = (
+            df['RNA_ELEMENTO_DI_AIUTO']
+            .astype(str)
+            .str.replace(',', '.')
+            .str.replace(r'[^0-9.]', '', regex=True) # Rimuove eventuali simboli € o spazi
+        )
         
+        # Trasformiamo in numero
+        df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(df['RNA_ELEMENTO_DI_AIUTO'], errors='coerce').fillna(0)
+    
+    # 4. PULIZIA CODICI FISCALI (Opzionale ma consigliata)
+    if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df.columns:
+        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = df['RNA_CODICE_FISCALE_BENEFICIARIO'].astype(str).str.strip().str.upper()
+
     return df
 
 
