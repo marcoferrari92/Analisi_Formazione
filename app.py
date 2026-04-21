@@ -24,7 +24,7 @@ st.sidebar.header("1. Caricamento Dati")
 uploaded_file = st.sidebar.file_uploader("Carica file RNA", type=["csv"])
 # Database Clienti
 uploaded_clienti = st.sidebar.file_uploader(
-    "Carica Database Clienti (Opzionale)", 
+    "Carica database di confronto (opzionale)", 
     type=["csv", "pdf"]
 )
 
