@@ -319,7 +319,8 @@ if uploaded_file is not None:
             # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
             st.subheader("📈 Evoluzione del Budget nel Tempo")
             with st.expander("💡 Consigli"):
-                st.info(GUIDA_TIMELINE)
+                with st.container(border=True):
+                        st.info(GUIDA_TIMELINE)
             
             # Aggreghiamo Totale e Target
             df_time_tot = df.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
