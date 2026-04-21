@@ -618,6 +618,7 @@ if uploaded_file is not None:
             'RNA_CODICE_FISCALE_BENEFICIARIO': 'P.IVA',
             'RAGIONE SOCIALE': 'Ragione Sociale',
             'RNA_TITOLO_MISURA': 'Aiuti',
+            'RNA_REGIONE_BENEFICIARIO': 'Regione',
             'IS_TARGET': 'Aiuti Target',
             'RNA_ELEMENTO_DI_AIUTO': 'Budget',
             'IMPORTO_TARGET': 'Budget Target'
