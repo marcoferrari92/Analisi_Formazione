@@ -640,11 +640,11 @@ if uploaded_file is not None:
                 # Formattazione Budget (mantiene il sorting numerico)
                 "Budget": st.column_config.NumberColumn(
                     "Budget Totale (€)",
-                    format="%.2f", # Streamlit userà il separatore locale del browser (italiano se impostato)
+                    format="€ ,.2f", 
                 ),
                 "Budget Target": st.column_config.NumberColumn(
                     "Budget Target (€)",
-                    format="%.2f",
+                    format="€ ,.2f", 
                 ),
         
                 # Formattazione Percentuali Fo e Fe
