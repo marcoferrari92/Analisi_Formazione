@@ -123,44 +123,81 @@ def render_database_misure(df_rna):
 
 
 
+
+import pdfplumber
+
 def verifica_stato_clienti(df_rna, uploaded_clienti):
     """
-    Confronta il database RNA con il file Clienti tramite Codice Fiscale/P.IVA.
-    Ritorna il dataframe RNA arricchito con la colonna 'STATO'.
+    Versione Universale: Legge CSV o PDF, identifica automaticamente la 
+    colonna o il testo contenente P.IVA (11 cifre) e confronta con RNA.
     """
     try:
-        # 1. Caricamento del file Clienti (assicuriamoci che legga le P.IVA come stringhe)
-        df_clienti = pd.read_csv(uploaded_clienti, sep=';', encoding='utf-8-sig', dtype=str, low_memory=False)
-        
-        # Verifichiamo se la colonna esiste (adattala se nel tuo file clienti ha un nome diverso)
-        col_piva_clienti = 'Partita IVA' 
-        if col_piva_clienti not in df_clienti.columns:
-            st.error(f"⚠️ Errore: Colonna '{col_piva_clienti}' non trovata nel file clienti!")
+        lista_piva_clienti = set()
+        regex_piva_pura = r'\b\d{11}\b' # Cerca 11 cifre esatte isolate
+
+        # --- 1. CARICAMENTO E ESTRAZIONE DATI ---
+        if uploaded_clienti.name.lower().endswith('.pdf'):
+            with st.spinner("Analisi del PDF in corso..."):
+                with pdfplumber.open(uploaded_clienti) as pdf:
+                    testo_completo = ""
+                    trovata_tabella = False
+                    
+                    for page in pdf.pages:
+                        # Tentativo A: Estrazione tabelle
+                        table = page.extract_table()
+                        if table:
+                            trovata_tabella = True
+                            df_temp = pd.DataFrame(table)
+                            # Per ogni cella della tabella, cerchiamo P.IVA
+                            for col in df_temp.columns:
+                                for val in df_temp[col]:
+                                    clean_val = re.sub(r'\D', '', str(val))
+                                    if len(clean_val) == 11:
+                                        lista_piva_clienti.add(clean_val)
+                        
+                        # Tentativo B: Estrazione testo libero (se le tabelle falliscono o sono parziali)
+                        testo_completo += page.extract_text() or ""
+
+                    # Se non abbiamo trovato nulla nelle tabelle, cerchiamo nel testo libero
+                    piva_nel_testo = re.findall(regex_piva_pura, testo_completo)
+                    lista_piva_clienti.update(piva_nel_testo)
+
+        else:
+            # Gestione CSV/TXT
+            df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
+            
+            col_trovata = None
+            for col in df_clienti.columns:
+                # Testiamo se la colonna contiene P.IVA (almeno il 60% dei valori)
+                sample = df_clienti[col].str.replace(r'\D', '', regex=True).replace('', pd.NA).dropna().head(20)
+                if not sample.empty:
+                    matches = sample.apply(lambda x: len(str(x)) == 11).sum()
+                    if matches > len(sample) * 0.6:
+                        col_trovata = col
+                        break
+            
+            if col_trovata:
+                pivas = df_clienti[col_trovata].str.replace(r'\D', '', regex=True).unique()
+                lista_piva_clienti.update([p for p in pivas if len(str(p)) == 11])
+
+        # --- 2. VERIFICA RISULTATI ---
+        if not lista_piva_clienti:
+            st.error(f"⚠️ Nessuna Partita IVA valida (11 cifre) trovata in {uploaded_clienti.name}")
             return df_rna
 
-        # 2. Pulizia e Normalizzazione P.IVA Clienti
-        # Creiamo un set (più veloce della lista per i confronti) di stringhe pulite
-        lista_piva_clienti = set(
-            df_clienti[col_piva_clienti]
-            .astype(str)
-            .str.strip()
-            .str.replace(' ', '')
-            .unique()
-        )
-
-        # 3. Matching usando il nome colonna UFFICIALE RNA
-        # La colonna corretta è 'RNA_CODICE_FISCALE_BENEFICIARIO'
+        # --- 3. MATCHING CON DATAFRAME RNA ---
         def check_stato(val):
-            clean_val = str(val).strip().replace(' ', '')
-            return "🟢 CLIENTE" if clean_val in lista_piva_clienti else "⚪ PROSPECT"
+            # Normalizziamo il valore RNA (solo numeri)
+            rna_val = re.sub(r'\D', '', str(val))
+            return "🟢 CLIENTE" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
 
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
         
-        st.sidebar.success(f"✅ Confronto completato: {len(lista_piva_clienti)} codici caricati.")
+        st.sidebar.success(f"✅ Analisi completata: {len(lista_piva_clienti)} P.IVA trovate.")
         return df_rna
 
     except Exception as e:
-        st.error(f"❌ Errore durante il confronto: {e}")
+        st.error(f"❌ Errore critico durante l'elaborazione del file: {e}")
         return df_rna
 
 
