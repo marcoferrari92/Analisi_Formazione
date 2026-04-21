@@ -31,7 +31,7 @@ with st.sidebar.popover("ℹ️ Info logica di ricerca"):
 st.sidebar.header("3. Range Temporale")
 data_range = None
 
-btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
+
 
 # ANALISI
 if uploaded_file is not None:
@@ -68,6 +68,7 @@ if uploaded_file is not None:
             df = df_raw.copy()
             st.sidebar.warning("⚠️ Nessuna data valida trovata nel file.")
 
+        btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
         
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
