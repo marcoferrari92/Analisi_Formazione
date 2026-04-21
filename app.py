@@ -132,9 +132,9 @@ if uploaded_file is not None:
             
             
         with m3:
-            st.metric("Budget Totale", f"€ {budget_totale:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+            st.metric("Budget Totale", f"{budget_totale:€ %,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
             st.metric("Budget Target",
-                      f"€ {budget_target:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                      f"{budget_target:€ %,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                      delta=f"{perc_budget_target:.1f}% del budget totale")
 
         # GRAFICI A TORTA 
