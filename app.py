@@ -654,7 +654,7 @@ if uploaded_file is not None:
                     help="Incidenza budget target"
                 )
             }
-        )     
+        )   
         st.write("")
 
         
