@@ -306,8 +306,6 @@ if uploaded_file is not None:
 
         # --- SEZIONE TEMPORALE DENTRO EXPANDER ---
         with st.expander("📅 Distribuzione Temporale Settore Target"):
-            with st.expander("📖 Guida alla lettura"):
-                st.markdown(GUIDA_TIMELINE)
                 
             # 1. Preparazione Dati
             # Assicurati che la data sia in formato datetime
@@ -320,6 +318,8 @@ if uploaded_file is not None:
             
             # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
             st.subheader("📈 Evoluzione del Budget nel Tempo")
+            with st.expander("💡 Consigli"):
+                st.markdown(GUIDA_TIMELINE)
             
             # Aggreghiamo Totale e Target
             df_time_tot = df.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
