@@ -20,8 +20,13 @@ st.markdown("Analisi strategica e qualificazione lead basata sui dati integrali 
 
 # --- SIDEBAR ---
 st.sidebar.header("1. Caricamento Dati")
+# File RNA
 uploaded_file = st.sidebar.file_uploader("Carica file RNA", type=["csv"])
-uploaded_clienti = st.sidebar.file_uploader("Carica Database Clienti (Opzionale)", type=["csv"])
+# Database Clienti
+uploaded_clienti = st.sidebar.file_uploader(
+    "Carica Database Clienti (Opzionale)", 
+    type=["csv", "pdf"]
+)
 
 st.sidebar.header("2. Filtri Target")
 keywords_raw = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWORDS)
