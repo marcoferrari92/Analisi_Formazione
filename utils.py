@@ -14,11 +14,29 @@ Carica i dati RNA e pulisce la colonna importi (rendendoli numeri).
 
 @st.cache_data
 def load_rna_data(file):
-    
-    # Caricamento file
+    # 1. Caricamento file
     df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
     
-    # Pulizia colonna importo (trasforma stringa con virgola in numero)
+    # 2. NORMALIZZAZIONE COLONNE
+    # Definiamo un mapping: "Nome nel file": "Nome atteso dall'App"
+    mapping = {
+        # Colonne per la Ragione Sociale
+        'DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
+        'RNA_DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
+        
+        # Colonne per il Codice Fiscale / P.IVA
+        'CF_BENEFICIARIO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
+        'CF_TROVATO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
+        
+        # Colonne per l'importo (se presenti nomi alternativi)
+        'RNA_IMPORTO_NOMINALE': 'RNA_ELEMENTO_DI_AIUTO'
+    }
+    
+    # Applichiamo il rinnovo (solo se la colonna esiste nel file caricato)
+    df = df.rename(columns=mapping)
+    
+    # 3. Pulizia colonna importo
+    # Ora usiamo sempre il nome standard 'RNA_ELEMENTO_DI_AIUTO'
     if 'RNA_ELEMENTO_DI_AIUTO' in df.columns:
         df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(
             df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.'), 
