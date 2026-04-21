@@ -28,6 +28,9 @@ keywords_raw = st.sidebar.text_area("Parole chiave target", value=DEFAULT_KEYWOR
 with st.sidebar.popover("ℹ️ Info logica di ricerca"):
     st.markdown(GUIDA_RICERCA)
 
+st.sidebar.header("3. Range Temporale")
+data_range = None
+
 btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
 
 # ANALISI
@@ -37,8 +40,7 @@ if uploaded_file is not None:
         # Caricamento dei dati integrale
         df_raw = load_rna_data(uploaded_file)
 
-        # --- SEZIONE FILTRO TEMPORALE (Novità) ---
-        st.sidebar.header("3. Range Temporale")
+        # --- FILTRO TEMPORALE  ---
         
         # Convertiamo la colonna data in datetime per poter calcolare i limiti
         df_raw['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_raw['RNA_DATA_CONCESSIONE'], errors='coerce')
@@ -66,6 +68,7 @@ if uploaded_file is not None:
             df = df_raw.copy()
             st.sidebar.warning("⚠️ Nessuna data valida trovata nel file.")
 
+        
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
         df['IS_TARGET']      = df.apply(lambda row: is_target_row(row, keywords), axis=1)
