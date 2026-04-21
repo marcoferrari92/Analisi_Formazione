@@ -209,7 +209,7 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
         def check_stato(val):
             rna_val = re.sub(r'\D', '', str(val))
-            return "🟢 CLIENTE" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
+            return "🟢 MATCH" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
 
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
         return df_rna
