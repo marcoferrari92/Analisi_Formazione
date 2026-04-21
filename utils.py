@@ -193,6 +193,7 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
         # --- 2. OUTPUT DI VERIFICA (DEBUG EXPANDER) ---
         with st.sidebar.expander("🔍 Verifica estrazione dati"):
             st.write(f"**File:** {uploaded_clienti.name}")
+            st.sidebar.divider()
             if isinstance(anteprima_debug, pd.DataFrame):
                 st.dataframe(anteprima_debug, use_container_width=True)
             else:
@@ -213,7 +214,6 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
         return df_rna
-        st.sidebar.divider()
 
     except Exception as e:
         st.error(f"❌ Errore: {e}")
@@ -252,7 +252,7 @@ def genera_output_confronto(df_filtrato, uploaded_clienti):
                 break
 
         if not col_piva_tua:
-            st.error("Impossibile trovare una colonna P.IVA nel file caricato.")
+            st.error("⚠️ Impossibile trovare una colonna P.IVA nel file caricato.")
             return None
 
         # 4. LOGICA DI VERIFICA 
