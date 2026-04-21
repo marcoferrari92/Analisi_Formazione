@@ -633,10 +633,10 @@ if uploaded_file is not None:
                 "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
                 "Budget": st.column_config.NumberColumn(
                     "Budget Totale (€)",
-                    format="€,.2f"),
+                    format="€ %,.0f"),
                 "Budget Target": st.column_config.NumberColumn(
                     "Budget Target (€)",
-                    format="€,.2f"),
+                    format="€ %,.0f"),
                 "Fo": st.column_config.NumberColumn(
                     "Fo (%)",
                     format="%.1f%%",
