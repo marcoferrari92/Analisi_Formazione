@@ -685,9 +685,19 @@ if uploaded_file is not None:
         
                 with col2:
                     st.write("**Budget per Azienda**")
-                    st.metric("Mediana Totale", f"€ {med_budget:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                    st.metric("Mediana Target", f"€ {med_budget_target:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                              delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", delta_color = "normal")
+                    # Mediana Totale
+                    st.metric(
+                        label="Mediana Totale", 
+                        value=f"€ {med_budget:,.2f}"
+                    )
+                    
+                    # Mediana Target
+                    st.metric(
+                        label="Mediana Target", 
+                        value=f"€ {med_budget_target:,.2f}",
+                        delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", 
+                        delta_color="normal"
+                    )
                     # Calcolo aziende sotto la mediana
                     sotto_med_budget_target = len(df_benchmark_1[df_benchmark_1['Budget Target'] < med_budget_target])
                     st.caption(f"📉 {sotto_med_budget_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
