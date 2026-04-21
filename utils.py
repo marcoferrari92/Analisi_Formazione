@@ -213,6 +213,7 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
         return df_rna
+        st.sidebar.divider()
 
     except Exception as e:
         st.error(f"❌ Errore: {e}")
