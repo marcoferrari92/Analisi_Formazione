@@ -18,10 +18,9 @@ def load_rna_data(file):
     df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
     
     # 2. NORMALIZZAZIONE COLONNE (Mapping)
-    # Rinominiamo subito per avere nomi standard su cui lavorare
+    # Rinominiamo prima di tutto per essere sicuri di avere i nomi standard
     mapping = {
         'DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
-        'RNA_DENOMINAZIONE_BENEFICIARIO': 'RAGIONE SOCIALE',
         'CF_BENEFICIARIO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
         'CF_TROVATO': 'RNA_CODICE_FISCALE_BENEFICIARIO',
         'RNA_IMPORTO_NOMINALE': 'RNA_ELEMENTO_DI_AIUTO'
@@ -29,23 +28,26 @@ def load_rna_data(file):
     df = df.rename(columns=mapping)
     
     # 3. PULIZIA COLONNA IMPORTO
-    # Verifichiamo che la colonna ESISTA prima di pulirla
+    # Verifichiamo che la colonna standard 'RNA_ELEMENTO_DI_AIUTO' esista ora nel DF
     if 'RNA_ELEMENTO_DI_AIUTO' in df.columns:
-        # TRUCCO: Usiamo .astype(str) sulla COLONNA, non sul dataframe
-        df['RNA_ELEMENTO_DI_AIUTO'] = (
-            df['RNA_ELEMENTO_DI_AIUTO']
+        # TRUCCO: Convertiamo prima in stringa la COLONNA, poi applichiamo le sostituzioni
+        colonna_pulita = df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.')
+        
+        # Rimuoviamo eventuali caratteri non numerici residui (es. spazi o simboli valuta)
+        colonna_pulita = colonna_pulita.str.replace(r'[^0-9.]', '', regex=True)
+        
+        # Trasformiamo in numero vero e proprio
+        df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(colonna_pulita, errors='coerce').fillna(0)
+    
+    # 4. PULIZIA CODICI FISCALI
+    if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df.columns:
+        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = (
+            df['RNA_CODICE_FISCALE_BENEFICIARIO']
             .astype(str)
-            .str.replace(',', '.')
-            .str.replace(r'[^0-9.]', '', regex=True) # Rimuove eventuali simboli € o spazi
+            .str.strip()
+            .str.upper()
         )
         
-        # Trasformiamo in numero
-        df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(df['RNA_ELEMENTO_DI_AIUTO'], errors='coerce').fillna(0)
-    
-    # 4. PULIZIA CODICI FISCALI (Opzionale ma consigliata)
-    if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df.columns:
-        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = df['RNA_CODICE_FISCALE_BENEFICIARIO'].astype(str).str.strip().str.upper()
-
     return df
 
 
