@@ -596,7 +596,7 @@ if uploaded_file is not None:
     
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
         # Usiamo questa lista dinamica per evitare il crash se c'è o meno lo STATO
-        col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE']
+        col_raggruppamento = ['RNA_CODICE_FISCALE_BENEFICIARIO', 'RAGIONE SOCIALE', 'RNA_REGIONE_BENEFICIARIO']
         if 'STATO' in df.columns:
             col_raggruppamento.append('STATO')
 
