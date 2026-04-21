@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti
 from analisi import create_centered_pie
 
@@ -376,7 +376,7 @@ if uploaded_file is not None:
             # --- HEATMAP (STAGIONALITÀ) ---
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
             with st.expander("💡 Consigli"):
-                st.info(GUIDA_TIMELINE)
+                st.info(GUIDA_TIMEMAP)
                   
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             df_heat_data = df_heat_data.sort_values(by='Anno', ascending=False)
