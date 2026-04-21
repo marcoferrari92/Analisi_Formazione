@@ -319,8 +319,7 @@ if uploaded_file is not None:
             # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
             st.subheader("📈 Evoluzione del Budget nel Tempo")
             with st.expander("💡 Consigli"):
-                with st.container(border=True):
-                        st.info(GUIDA_TIMELINE)
+                st.info(GUIDA_TIMELINE)
             
             # Aggreghiamo Totale e Target
             df_time_tot = df.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -376,7 +375,9 @@ if uploaded_file is not None:
         
             # --- HEATMAP (STAGIONALITÀ) ---
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
-      
+            with st.expander("💡 Consigli"):
+                st.info(GUIDA_TIMELINE)
+                  
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
             df_heat_data = df_heat_data.sort_values(by='Anno', ascending=False)
             pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
@@ -407,7 +408,6 @@ if uploaded_file is not None:
             
             st.plotly_chart(fig_heat, use_container_width=True)
             
-            st.info("💡 **Consiglio Commerciale:** I mesi con i quadrati più scuri indicano quando le aziende ricevono liquidità. È il momento migliore per proporre nuovi investimenti.")
         st.write("")
         st.write("")
 
