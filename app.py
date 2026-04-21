@@ -565,11 +565,6 @@ if uploaded_file is not None:
                 budget_target_tot = df[df['IS_TARGET'] == 1]['RNA_ELEMENTO_DI_AIUTO'].sum()
                 top_bando_peso = (df_bandi_top.iloc[0]['Budget_Totale'] / budget_target_tot) * 100
         
-                st.success(f"""
-                **📌 Insight Strategico:**
-                Il bando **"{top_bando_nome}"** è il principale motore del settore, 
-                coprendo da solo il **{top_bando_peso:.1f}%** di tutto il budget target erogato.
-                """)
         
             st.divider()
         
