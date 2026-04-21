@@ -94,7 +94,7 @@ if uploaded_file is not None:
                     mime="text/csv",
                     help="Scarica il tuo file con l'indicazione di chi ha ricevuto aiuti NEL PERIODO SELEZIONATO."
                 )
-
+                st.sidebar.divider()
         
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
