@@ -175,7 +175,7 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
         else:
             # Gestione CSV
             df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
-            anteprima_debug = df_clienti.head(10) # Anteprima prime 10 righe
+            anteprima_debug = df_clienti.head(10) 
             
             col_trovata = None
             for col in df_clienti.columns:
@@ -259,9 +259,9 @@ def genera_output_confronto(df_filtrato, uploaded_clienti):
         def verifica_presenza(val):
             clean_val = re.sub(r'\D', '', str(val))
             if clean_val in piva_presenti_nel_periodo:
-                return "✅ Trovato nel periodo"
+                return "Match"
             else:
-                return "🔴 Not found (in questo periodo)"
+                return "Not Found"
 
         # Aggiungiamo la colonna dell'esito al tuo file originale
         df_tuo['ESITO_FILTRO_ATTUALE'] = df_tuo[col_piva_tua].apply(verifica_presenza)
