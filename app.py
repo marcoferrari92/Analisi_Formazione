@@ -96,7 +96,7 @@ if uploaded_file is not None:
                 )
                 
 
-        st.sidebar.divider()
+       
         
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
