@@ -219,6 +219,57 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
         return df_rna
 
 
+def genera_output_confronto(df_filtrato, uploaded_clienti):
+    try:
+        # 1. Creiamo il set di P.IVA presenti nel report filtrato (quelle che l'app sta visualizzando)
+        piva_presenti_nel_periodo = set(
+            df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
+            .astype(str)
+            .str.replace(r'\D', '', regex=True)
+            .unique()
+        )
+
+        # 2. Carichiamo il tuo file originale (quello da "marcare")
+        if uploaded_clienti.name.lower().endswith('.pdf'):
+            with pdfplumber.open(uploaded_clienti) as pdf:
+                data = []
+                for page in pdf.pages:
+                    table = page.extract_table()
+                    if table: data.extend(table)
+                # Creiamo il DF usando la prima riga come header
+                df_tuo = pd.DataFrame(data[1:], columns=data[0])
+        else:
+            df_tuo = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
+
+        # 3. Trova la colonna P.IVA nel TUO file
+        col_piva_tua = None
+        for col in df_tuo.columns:
+            # Test su un campione: cerchiamo la colonna con 11 cifre
+            sample = df_tuo[col].str.replace(r'\D', '', regex=True).dropna().head(20)
+            if any(len(str(x)) == 11 for x in sample):
+                col_piva_tua = col
+                break
+
+        if not col_piva_tua:
+            st.error("Impossibile trovare una colonna P.IVA nel file caricato.")
+            return None
+
+        # 4. LOGICA DI VERIFICA 
+        def verifica_presenza(val):
+            clean_val = re.sub(r'\D', '', str(val))
+            if clean_val in piva_presenti_nel_periodo:
+                return "✅ Trovato nel periodo"
+            else:
+                return "🔴 Not found (in questo periodo)"
+
+        # Aggiungiamo la colonna dell'esito al tuo file originale
+        df_tuo['ESITO_FILTRO_ATTUALE'] = df_tuo[col_piva_tua].apply(verifica_presenza)
+        
+        return df_tuo
+
+    except Exception as e:
+        st.error(f"Errore nel confronto: {e}")
+        return None
 
 
 
