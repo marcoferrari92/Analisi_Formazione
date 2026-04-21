@@ -688,13 +688,13 @@ if uploaded_file is not None:
                     # Mediana Totale
                     st.metric(
                         label="Mediana Totale", 
-                        value=f"€ {med_budget:,.2f}"
+                        value=f"€ {med_budget:,.0f}"
                     )
                     
                     # Mediana Target
                     st.metric(
                         label="Mediana Target", 
-                        value=f"€ {med_budget_target:,.2f}",
+                        value=f"€ {med_budget_target:,.0f}",
                         delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", 
                         delta_color="normal"
                     )
