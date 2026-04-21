@@ -126,49 +126,59 @@ def render_database_misure(df_rna):
 
 import pdfplumber
 
+import pandas as pd
+import re
+import pdfplumber
+import streamlit as st
+
 def verifica_stato_clienti(df_rna, uploaded_clienti):
     """
-    Versione Universale: Legge CSV o PDF, identifica automaticamente la 
-    colonna o il testo contenente P.IVA (11 cifre) e confronta con RNA.
+    Versione Universale con Debug: Legge CSV o PDF, identifica P.IVA 
+    e mostra un'anteprima dei dati estratti per verifica.
     """
     try:
         lista_piva_clienti = set()
-        regex_piva_pura = r'\b\d{11}\b' # Cerca 11 cifre esatte isolate
+        regex_piva_pura = r'\b\d{11}\b' 
+        anteprima_debug = [] # Lista per raccogliere i dati da mostrare nell'expander
 
         # --- 1. CARICAMENTO E ESTRAZIONE DATI ---
         if uploaded_clienti.name.lower().endswith('.pdf'):
             with st.spinner("Analisi del PDF in corso..."):
                 with pdfplumber.open(uploaded_clienti) as pdf:
                     testo_completo = ""
-                    trovata_tabella = False
                     
-                    for page in pdf.pages:
+                    for i, page in enumerate(pdf.pages):
                         # Tentativo A: Estrazione tabelle
                         table = page.extract_table()
                         if table:
-                            trovata_tabella = True
                             df_temp = pd.DataFrame(table)
-                            # Per ogni cella della tabella, cerchiamo P.IVA
+                            # Salviamo le prime righe della prima tabella trovata per il debug
+                            if not anteprima_debug:
+                                anteprima_debug = table[:10] 
+                            
                             for col in df_temp.columns:
                                 for val in df_temp[col]:
                                     clean_val = re.sub(r'\D', '', str(val))
                                     if len(clean_val) == 11:
                                         lista_piva_clienti.add(clean_val)
                         
-                        # Tentativo B: Estrazione testo libero (se le tabelle falliscono o sono parziali)
                         testo_completo += page.extract_text() or ""
 
-                    # Se non abbiamo trovato nulla nelle tabelle, cerchiamo nel testo libero
+                    # Integriamo P.IVA dal testo libero
                     piva_nel_testo = re.findall(regex_piva_pura, testo_completo)
                     lista_piva_clienti.update(piva_nel_testo)
+                    
+                    # Se non abbiamo tabelle, mostriamo un estratto del testo nel debug
+                    if not anteprima_debug:
+                        anteprima_debug = [["Testo Estratto (Prime 500 battute)"], [testo_completo[:500] + "..."]]
 
         else:
-            # Gestione CSV/TXT
+            # Gestione CSV
             df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
+            anteprima_debug = df_clienti.head(10) # Anteprima prime 10 righe
             
             col_trovata = None
             for col in df_clienti.columns:
-                # Testiamo se la colonna contiene P.IVA (almeno il 60% dei valori)
                 sample = df_clienti[col].str.replace(r'\D', '', regex=True).replace('', pd.NA).dropna().head(20)
                 if not sample.empty:
                     matches = sample.apply(lambda x: len(str(x)) == 11).sum()
@@ -180,24 +190,32 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
                 pivas = df_clienti[col_trovata].str.replace(r'\D', '', regex=True).unique()
                 lista_piva_clienti.update([p for p in pivas if len(str(p)) == 11])
 
-        # --- 2. VERIFICA RISULTATI ---
+        # --- 2. OUTPUT DI VERIFICA (DEBUG EXPANDER) ---
+        with st.sidebar.expander("🔍 Verifica estrazione dati"):
+            st.write(f"**File:** {uploaded_clienti.name}")
+            if isinstance(anteprima_debug, pd.DataFrame):
+                st.dataframe(anteprima_debug, use_container_width=True)
+            else:
+                st.table(anteprima_debug)
+            
+            st.write(f"**P.IVA totali individuate:** {len(lista_piva_clienti)}")
+            if lista_piva_clienti:
+                st.write("**Esempio valori:**", list(lista_piva_clienti)[:5])
+
+        # --- 3. VERIFICA RISULTATI E MATCHING ---
         if not lista_piva_clienti:
-            st.error(f"⚠️ Nessuna Partita IVA valida (11 cifre) trovata in {uploaded_clienti.name}")
+            st.error(f"⚠️ Nessuna P.IVA trovata in {uploaded_clienti.name}")
             return df_rna
 
-        # --- 3. MATCHING CON DATAFRAME RNA ---
         def check_stato(val):
-            # Normalizziamo il valore RNA (solo numeri)
             rna_val = re.sub(r'\D', '', str(val))
             return "🟢 CLIENTE" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
 
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
-        
-        st.sidebar.success(f"✅ Analisi completata: {len(lista_piva_clienti)} P.IVA trovate.")
         return df_rna
 
     except Exception as e:
-        st.error(f"❌ Errore critico durante l'elaborazione del file: {e}")
+        st.error(f"❌ Errore: {e}")
         return df_rna
 
 
