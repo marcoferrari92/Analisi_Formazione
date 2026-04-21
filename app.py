@@ -73,6 +73,27 @@ if uploaded_file is not None:
             df = df_raw.copy()
             st.sidebar.warning("⚠️ Nessuna data valida trovata nel file.")
 
+
+        # Generiamo il file di confronto basandoci sul df filtrato per periodo
+        if uploaded_clienti is not None:
+            
+            tuo_file_esito = genera_output_confronto(df, uploaded_clienti)
+            
+            if tuo_file_esito is not None:
+                st.sidebar.divider()
+                st.sidebar.subheader("🚩 Verifica Database")
+                
+                # Download del file arricchito
+                csv_buffer = tuo_file_esito.to_csv(index=False, sep=';', encoding='utf-8-sig')
+                
+                st.sidebar.download_button(
+                    label="📥 Scarica Esito Verifica (CSV)",
+                    data=csv_buffer,
+                    file_name=f"Verifica_Periodica_{uploaded_clienti.name}.csv",
+                    mime="text/csv",
+                    help="Scarica il tuo file con l'indicazione di chi ha ricevuto aiuti NEL PERIODO SELEZIONATO."
+                )
+
         btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=True, type="primary")
         
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
