@@ -620,7 +620,7 @@ if uploaded_file is not None:
         }
         report_aziende = report_aziende.rename(columns=mappa_nomi)
 
-        # --- 5. TABELLA  ---
+        # --- 5. TABELLA ---
         st.write("")
         st.dataframe(
             report_aziende.style.apply(colora_clienti, axis=1),
@@ -631,21 +631,17 @@ if uploaded_file is not None:
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
                 "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
                 "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-        
-                # Formattazione Budget: la virgola prima del punto attiva il separatore delle migliaia
                 "Budget": st.column_config.NumberColumn(
                     "Budget Totale (€)",
-                    format="€ ,.2f", # Esempio: € 1,234.56
+                    format="€ ,.2f",
                 ),
                 "Budget Target": st.column_config.NumberColumn(
                     "Budget Target (€)",
                     format="€ ,.2f",
                 ),
-        
-                # Formattazione Percentuali Fo e Fe (anche qui puoi usare la virgola se necessario)
                 "Fo": st.column_config.NumberColumn(
                     "Fo (%)",
-                    format=",.1f%%", 
+                    format=",.1f%%",
                     help="Incidenza numero aiuti target"
                 ),
                 "Fe": st.column_config.NumberColumn(
