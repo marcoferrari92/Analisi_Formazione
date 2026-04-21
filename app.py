@@ -33,9 +33,38 @@ btn_ricerca = st.sidebar.button("🔍 Aggiorna Analisi", use_container_width=Tru
 # ANALISI
 if uploaded_file is not None:
     try:
+
+        # Caricamento dei dati integrale
+        df_raw = load_rna_data(uploaded_file)
+
+        # --- SEZIONE FILTRO TEMPORALE (Novità) ---
+        st.sidebar.header("3. Range Temporale")
         
-        # Loading dei dati
-        df = load_rna_data(uploaded_file)
+        # Convertiamo la colonna data in datetime per poter calcolare i limiti
+        df_raw['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_raw['RNA_DATA_CONCESSIONE'], errors='coerce')
+        min_date_file = df_raw['RNA_DATA_CONCESSIONE'].min().date() if not df_raw['RNA_DATA_CONCESSIONE'].dropna().empty else None
+        max_date_file = df_raw['RNA_DATA_CONCESSIONE'].max().date() if not df_raw['RNA_DATA_CONCESSIONE'].dropna().empty else None
+
+        if min_date_file and max_date_file:
+            data_range = st.sidebar.date_input(
+                "Seleziona periodo di analisi",
+                value=(min_date_file, max_date_file),
+                min_value=min_date_file,
+                max_value=max_date_file
+            )
+            
+            # Applichiamo il filtro se l'utente ha selezionato un range completo (inizio e fine)
+            if len(data_range) == 2:
+                start_date, end_date = data_range
+                df = df_raw[
+                    (df_raw['RNA_DATA_CONCESSIONE'].dt.date >= start_date) & 
+                    (df_raw['RNA_DATA_CONCESSIONE'].dt.date <= end_date)
+                ].copy()
+            else:
+                df = df_raw.copy()
+        else:
+            df = df_raw.copy()
+            st.sidebar.warning("⚠️ Nessuna data valida trovata nel file.")
 
         # RICERCA TARGETS NEL DATAFRAME (e relativi importi)
         keywords             = [k.strip().upper() for k in keywords_raw.split(',')]
