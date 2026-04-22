@@ -198,79 +198,69 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
 
 def genera_output_confronto(df_filtrato, uploaded_clienti):
+    import re
+    import pandas as pd
+    import pdfplumber
+    import streamlit as st
     
     try:
-        # 1. Creiamo il set di P.IVA/CF presenti nel report RNA
+        # 1. Set di confronto (RNA)
         piva_presenti_nel_periodo = set(
             df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
             .astype(str).str.strip().str.upper().unique()
         )
 
-        # 2. Caricamento del file originale
+        rows_list = []
+        # Regex per identificare P.IVA o CF
+        regex_id = r'(\d{11}|[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])'
+
+        # 2. Estrazione dati dal PDF
         if uploaded_clienti.name.lower().endswith('.pdf'):
             with pdfplumber.open(uploaded_clienti) as pdf:
-                all_data = []
                 for page in pdf.pages:
-                    # Usiamo impostazioni più aggressive per forzare la separazione delle colonne
-                    table = page.extract_table(table_settings={
-                        "vertical_strategy": "text",
-                        "horizontal_strategy": "text",
-                        "snap_y_tolerance": 5,
-                    })
+                    table = page.extract_table()
                     if table:
-                        all_data.extend(table)
-                
-                if not all_data: return None
-                
-                # Creiamo il DF
-                df_tuo = pd.DataFrame(all_data[1:], columns=all_data[0])
-                
-                # --- LOGICA DI RIPARAZIONE (Se le colonne sono agglomerate) ---
-                if len(df_tuo.columns) < 3:
-                    st.warning("⚠️ Formato PDF complesso rilevato: applicazione split automatico delle colonne.")
-                    # Regex per separare: [Progressivo] [Ragione Sociale] [P.IVA/CF] [Resto]
-                    regex_split = r'^(\S+)\s+(.+?)\s+(\d{11}|[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])\s+(.*)$'
-                    
-                    rows_fixed = []
-                    col_name = df_tuo.columns[0]
-                    for val in df_tuo[col_name].astype(str):
-                        match = re.search(regex_split, val.strip())
-                        if match:
-                            rows_fixed.append(list(match.groups()))
-                        else:
-                            # Se non matcha perfettamente, proviamo a salvare il dato
-                            rows_fixed.append([val, "", "", ""])
-                    
-                    df_tuo = pd.DataFrame(rows_fixed, columns=["PROGRESSIVO", "DENOMINAZIONE", "P.IVA/C.F.", "ALTRI DATI"])
+                        for row in table:
+                            # Filtriamo i valori None e uniamo tutta la riga in una stringa
+                            line_text = " ".join([str(cell) for cell in row if cell is not None]).replace('\n', ' ')
+                            
+                            # Cerchiamo il codice fiscale nella riga
+                            match = re.search(regex_id, line_text)
+                            codice = match.group(0) if match else ""
+                            
+                            # Cerchiamo di isolare la Ragione Sociale (tutto ciò che sta prima del codice)
+                            # Nota: ipotizziamo che il progressivo sia all'inizio
+                            parts = re.split(regex_id, line_text)
+                            prefix = parts[0].strip() if len(parts) > 0 else ""
+                            
+                            rows_list.append({
+                                "DATI_ORIGINALI": line_text,
+                                "IDENTIFICATIVO_ESTRATTO": codice,
+                                "ESITO_AIUTI_RNA": "MATCH" if codice in piva_presenti_nel_periodo and codice != "" else "NON TROVATO"
+                            })
+            
+            df_tuo = pd.DataFrame(rows_list)
+            
         else:
+            # Gestione CSV (molto più semplice)
             df_tuo = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
+            # Cerchiamo la colonna identificativa nel CSV
+            col_target = None
+            for col in df_tuo.columns:
+                if df_tuo[col].astype(str).str.contains(regex_id, regex=True).any():
+                    col_target = col
+                    break
+            
+            if col_target:
+                df_tuo['IDENTIFICATIVO_ESTRATTO'] = df_tuo[col_target].str.extract(regex_id)
+                df_tuo['ESITO_AIUTI_RNA'] = df_tuo['IDENTIFICATIVO_ESTRATTO'].apply(
+                    lambda x: "MATCH" if str(x).upper() in piva_presenti_nel_periodo else "NON TROVATO"
+                )
 
-        # 3. IDENTIFICAZIONE COLONNA IDENTIFICATIVI
-        regex_identificativo = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
-        col_piva_tua = None
-        for col in df_tuo.columns:
-            sample = " ".join(df_tuo[col].astype(str).head(10)).upper()
-            if re.search(regex_identificativo, sample):
-                col_piva_tua = col
-                break
-
-        if not col_piva_tua:
-            st.error("Impossibile trovare la colonna identificativi nel file.")
-            return None
-
-        # 4. LOGICA DI VERIFICA
-        def verifica_presenza(val):
-            if not val: return "NON TROVATO"
-            match = re.search(regex_identificativo, str(val).upper())
-            if match:
-                if match.group(0) in piva_presenti_nel_periodo:
-                    return "MATCH"
-            return "NON TROVATO"
-
-        # Aggiungiamo l'esito
-        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica_presenza)
+        # Rimuoviamo righe vuote o intestazioni duplicate se presenti
+        df_tuo = df_tuo[df_tuo['IDENTIFICATIVO_ESTRATTO'] != ""].copy()
         
-        # Ordiniamo per mettere i match in alto
+        # Ordiniamo per mettere i MATCH in cima
         df_tuo = df_tuo.sort_values(by='ESITO_AIUTI_RNA', ascending=True)
         
         return df_tuo
@@ -278,6 +268,11 @@ def genera_output_confronto(df_filtrato, uploaded_clienti):
     except Exception as e:
         st.error(f"Errore nel confronto: {e}")
         return None
+
+
+
+
+
 
 
 def colora_clienti(row):
