@@ -837,20 +837,24 @@ if uploaded_file is not None:
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
+                    # 1. Definiamo i dati extra da includere nel DataFrame del grafico
                     custom_data_cols = ["Aiuti Target", "Fo", "Budget Target", "Fe"]
+                    
+                    # 2. Creiamo il boxplot base
                     fig = px.box(
                         df, 
                         x=col, 
                         points="all", 
-                        hovertemplate=(),
+                        hover_name="Ragione Sociale",
                         title=titolo,
-                        color_discrete_sequence=[colore]
+                        color_discrete_sequence=[colore],
+                        custom_data=custom_data_cols  # Carichiamo i dati per il tooltip
                     )
-                    # pointpos=0 sovrappone i punti al box
-                    # jitter controlla quanto i punti si allargano (0.1 è molto stretto)
+                    
+                    # 3. Personalizziamo i punti e il tooltip (qui va il hovertemplate)
                     fig.update_traces(
                         pointpos=0, 
-                        jitter=1.0, 
+                        jitter=0.7, 
                         marker=dict(opacity=0.6, size=7), # <-- La virgola qui è fondamentale
                         hovertemplate=(
                             "<b>%{hovertext}</b><br>" +
@@ -862,7 +866,12 @@ if uploaded_file is not None:
                             "<extra></extra>"
                         )
                     )
-                    fig.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20))
+                    
+                    fig.update_layout(
+                        height=280, 
+                        margin=dict(l=20, r=20, t=40, b=20),
+                        xaxis_title=""
+                    )
                     return fig
                     
                 # GRAFICO: NUMERO AIUTI TARGET
