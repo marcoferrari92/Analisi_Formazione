@@ -48,7 +48,7 @@ Questi valori descrivono l'ambiente esterno in cui operano le aziende.
 ### 🏢 Indicatori dell'Azienda (Specializzazione)
 Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche della singola impresa.
 * **Fattore Fo (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite per un'azienda media. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
-    * * *Esempio:* Se la **Mediana di Fo è il 70%**, significa che metà delle aziende analizzate dedica al settore target almeno il 70% dei bandi a cui partecipa, mentre l'altra metà addirittura di più. 
+    * *Esempio:* Se la **Mediana di Fo è il 70%**, significa che metà delle aziende analizzate dedica al settore target almeno il 70% dei bandi a cui partecipa, mentre l'altra metà addirittura di più. 
 * **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business degli aiuti dell'azienda è strettamente legato al settore target.
     * *Esempio:* Se la **Mediana di Fe è il 15%**, significa che metà delle aziende analizzate dedica al settore target meno del 15% del proprio budget totale di aiuti, mentre l'altra metà di più. 
     * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel sistema.
