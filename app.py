@@ -229,8 +229,6 @@ if uploaded_file is not None:
                     delta=f"{100 - perc_penetrazione:.1f}% del mercato target libero",
                     delta_color="normal"
                 )
-            with f_col2:
-                st.info("")
                 
 
         # --- ANALISI GEOGRAFICA ---
