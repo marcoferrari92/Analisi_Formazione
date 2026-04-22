@@ -837,11 +837,20 @@ if uploaded_file is not None:
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
+                    custom_data_cols = ["Aiuti Target", "Fo", "Budget Target", "Fe"]
                     fig = px.box(
                         df, 
                         x=col, 
                         points="all", 
-                        hover_name="Ragione Sociale",
+                        hovertemplate=(
+                            "<b>%{hovertext}</b><br>" +
+                            "------------------<br>" +
+                            "Aiuti Target: %{customdata[0]}<br>" +
+                            "Fattore Fo: %{customdata[1]:.1f}%<br>" +
+                            "Budget Target: €%{customdata[2]:,.0f}<br>" +
+                            "Fattore Fe: %{customdata[3]:.1f}%<br>" +
+                            "<extra></extra>" # Rimuove la scritta secondaria di plotly
+                        )
                         title=titolo,
                         color_discrete_sequence=[colore]
                     )
