@@ -348,7 +348,7 @@ if uploaded_file is not None:
             
             # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
             st.subheader("📈 Evoluzione del Budget nel Tempo")
-            with st.expander("💡 Consigli"):
+            with st.expander("💡 Strategia"):
                 st.info(GUIDA_TIMELINE)
             
             # Aggreghiamo Totale e Target
@@ -405,7 +405,7 @@ if uploaded_file is not None:
         
             # --- HEATMAP (STAGIONALITÀ) ---
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
-            with st.expander("💡 Consigli"):
+            with st.expander("💡 Strategia"):
                 st.info(GUIDA_TIMEMAP)
                   
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -477,7 +477,7 @@ if uploaded_file is not None:
         
             # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
             st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
-            with st.expander("💡 Consigli"):
+            with st.expander("📖 Guida ai grafici"):
                 st.markdown(GUIDA_PARETO)
                 
             # 1. Preparazione dati (già ordinati per budget decrescente)
