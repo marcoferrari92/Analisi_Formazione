@@ -849,8 +849,8 @@ if uploaded_file is not None:
                             "Fattore Fo: %{customdata[1]:.1f}%<br>" +
                             "Budget Target: €%{customdata[2]:,.0f}<br>" +
                             "Fattore Fe: %{customdata[3]:.1f}%<br>" +
-                            "<extra></extra>" # Rimuove la scritta secondaria di plotly
-                        )
+                            "<extra></extra>" 
+                        ),
                         title=titolo,
                         color_discrete_sequence=[colore]
                     )
