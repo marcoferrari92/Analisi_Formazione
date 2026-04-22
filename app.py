@@ -621,7 +621,49 @@ if uploaded_file is not None:
             fig_ticket.update_layout(showlegend=False, height=400)
             st.plotly_chart(fig_ticket, use_container_width=True, key="scatter_ticket_medio_success")
 
-
+            # --- NUOVO GRAFICO: SUNBURST (GERARCHIA MISURE) ---
+            st.divider()
+            st.subheader("⭕ Analisi Strutturale: Strumenti e Misure")
+            
+            # 1. Preparazione dati per la gerarchia
+            # Nota: Adattiamo i nomi delle colonne se differiscono nel tuo file
+            col_strumento = 'RNA_DES_TIPO_STRUMENTO' # Es: Contributo in conto capitale, Garanzia, etc.
+            col_misura = 'RNA_TITOLO_MISURA'
+            
+            if col_strumento in df.columns:
+                df_sunburst = df[df['IS_TARGET'] == 1].groupby([col_strumento, col_misura])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+                
+                # Creazione del grafico Sunburst
+                fig_sun = px.sunburst(
+                    df_sunburst,
+                    path=[col_strumento, col_misura], # Definisce la gerarchia: Centro -> Esterno
+                    values='RNA_ELEMENTO_DI_AIUTO',
+                    color=col_strumento,
+                    color_discrete_sequence=px.colors.qualitative.Pastel,
+                    title="Gerarchia Strumenti Finanziari -> Misure Target"
+                )
+                
+                fig_sun.update_layout(
+                    margin=dict(t=40, l=0, r=0, b=0),
+                    height=600
+                )
+                
+                # Personalizzazione tooltip
+                fig_sun.update_traces(
+                    hovertemplate="<b>%{label}</b><br>Budget: €%{value:,.0f}<br>Incidenza: %{percentParent:.1%}"
+                )
+                
+                st.plotly_chart(fig_sun, use_container_width=True)
+                
+                # --- LEGENDINA STRATEGICA ---
+                st.info("""
+                **📖 Come leggere il Sunburst:**
+                * **Anello Interno:** Rappresenta la tipologia di strumento (es. quanto pesa il *Fondo Perduto* rispetto alle *Garanzie*).
+                * **Anello Esterno:** Mostra i singoli bandi che compongono quella categoria.
+                * **Ampiezza Spicchio:** Più lo spicchio è largo, maggiore è il budget erogato attraverso quello strumento/misura.
+                """)
+            else:
+                st.warning("⚠️ Colonna 'Tipo Strumento' non trovata. Impossibile generare il grafico Sunburst.")
 
     
         # --- 1. PREPARAZIONE COLONNE RAGGRUPPAMENTO ---
