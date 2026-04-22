@@ -197,88 +197,147 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
         return df_rna
 
 
-def elabora_confronto_pdf(df_filtrato, uploaded_clienti, piva_presenti, regex_id):
-    """Logica specifica per PDF: gestisce righe con numero di colonne variabile"""
-    with pdfplumber.open(uploaded_clienti) as pdf:
-        all_data = []
-        for page in pdf.pages:
-            table = page.extract_table(table_settings={
-                "vertical_strategy": "text",
-                "horizontal_strategy": "text",
-            })
-            if table:
-                all_data.extend(table)
-        
-        if not all_data: return None
-        
-        headers = all_data[0]
-        num_cols = len(headers)
-        clean_rows = []
-        
-        for row in all_data[1:]:
-            if row is None: continue
-            # Normalizzazione riga per evitare l'errore 'columns passed/data had'
-            if len(row) > num_cols:
-                row = row[:num_cols-1] + [" ".join([str(i) for i in row[num_cols-1:] if i])]
-            elif len(row) < num_cols:
-                row = list(row) + [""] * (num_cols - len(row))
-            clean_rows.append(row)
-        
-        return pd.DataFrame(clean_rows, columns=headers)
 
-def elabora_confronto_csv(uploaded_clienti):
-    """Logica specifica per CSV: mantiene separatori e struttura originale"""
-    content = uploaded_clienti.getvalue().decode('utf-8-sig')
-    first_line = content.split('\n')[0]
-    # Identifica se usare ; o ,
-    sep = ';' if ';' in first_line else ','
-    return pd.read_csv(io.StringIO(content), sep=sep, dtype=str, engine='python').fillna('')
 
-def genera_output_confronto(df_filtrato, uploaded_clienti):
-    """Funzione principale che smista il lavoro"""
+
+def genera_output_confronto_csv(df_filtrato, uploaded_clienti):  
+    import re  
+    import pandas as pd  
+    import streamlit as st  
+    import io  
+
+    try:  
+        # 1. Preparazione set di confronto (RNA)  
+        piva_presenti_nel_periodo = set(  
+            df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']  
+            .astype(str).str.strip().str.upper().unique()  
+        )  
+
+        # 2. CARICAMENTO DATI CSV (MANTENIAMO TUTTO)
+        content = uploaded_clienti.getvalue().decode('utf-8-sig')  
+        
+        # Determiniamo il separatore guardando la prima riga  
+        first_line = content.split('\n')[0]  
+        sep = ';' if ';' in first_line else ','  
+        
+        # Carichiamo il DataFrame integrale  
+        df_tuo = pd.read_csv(io.StringIO(content), sep=sep, dtype=str, engine='python').fillna('')  
+
+        # 3. IDENTIFICAZIONE DELLA COLONNA PER IL MATCH  
+        regex_id = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'  
+        col_piva_tua = None  
+        
+        # Priorità a nomi colonna noti  
+        for col in df_tuo.columns:  
+            if any(x in str(col).upper() for x in ["PARTITA IVA", "CODICE FISCALE", "P.IVA", "P. IVA", "C.F."]):  
+                col_piva_tua = col  
+                break  
+        
+        # Fallback: scansione contenuto  
+        if not col_piva_tua:  
+            for col in df_tuo.columns:  
+                if df_tuo[col].astype(str).str.contains(regex_id, regex=True).any():  
+                    col_piva_tua = col  
+                    break  
+
+        if not col_piva_tua:  
+            st.error("⚠️ Non ho trovato una colonna P.IVA o C.F. nel tuo file CSV.")  
+            return None  
+
+        # 4. AGGIUNTA COLONNA MATCH  
+        def verifica(val):  
+            val_str = str(val).strip().upper()  
+            match = re.search(regex_id, val_str)  
+            if match:  
+                if match.group(0) in piva_presenti_nel_periodo:  
+                    return "MATCH"  
+            return "NON TROVATO"  
+
+        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica)  
+        
+        # Spostiamo la colonna esito in PRIMA posizione  
+        cols = ['ESITO_AIUTI_RNA'] + [c for c in df_tuo.columns if c != 'ESITO_AIUTI_RNA']  
+        df_tuo = df_tuo[cols]  
+        
+        return df_tuo  
+
+    except Exception as e:  
+        st.error(f"Errore nel confronto CSV: {e}")  
+        return None
+
+
+def genera_output_confronto_pdf(df_filtrato, uploaded_clienti):
+    import re
+    import pandas as pd
+    import pdfplumber
+    import streamlit as st
+
     try:
         # 1. Preparazione set di confronto (RNA)
-        piva_presenti = set(df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO'].astype(str).str.strip().str.upper().unique())
+        piva_presenti_nel_periodo = set(
+            df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
+            .astype(str).str.strip().str.upper().unique()
+        )
+
+        # 2. CARICAMENTO DATI PDF
+        with pdfplumber.open(uploaded_clienti) as pdf:
+            all_data = []
+            for page in pdf.pages:
+                table = page.extract_table(table_settings={
+                    "vertical_strategy": "text",
+                    "horizontal_strategy": "text",
+                })
+                if table:
+                    all_data.extend(table)
+            
+            if not all_data:
+                st.error("⚠️ Impossibile estrarre tabelle dal PDF.")
+                return None
+            
+            # Normalizzazione righe (gestione colonne variabili per riga)
+            headers = all_data[0]
+            num_cols = len(headers)
+            clean_rows = []
+            
+            for row in all_data[1:]:
+                if row is None: continue
+                # Se la riga ha più o meno colonne dell'header, la aggiustiamo
+                if len(row) > num_cols:
+                    row = row[:num_cols-1] + [" ".join([str(i) for i in row[num_cols-1:] if i])]
+                elif len(row) < num_cols:
+                    row = list(row) + [""] * (num_cols - len(row))
+                clean_rows.append(row)
+            
+            df_tuo = pd.DataFrame(clean_rows, columns=headers)
+
+        # 3. IDENTIFICAZIONE COLONNA E MATCH
         regex_id = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
-
-        # 2. Caricamento Dati (Smistamento)
-        if uploaded_clienti.name.lower().endswith('.pdf'):
-            df_tuo = elabora_confronto_pdf(df_filtrato, uploaded_clienti, piva_presenti, regex_id)
-        else:
-            df_tuo = elabora_confronto_csv(uploaded_clienti)
-
-        if df_tuo is None: return None
-
-        # 3. Identificazione Colonna Target
         col_piva_tua = None
         for col in df_tuo.columns:
-            if any(x in str(col).upper() for x in ["PARTITA IVA", "CODICE FISCALE", "P.IVA", "P. IVA", "C.F."]):
+            if any(x in str(col).upper() for x in ["P.IVA", "PARTITA IVA", "C.F.", "P. IVA"]):
                 col_piva_tua = col
                 break
         
         if not col_piva_tua:
+            # Fallback contenuto
             for col in df_tuo.columns:
                 if df_tuo[col].astype(str).str.contains(regex_id, regex=True).any():
                     col_piva_tua = col
                     break
 
-        if not col_piva_tua:
-            st.error("⚠️ Colonna P.IVA/C.F. non trovata.")
-            return None
-
-        # 4. Verifica e Formattazione Finale
         def verifica(val):
             match = re.search(regex_id, str(val).strip().upper())
-            return "MATCH" if match and match.group(0) in piva_presenti else "NON TROVATO"
+            if match and match.group(0) in piva_presenti_nel_periodo:
+                return "MATCH"
+            return "NON TROVATO"
 
         df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica)
         
-        # Riordino: Esito in prima colonna
         cols = ['ESITO_AIUTI_RNA'] + [c for c in df_tuo.columns if c != 'ESITO_AIUTI_RNA']
         return df_tuo[cols]
 
     except Exception as e:
-        st.error(f"Errore nel confronto: {e}")
+        st.error(f"Errore nel confronto PDF: {e}")
         return None
 
 
