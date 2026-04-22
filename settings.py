@@ -60,17 +60,16 @@ I valori di benchmark dovranno poi essere confrontati con quello di tali outlier
 """
 
 GUIDA_OUTLIER = """
-* **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se è stretta, le aziende hanno comportamenti simili; se è larga, c'è molta disparità.
-    * **1° Quartile:** indica il valore sotto il quale si trova il 25% delle aziende "più piccole".
+* **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se il box è stretto, le aziende hanno comportamenti simili; se è largo, c'è molta disparità.
+    * **1° Quartile:** indica il valore sotto il quale si trova il 25% delle aziende.
     * **2° Quartile (Mediana):** È il "centro" del mercato. Indica che metà delle aziende ha ottenuto meno di quel valore e l'altra metà di più.
     * **3° Quartile:** indica il valore sopra il quale si trova il 25% dei "top player".
-* **I "Baffi" (Fence):** Sono le linee che si estendono fuori dalla scatola. Rappresentano il limite della "normalità" statistica. 
-    * Tutto ciò che sta **dentro** i baffi è considerato un comportamento standard per il settore.
+* **I baffi (Fence):** Sono le linee che si estendono fuori dalla scatola. Rappresentano il limite della "normalità" statistica. 
+    * Tutto ciò che sta **dentro** i baffi è considerato un comportamento standard per il settore (copre circa il 99.3% dei dati).
     * Tutto ciò che sta **oltre** i baffi è un'anomalia.
-* **I Pallini (Outliers):** Ogni pallino è un'azienda reale.
-    * I pallini **dentro** i baffi sono la massa dei competitor.
-    * I pallini **oltre il baffo destro** sono gli **Outliers**: aziende eccezionali che hanno ottenuto risultati fuori scala (eccellenze o grandi gruppi).
-* **Dispersione Verticale:** I pallini sono "sparpagliati" in verticale solo per non sovrapporsi e permetterti di vederli tutti; l'unico valore che conta per il dato è la loro posizione sull'asse orizzontale.
+* **I Pallini (Outliers):**
+    * I pallini **dentro** i baffi sono la massa delle aziende competitor.
+    * I pallini **oltre il baffo destro** sono gli **outliers**: aziende eccezionali che hanno ottenuto risultati fuori scala.
 """
 
 
