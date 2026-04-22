@@ -477,7 +477,7 @@ if uploaded_file is not None:
         
             # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
             st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
-            with st.expander("📖 Guida ai grafici"):
+            with st.expander("📖 Metodologia e guida ai grafici"):
                 st.markdown(GUIDA_PARETO)
                 
             # 1. Preparazione dati (già ordinati per budget decrescente)
@@ -706,7 +706,7 @@ if uploaded_file is not None:
             st.subheader("📈 Benchmark Settore Target")
             st.write("Il *benchmark* permette di definire gli *standard* del mercato di riferimento sui cui dovranno essere valutate le singole aziende.")
             
-            with st.expander("💡 Consigli"):
+            with st.expander("📖 Metodologia"):
                 st.markdown(GUIDA_BENCHMARK)
                 
             # Creiamo un contenitore con bordo (stile card)
