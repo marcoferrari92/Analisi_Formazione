@@ -204,6 +204,7 @@ if uploaded_file is not None:
             })
 
             # Generazione del Grafico
+            # Generazione del Grafico
             fig_funnel = px.funnel(
                 funnel_df, 
                 x='Numero', 
@@ -212,16 +213,8 @@ if uploaded_file is not None:
                 color_discrete_sequence=["#3498db"]
             )
             
-            # MODIFICA QUI: Usiamo texttemplate per il controllo granulare
-            # %{value} mostra il numero intero
-            # %{percentInitial:.2%} calcola la percentuale rispetto al primo step con 2 decimali
-            fig_funnel.update_traces(
-                texttemplate="%{value} aziende<br>%{percentInitial:.2%}", 
-                textposition="inside"
-            )
-            
-            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))
-            
+            fig_funnel.update_traces(textinfo="value+percent initial")
+            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))    
             st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
             
             # --- ANALISI DEI PROSPECT ---
