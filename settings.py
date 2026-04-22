@@ -41,9 +41,9 @@ Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la m
 
 ### 🌍 Indicatori del Mercato (Potenziale)
 Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponibili.
-* **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno ricevuto mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati.
-* **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la Mediana Target con la Mediana Totale chiarisce se i fondi nel settore d'interesse (target) sono mediamente più ricchi o più poveri rispetto al mercato generale.
-    * *Esempio:* Se il rapporto tra Mediana Target e Mediana Totale è il **25%**, significa che il finanziamento tipico nel settore target è grande un quarto rispetto a un finanziamento generico. Questo ci dice se il settore target è composto da piccoli contributi o da grandi investimenti.
+* **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno ricevuto mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati, ma non necessariamente di grande impatto economico (che è, invece, definito dal **Budget per Azienda**)
+* **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la **Mediana Target** con la **Mediana Totale** chiarisce se i fondi nel settore d'interesse (target) sono mediamente più ricchi o più poveri rispetto a un bando generico.
+    * *Esempio:* Se il rapporto tra Mediana Target e Mediana Totale è il **25%**, significa che il finanziamento tipico nel settore target è grande un quarto rispetto a un finanziamento generico. Questo chiarisce se il settore target è composto da piccoli contributi o da grandi investimenti. 
 
 ### 🏢 Indicatori dell'Azienda (Specializzazione)
 Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche della singola impresa.
