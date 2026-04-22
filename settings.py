@@ -61,9 +61,9 @@ I valori di benchmark dovranno poi essere confrontati con quello di tali outlier
 
 GUIDA_OUTLIER = """
 * **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se il box è stretto, le aziende hanno comportamenti simili; se è largo, c'è molta disparità.
-    * **1° Quartile:** indica il valore sotto il quale si trova il 25% delle aziende.
-    * **2° Quartile (Mediana):** È il "centro" del mercato. Indica che metà delle aziende ha ottenuto meno di quel valore e l'altra metà di più.
-    * **3° Quartile:** indica il valore sopra il quale si trova il 25% dei "top player".
+    * *1° Quartile:* indica il valore sotto il quale si trova il 25% delle aziende.
+    * *2° Quartile (Mediana):* È il "centro" del mercato. Indica che metà delle aziende ha ottenuto meno di quel valore e l'altra metà di più.
+    * *3° Quartile:* indica il valore sopra il quale si trova il 25% dei "top player".
 * **I baffi (Fence):** Sono le linee che si estendono fuori dalla scatola. Rappresentano il limite della "normalità" statistica. 
     * Tutto ciò che sta **dentro** i baffi è considerato un comportamento standard per il settore (copre circa il 99.3% dei dati).
     * Tutto ciò che sta **oltre** i baffi è un'anomalia.
