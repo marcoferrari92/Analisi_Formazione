@@ -128,89 +128,72 @@ import pdfplumber
 
 def verifica_stato_clienti(df_rna, uploaded_clienti):
     """
-    Versione Universale Ottimizzata: Legge CSV o PDF, identifica P.IVA e Codici Fiscali,
-    gestisce celle multi-riga e formati misti.
+    Estrae P.IVA/CF da qualsiasi file e aggiorna il database RNA.
     """
     try:
         lista_piva_clienti = set()
-        # Regex aggiornata: 11 cifre (P.IVA) OPPURE formato Codice Fiscale standard
+        # Regex per P.IVA (11 cifre) e Codici Fiscali (16 caratteri)
         regex_piva_cf = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
         
         anteprima_debug = [] 
 
-        # --- 1. CARICAMENTO E ESTRAZIONE DATI ---
+        # --- 1. ESTRAZIONE DATI (PDF o CSV) ---
         if uploaded_clienti.name.lower().endswith('.pdf'):
-            with st.spinner("Analisi del PDF in corso..."):
+            with st.spinner("Analisi del PDF..."):
                 with pdfplumber.open(uploaded_clienti) as pdf:
-                    testo_completo = ""
-                    
-                    for i, page in enumerate(pdf.pages):
-                        # Tentativo A: Estrazione tabelle (ottimale per il tuo file ISI 2021)
+                    for page in pdf.pages:
+                        # Estrazione tabelle
                         table = page.extract_table()
                         if table:
-                            # Salviamo le prime righe per il debug
-                            if not anteprima_debug:
-                                anteprima_debug = table[:10] 
-                            
+                            if not anteprima_debug: anteprima_debug = table[:10]
                             for row in table:
                                 for cell in row:
                                     if cell:
-                                        # Pulizia: rimuove spazi extra ma mantiene il testo per la regex
-                                        clean_cell = str(cell).strip()
-                                        # Cerchiamo tutti i match nella cella (gestisce i casi multi-riga)
-                                        matches = re.findall(regex_piva_cf, clean_cell)
+                                        matches = re.findall(regex_piva_cf, str(cell).strip())
                                         lista_piva_clienti.update(matches)
                         
-                        # Tentativo B: Estrazione testo libero (per sicurezza)
-                        testo_pagina = page.extract_text() or ""
-                        testo_completo += testo_pagina
-                        piva_nel_testo = re.findall(regex_piva_cf, testo_pagina)
-                        lista_piva_clienti.update(piva_nel_testo)
-
-                    if not anteprima_debug:
-                        anteprima_debug = [["Testo Estratto"], [testo_completo[:500] + "..."]]
-
+                        # Estrazione testo (per sicurezza se le tabelle falliscono)
+                        testo_libero = page.extract_text() or ""
+                        lista_piva_clienti.update(re.findall(regex_piva_cf, testo_libero))
         else:
-            # Gestione CSV
-            df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
-            anteprima_debug = df_clienti.head(10) 
-            
-            # Applichiamo la regex a ogni cella del CSV
-            for col in df_clienti.columns:
-                for val in df_clienti[col]:
-                    matches = re.findall(regex_piva_cf, str(val))
-                    lista_piva_clienti.update(matches)
+            # Gestione CSV: leggiamo tutto il file come stringhe e cerchiamo i pattern
+            df_temp = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
+            anteprima_debug = df_temp.head(10)
+            for col in df_temp.columns:
+                for val in df_temp[col]:
+                    lista_piva_clienti.update(re.findall(regex_piva_cf, str(val)))
 
-        # --- 2. OUTPUT DI VERIFICA (DEBUG EXPANDER) ---
+        # --- 2. DEBUG SIDEBAR ---
         with st.sidebar.expander("🔍 Verifica estrazione dati"):
             st.write(f"**File:** {uploaded_clienti.name}")
-            st.sidebar.divider()
-            if isinstance(anteprima_debug, pd.DataFrame):
-                st.dataframe(anteprima_debug, use_container_width=True)
-            else:
-                st.table(anteprima_debug)
-            
-            st.write(f"**Identificativi trovati (P.IVA/CF):** {len(lista_piva_clienti)}")
+            st.write(f"**Identificativi trovati:** {len(lista_piva_clienti)}")
             if lista_piva_clienti:
-                st.write("**Esempio valori estratti:**", list(lista_piva_clienti)[:10])
+                st.write("**Esempio:**", list(lista_piva_clienti)[:5])
 
-        # --- 3. VERIFICA RISULTATI E MATCHING ---
+        # --- 3. MATCHING SUL DATAFRAME RNA ---
         if not lista_piva_clienti:
-            st.error(f"⚠️ Nessuna P.IVA o C.F. trovati in {uploaded_clienti.name}")
+            st.warning(f"Nessun codice identificativo trovato in {uploaded_clienti.name}")
+            df_rna['STATO'] = "⚪ PROSPECT" # Default se non trova nulla
             return df_rna
 
-        def check_stato(val):
-            # Pulizia del valore nel DB RNA per il confronto
-            rna_val = str(val).strip().upper()
-            return "🟢 MATCH" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
+        # Funzione di confronto pulita
+        def check_match(valore_rna):
+            # Pulizia del dato nel tuo database principale
+            codice_pulito = str(valore_rna).strip().upper()
+            return "🟢 MATCH" if codice_pulito in lista_piva_clienti else "⚪ PROSPECT"
 
-        # Applichiamo il confronto sulla colonna del Codice Fiscale del beneficiario
-        df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
+        # AGGIORNAMENTO COLONNA STATO
+        # Assicurati che 'RNA_CODICE_FISCALE_BENEFICIARIO' sia il nome corretto della colonna nel tuo df_rna
+        if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df_rna.columns:
+            df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_match)
+            st.success(f"Confronto completato: {len(df_rna[df_rna['STATO'] == '🟢 MATCH'])} match trovati.")
+        else:
+            st.error("La colonna 'RNA_CODICE_FISCALE_BENEFICIARIO' non esiste nel database RNA.")
         
         return df_rna
 
     except Exception as e:
-        st.error(f"❌ Errore durante l'elaborazione: {e}")
+        st.error(f"Errore: {e}")
         return df_rna
 
 
