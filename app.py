@@ -190,45 +190,36 @@ if uploaded_file is not None:
             val_totali = n_aziende
             val_target = n_aziende_target
             
-            # Calcolo aziende clienti nel target (se il database clienti è caricato)
+            # --- CALCOLO CORRETTO PER IL FUNNEL ---
             if 'STATO' in df.columns:
-                # Contiamo i CF univoci che sono sia in target che già clienti
-                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+                # Trasformiamo tutto in stringa e cerchiamo 'MATCH' ignorando emoji e spazi
+                mask_match = df['STATO'].astype(str).str.contains('MATCH', case=False, na=False)
+                
+                # Filtriamo: deve essere in TARGET e deve essere un MATCH
+                df_match_target = df[(df['IS_TARGET'] == 1) & (mask_match)]
+                
+                # Contiamo i codici fiscali univoci
+                val_clienti = df_match_target['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
             else:
                 val_clienti = 0
-
-            # Creazione del DataFrame per il grafico
+            
+            # --- AGGIORNAMENTO GRAFICO ---
             funnel_df = pd.DataFrame({
-                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Clienti"],
+                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Match"],
                 "Numero": [val_totali, val_target, val_clienti]
             })
-
-            # Generazione del Grafico
-            # Generazione del Grafico
+            
             fig_funnel = px.funnel(
-                funnel_df, 
-                x='Numero', 
-                y='Fase',
+                funnel_df, x='Numero', y='Fase',
                 title="Conversione e Penetrazione del Mercato",
                 color_discrete_sequence=["#3498db"]
             )
             
-            fig_funnel.update_traces(textinfo="value+percent initial")
-            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))    
-            st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
-            
-            # --- ANALISI DEI PROSPECT ---
-            n_prospect = val_target - val_clienti
-            perc_penetrazione = (val_clienti / val_target * 100) if val_target > 0 else 0
-            
-            f_col1, f_col2 = st.columns(2)
-            with f_col1:
-                st.metric(
-                    label="🎯 Prospect da Conquistare", 
-                    value=f"{n_prospect}", 
-                    delta=f"{100 - perc_penetrazione:.1f}% del mercato target libero",
-                    delta_color="normal"
-                )
+            # Applichiamo le due cifre decimali come richiesto
+            fig_funnel.update_traces(
+                texttemplate="%{value} aziende<br>%{percentInitial:.2%}", 
+                textposition="inside"
+            )
                 
 
         # --- ANALISI GEOGRAFICA ---
