@@ -202,7 +202,7 @@ if uploaded_file is not None:
             # Calcolo aziende clienti nel target (se il database clienti è caricato)
             if 'STATO' in df.columns:
                 # Contiamo i CF univoci che sono sia in target che già clienti
-                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('Cliente', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
             else:
                 val_clienti = 0
 
