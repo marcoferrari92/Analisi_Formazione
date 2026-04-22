@@ -704,8 +704,8 @@ if uploaded_file is not None:
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
-
-            # Menu a scomparsa con la spiegazione tecnica e metodologica
+            st.write("Il *benchmark* permette di definire gli *standard* del mercato di riferimento sui cui dovranno essere valutate le singole aziende.")
+            
             with st.expander("💡 Consigli"):
                 st.markdown(GUIDA_BENCHMARK)
                 
