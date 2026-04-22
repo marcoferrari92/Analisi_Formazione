@@ -842,6 +842,16 @@ if uploaded_file is not None:
                         df, 
                         x=col, 
                         points="all", 
+                        hovertemplate=(),
+                        title=titolo,
+                        color_discrete_sequence=[colore]
+                    )
+                    # pointpos=0 sovrappone i punti al box
+                    # jitter controlla quanto i punti si allargano (0.1 è molto stretto)
+                    fig.update_traces(
+                        pointpos=0, 
+                        jitter=1.0, 
+                        marker=dict(opacity=0.6, size=7), # <-- La virgola qui è fondamentale
                         hovertemplate=(
                             "<b>%{hovertext}</b><br>" +
                             "------------------<br>" +
@@ -849,14 +859,9 @@ if uploaded_file is not None:
                             "Fattore Fo: %{customdata[1]:.1f}%<br>" +
                             "Budget Target: €%{customdata[2]:,.0f}<br>" +
                             "Fattore Fe: %{customdata[3]:.1f}%<br>" +
-                            "<extra></extra>" 
-                        ),
-                        title=titolo,
-                        color_discrete_sequence=[colore]
+                            "<extra></extra>"
+                        )
                     )
-                    # pointpos=0 sovrappone i punti al box
-                    # jitter controlla quanto i punti si allargano (0.1 è molto stretto)
-                    fig.update_traces(pointpos=0, jitter=1, marker=dict(opacity=0.6, size=7))
                     fig.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20))
                     return fig
                     
