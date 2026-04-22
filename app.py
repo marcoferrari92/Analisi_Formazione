@@ -195,8 +195,6 @@ if uploaded_file is not None:
                 # Trasformiamo tutto in stringa e cerchiamo 'MATCH' ignorando emoji e spazi
                 val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
                 
-                # Contiamo i codici fiscali univoci
-                val_clienti = df_match_target['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
             else:
                 val_clienti = 0
             
