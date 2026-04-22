@@ -51,7 +51,7 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
     * *Esempio:* Se la **Mediana di Fo è il 70%**, significa che metà delle aziende analizzate dedica al settore target almeno il 70% dei bandi a cui partecipa, mentre l'altra metà addirittura di più. 
 * **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business degli aiuti dell'azienda è strettamente legato al settore target.
     * *Esempio:* Se la **Mediana di Fe è il 15%**, significa che metà delle aziende analizzate dedica al settore target meno del 15% del proprio budget totale di aiuti, mentre l'altra metà di più. 
-    * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel settore (per questo vedasi la sezione **Panoramica del Settore Target**)
+    * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel settore (per questo vedasi la sezione **Panoramica Settore Target**)
 
 ---
 💡 **Strategia:** Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
