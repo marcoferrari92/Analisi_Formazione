@@ -845,7 +845,7 @@ if uploaded_file is not None:
                     )
                     # pointpos=0 sovrappone i punti al box
                     # jitter controlla quanto i punti si allargano (0.1 è molto stretto)
-                    fig.update_traces(pointpos=0, jitter=0.7, marker=dict(opacity=0.6, size=7))
+                    fig.update_traces(pointpos=0, jitter=1.0, marker=dict(opacity=0.6, size=7))
                     fig.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20))
                     return fig
                     
