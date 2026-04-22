@@ -193,10 +193,7 @@ if uploaded_file is not None:
             # --- CALCOLO CORRETTO PER IL FUNNEL ---
             if 'STATO' in df.columns:
                 # Trasformiamo tutto in stringa e cerchiamo 'MATCH' ignorando emoji e spazi
-                mask_match = df['STATO'].astype(str).str.contains('MATCH', case=False, na=False)
-                
-                # Filtriamo: deve essere in TARGET e deve essere un MATCH
-                df_match_target = df[(df['IS_TARGET'] == 1) & (mask_match)]
+                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
                 
                 # Contiamo i codici fiscali univoci
                 val_clienti = df_match_target['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
