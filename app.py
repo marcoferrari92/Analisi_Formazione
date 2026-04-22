@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
 from analisi import create_centered_pie
 
@@ -832,6 +832,8 @@ if uploaded_file is not None:
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
             with st.expander("📈 Analisi Outliers"):
+                with st.expander("💡 Consigli"):
+                    st.info(GUIDA_OUTLIER)
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
