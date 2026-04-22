@@ -283,6 +283,7 @@ def genera_output_confronto_pdf(df_filtrato, uploaded_clienti):
         with pdfplumber.open(uploaded_clienti) as pdf:
             all_data = []
             for page in pdf.pages:
+                # Estrazione tabella con strategia basata sul testo
                 table = page.extract_table(table_settings={
                     "vertical_strategy": "text",
                     "horizontal_strategy": "text",
@@ -290,66 +291,72 @@ def genera_output_confronto_pdf(df_filtrato, uploaded_clienti):
                 if table:
                     all_data.extend(table)
             
-            if not all_data:
-                st.error("⚠️ Impossibile estrarre tabelle dal PDF.")
+            if not all_data: 
+                st.error("⚠️ Nessuna tabella trovata nel PDF.")
                 return None
             
-            # Normalizzazione righe (gestione colonne variabili per riga)
-            headers = [str(h).strip() for h in all_data[0]]
+            # Creazione DataFrame: gestiamo il caso di righe con numero di colonne incoerente
+            headers = all_data[0]
             num_cols = len(headers)
             clean_rows = []
-            
             for row in all_data[1:]:
                 if row is None: continue
-                # Se la riga ha più o meno colonne dell'header, la aggiustiamo
-                row_list = list(row)
-                if len(row_list) > num_cols:
-                    row_list = row_list[:num_cols-1] + [" ".join([str(i) for i in row_list[num_cols-1:] if i])]
-                elif len(row_list) < num_cols:
-                    row_list = row_list + [""] * (num_cols - len(row_list))
-                clean_rows.append(row_list)
-            
+                # Pareggiamo la lunghezza della riga a quella degli headers per evitare crash
+                if len(row) > num_cols:
+                    row = row[:num_cols]
+                elif len(row) < num_cols:
+                    row = list(row) + [""] * (num_cols - len(row))
+                clean_rows.append(row)
+                
             df_tuo = pd.DataFrame(clean_rows, columns=headers)
 
-        # 3. IDENTIFICAZIONE COLONNA E MATCH
+        # 3. IDENTIFICAZIONE COLONNA IDENTIFICATIVI (P.IVA o CF)
         regex_id = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
         col_piva_tua = None
         
-        # Prova A: Cerca per nome colonna
+        # A. Controllo per nome colonna
         for col in df_tuo.columns:
-            if any(x in str(col).upper() for x in ["P.IVA", "PARTITA IVA", "C.F.", "P. IVA", "CODICE FISCALE"]):
+            if any(x in str(col).upper() for x in ["P.IVA", "PARTITA IVA", "CODICE FISCALE", "P. IVA", "C.F."]):
                 col_piva_tua = col
                 break
         
-        # Prova B: Cerca per contenuto (Corretto: analizza colonna per colonna)
+        # B. Controllo per contenuto (corretto per evitare l'errore Series)
         if not col_piva_tua:
             for col in df_tuo.columns:
-                # Controlliamo se almeno un valore nella colonna soddisfa la regex
+                # Verifichiamo se almeno un elemento della colonna contiene il pattern
                 if df_tuo[col].astype(str).apply(lambda x: bool(re.search(regex_id, x))).any():
                     col_piva_tua = col
                     break
 
         if not col_piva_tua:
-            st.error("⚠️ Non ho trovato una colonna P.IVA o C.F. nel PDF.")
+            st.error(f"⚠️ Impossibile trovare una colonna P.IVA/CF valida in {uploaded_clienti.name}")
             return None
 
-        # 4. FUNZIONE DI VERIFICA
-        def verifica(val):
-            if not val: return "NON TROVATO"
-            match = re.search(regex_id, str(val).strip().upper())
-            if match and match.group(0) in piva_presenti_nel_periodo:
-                return "MATCH"
+        # 4. LOGICA DI VERIFICA
+        def verifica_presenza(val):
+            if not val or pd.isna(val): return "NON TROVATO"
+            testo_cella = str(val).strip().upper()
+            match = re.search(regex_id, testo_cella)
+            if match:
+                codice = match.group(0)
+                if codice in piva_presenti_nel_periodo:
+                    return "MATCH"
             return "NON TROVATO"
 
-        # Aggiunta colonna esito
-        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica)
+        # Applichiamo la verifica
+        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica_presenza)
         
-        # Riordino colonne
+        # Spostiamo l'esito in prima posizione
         cols = ['ESITO_AIUTI_RNA'] + [c for c in df_tuo.columns if c != 'ESITO_AIUTI_RNA']
-        return df_tuo[cols]
+        df_tuo = df_tuo[cols]
+        
+        # Ordiniamo per i MATCH
+        df_tuo = df_tuo.sort_values(by='ESITO_AIUTI_RNA', ascending=True)
+        
+        return df_tuo
 
     except Exception as e:
-        st.error(f"Errore nel confronto PDF: {e}")
+        st.error(f"Errore tecnico nel confronto PDF: {e}")
         return None
 
 
