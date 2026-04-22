@@ -184,7 +184,7 @@ if uploaded_file is not None:
         # --- FUNNEL CHART (QUALIFICAZIONE) ---
         st.write("")
         st.write("")
-        with st.expander("🌪️ Funnel di Qualificazione del Mercato"):
+        with st.expander("💼 Funnel Chart"):
             
             # 1. Recupero dei valori per i passaggi del funnel
             val_totali = n_aziende
@@ -208,7 +208,7 @@ if uploaded_file is not None:
                 funnel_df, 
                 x='Numero', 
                 y='Fase',
-                title="Conversione e Penetrazione del Mercato",
+                title="Penetrazione Settore Target",
                 color_discrete_sequence=["#3498db"]
             )
             
