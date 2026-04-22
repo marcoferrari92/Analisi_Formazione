@@ -119,23 +119,15 @@ if uploaded_file is not None:
         # Famiglie di aziende
         aziende_totali        = set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
         aziende_target        = set(df[df['IS_TARGET'] == 1]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
-        aziende_live          = set(df[df['RNA_ELEMENTO_DI_AIUTO'] > 0]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique())
-        aziende_dead          = aziende_totali - aziende_live
-        aziende_off           = aziende_live - aziende_target
         
-        n_aziende             = df['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+        n_aziende             = len(aziende_totali)
         n_aziende_target      = len(aziende_target)
-        n_aziende_live        = len(aziende_live)
-        n_aziende_dead        = len(aziende_dead)
-        n_aziende_off         = len(aziende_off)
         
         n_aiuti_totali        = len(df)
         n_aiuti_target        = df['IS_TARGET'].sum()
         
         budget_totale         = df['RNA_ELEMENTO_DI_AIUTO'].sum()
         budget_target         = df['IMPORTO_TARGET'].sum()
-        #budget_medio          = budget_totale/n_aziende_live
-        #budget_target_medio   = budget_target/n_aziende_target
         
         perc_aiuti_target     = (n_aiuti_target / n_aiuti_totali * 100) if n_aiuti_totali > 0 else 0
         perc_budget_target    = (budget_target / budget_totale * 100) if budget_totale > 0 else 0
@@ -153,7 +145,7 @@ if uploaded_file is not None:
         
         m1, m2, m3 = st.columns(3)
         with m1:
-            st.metric("Aziende Attive", f"{n_aziende_live}")
+            st.metric("Aziende Attive", f"{n_aziende}")
             st.metric("Aziende Target", f"{n_aziende_target}", 
                       delta=f"{(n_aziende_target/n_aziende)*100:.1f}% del totale", delta_color = "normal")
         with m2:
@@ -196,7 +188,6 @@ if uploaded_file is not None:
             
             # 1. Recupero dei valori per i passaggi del funnel
             val_totali = n_aziende
-            val_attive = n_aziende_live
             val_target = n_aziende_target
             
             # Calcolo aziende clienti nel target (se il database clienti è caricato)
@@ -208,8 +199,8 @@ if uploaded_file is not None:
 
             # Creazione del DataFrame per il grafico
             funnel_df = pd.DataFrame({
-                "Fase": ["Aziende Totali", "Aziende Attive", "Aziende Target", "Aziende Clienti"],
-                "Numero": [val_totali, val_attive, val_target, val_clienti]
+                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Clienti"],
+                "Numero": [val_totali, val_target, val_clienti]
             })
 
             # Generazione del Grafico
