@@ -477,7 +477,7 @@ if uploaded_file is not None:
         
             # --- ANALISI DI PARETO (80/20) CON INTERSEZIONE ---
             st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
-            with st.expander("📖 Guida alla lettura e Metodologia"):
+            with st.expander("💡 Consigli"):
                 st.markdown(GUIDA_PARETO)
                 
             # 1. Preparazione dati (già ordinati per budget decrescente)
