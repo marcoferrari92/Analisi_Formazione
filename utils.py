@@ -198,77 +198,79 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
 
 def genera_output_confronto(df_filtrato, uploaded_clienti):
-    import re
+    
     try:
-        # 1. Creiamo il set di P.IVA/CF presenti nel report RNA (già filtrato per data nell'app)
-        # Usiamo upper() e strip() per garantire il match perfetto
+        # 1. Creiamo il set di P.IVA/CF presenti nel report RNA
         piva_presenti_nel_periodo = set(
             df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
-            .astype(str)
-            .str.strip()
-            .str.upper()
-            .unique()
+            .astype(str).str.strip().str.upper().unique()
         )
 
-        # 2. Carichiamo il tuo file originale
+        # 2. Caricamento del file originale
         if uploaded_clienti.name.lower().endswith('.pdf'):
             with pdfplumber.open(uploaded_clienti) as pdf:
                 all_data = []
                 for page in pdf.pages:
-                    table = page.extract_table()
+                    # Usiamo impostazioni più aggressive per forzare la separazione delle colonne
+                    table = page.extract_table(table_settings={
+                        "vertical_strategy": "text",
+                        "horizontal_strategy": "text",
+                        "snap_y_tolerance": 5,
+                    })
                     if table:
                         all_data.extend(table)
                 
-                if not all_data:
-                    return None
+                if not all_data: return None
                 
-                # Creiamo il DF. Se la prima riga è l'header, la usiamo
+                # Creiamo il DF
                 df_tuo = pd.DataFrame(all_data[1:], columns=all_data[0])
+                
+                # --- LOGICA DI RIPARAZIONE (Se le colonne sono agglomerate) ---
+                if len(df_tuo.columns) < 3:
+                    st.warning("⚠️ Formato PDF complesso rilevato: applicazione split automatico delle colonne.")
+                    # Regex per separare: [Progressivo] [Ragione Sociale] [P.IVA/CF] [Resto]
+                    regex_split = r'^(\S+)\s+(.+?)\s+(\d{11}|[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])\s+(.*)$'
+                    
+                    rows_fixed = []
+                    col_name = df_tuo.columns[0]
+                    for val in df_tuo[col_name].astype(str):
+                        match = re.search(regex_split, val.strip())
+                        if match:
+                            rows_fixed.append(list(match.groups()))
+                        else:
+                            # Se non matcha perfettamente, proviamo a salvare il dato
+                            rows_fixed.append([val, "", "", ""])
+                    
+                    df_tuo = pd.DataFrame(rows_fixed, columns=["PROGRESSIVO", "DENOMINAZIONE", "P.IVA/C.F.", "ALTRI DATI"])
         else:
             df_tuo = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
 
-        # 3. IDENTIFICAZIONE COLONNA (Migliorata per gestire CF alfanumerici)
-        # Regex per P.IVA (11 cifre) o CF (16 caratteri)
+        # 3. IDENTIFICAZIONE COLONNA IDENTIFICATIVI
         regex_identificativo = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
-        
         col_piva_tua = None
         for col in df_tuo.columns:
-            # Testiamo se la colonna contiene valori che somigliano a P.IVA o CF
-            concatenated_samples = " ".join(df_tuo[col].astype(str).head(20).tolist()).upper()
-            if re.search(regex_identificativo, concatenated_samples):
+            sample = " ".join(df_tuo[col].astype(str).head(10)).upper()
+            if re.search(regex_identificativo, sample):
                 col_piva_tua = col
                 break
 
         if not col_piva_tua:
-            # Se fallisce la ricerca automatica, proviamo a cercare una colonna che contenga "P. IVA" o "C.F." nel nome
-            for col in df_tuo.columns:
-                if any(x in str(col).upper() for x in ["P. IVA", "C.F.", "PARTITA IVA", "CODICE FISCALE"]):
-                    col_piva_tua = col
-                    break
-
-        if not col_piva_tua:
-            st.error(f"⚠️ Impossibile trovare la colonna identificativi in {uploaded_clienti.name}")
+            st.error("Impossibile trovare la colonna identificativi nel file.")
             return None
 
         # 4. LOGICA DI VERIFICA
         def verifica_presenza(val):
-            if not val: return "Not Found"
-            # Puliamo il valore (rimuoviamo newline e spazi)
-            clean_val = str(val).strip().split('\n')[0].strip().upper()
-            
-            # Estraiamo il codice puro se la cella contiene altro testo
-            match = re.search(regex_identificativo, clean_val)
+            if not val: return "NON TROVATO"
+            match = re.search(regex_identificativo, str(val).upper())
             if match:
-                codice_estratto = match.group(0)
-                if codice_estratto in piva_presenti_nel_periodo:
+                if match.group(0) in piva_presenti_nel_periodo:
                     return "MATCH"
-            
             return "NON TROVATO"
 
-        # Aggiungiamo la colonna dell'esito
+        # Aggiungiamo l'esito
         df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica_presenza)
         
-        # Ordiniamo per mettere i MATCH in alto nel file scaricabile
+        # Ordiniamo per mettere i match in alto
         df_tuo = df_tuo.sort_values(by='ESITO_AIUTI_RNA', ascending=True)
         
         return df_tuo
