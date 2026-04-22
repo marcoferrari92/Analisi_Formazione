@@ -706,7 +706,7 @@ if uploaded_file is not None:
             st.subheader("📈 Benchmark Settore Target")
 
             # Menu a scomparsa con la spiegazione tecnica e metodologica
-            with st.expander("📖 Guida alla lettura e Metodologia"):
+            with st.expander("💡 Consigli"):
                 st.markdown(GUIDA_BENCHMARK)
                 
             # Creiamo un contenitore con bordo (stile card)
