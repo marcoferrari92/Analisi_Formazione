@@ -126,20 +126,17 @@ def render_database_misure(df_rna):
 
 import pdfplumber
 
-import pandas as pd
-import re
-import pdfplumber
-import streamlit as st
-
 def verifica_stato_clienti(df_rna, uploaded_clienti):
     """
-    Versione Universale con Debug: Legge CSV o PDF, identifica P.IVA 
-    e mostra un'anteprima dei dati estratti per verifica.
+    Versione Universale Ottimizzata: Legge CSV o PDF, identifica P.IVA e Codici Fiscali,
+    gestisce celle multi-riga e formati misti.
     """
     try:
         lista_piva_clienti = set()
-        regex_piva_pura = r'\b\d{11}\b' 
-        anteprima_debug = [] # Lista per raccogliere i dati da mostrare nell'expander
+        # Regex aggiornata: 11 cifre (P.IVA) OPPURE formato Codice Fiscale standard
+        regex_piva_cf = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
+        
+        anteprima_debug = [] 
 
         # --- 1. CARICAMENTO E ESTRAZIONE DATI ---
         if uploaded_clienti.name.lower().endswith('.pdf'):
@@ -148,47 +145,41 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
                     testo_completo = ""
                     
                     for i, page in enumerate(pdf.pages):
-                        # Tentativo A: Estrazione tabelle
+                        # Tentativo A: Estrazione tabelle (ottimale per il tuo file ISI 2021)
                         table = page.extract_table()
                         if table:
-                            df_temp = pd.DataFrame(table)
-                            # Salviamo le prime righe della prima tabella trovata per il debug
+                            # Salviamo le prime righe per il debug
                             if not anteprima_debug:
                                 anteprima_debug = table[:10] 
                             
-                            for col in df_temp.columns:
-                                for val in df_temp[col]:
-                                    clean_val = re.sub(r'\D', '', str(val))
-                                    if len(clean_val) == 11:
-                                        lista_piva_clienti.add(clean_val)
+                            for row in table:
+                                for cell in row:
+                                    if cell:
+                                        # Pulizia: rimuove spazi extra ma mantiene il testo per la regex
+                                        clean_cell = str(cell).strip()
+                                        # Cerchiamo tutti i match nella cella (gestisce i casi multi-riga)
+                                        matches = re.findall(regex_piva_cf, clean_cell)
+                                        lista_piva_clienti.update(matches)
                         
-                        testo_completo += page.extract_text() or ""
+                        # Tentativo B: Estrazione testo libero (per sicurezza)
+                        testo_pagina = page.extract_text() or ""
+                        testo_completo += testo_pagina
+                        piva_nel_testo = re.findall(regex_piva_cf, testo_pagina)
+                        lista_piva_clienti.update(piva_nel_testo)
 
-                    # Integriamo P.IVA dal testo libero
-                    piva_nel_testo = re.findall(regex_piva_pura, testo_completo)
-                    lista_piva_clienti.update(piva_nel_testo)
-                    
-                    # Se non abbiamo tabelle, mostriamo un estratto del testo nel debug
                     if not anteprima_debug:
-                        anteprima_debug = [["Testo Estratto (Prime 500 battute)"], [testo_completo[:500] + "..."]]
+                        anteprima_debug = [["Testo Estratto"], [testo_completo[:500] + "..."]]
 
         else:
             # Gestione CSV
             df_clienti = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
             anteprima_debug = df_clienti.head(10) 
             
-            col_trovata = None
+            # Applichiamo la regex a ogni cella del CSV
             for col in df_clienti.columns:
-                sample = df_clienti[col].str.replace(r'\D', '', regex=True).replace('', pd.NA).dropna().head(20)
-                if not sample.empty:
-                    matches = sample.apply(lambda x: len(str(x)) == 11).sum()
-                    if matches > len(sample) * 0.6:
-                        col_trovata = col
-                        break
-            
-            if col_trovata:
-                pivas = df_clienti[col_trovata].str.replace(r'\D', '', regex=True).unique()
-                lista_piva_clienti.update([p for p in pivas if len(str(p)) == 11])
+                for val in df_clienti[col]:
+                    matches = re.findall(regex_piva_cf, str(val))
+                    lista_piva_clienti.update(matches)
 
         # --- 2. OUTPUT DI VERIFICA (DEBUG EXPANDER) ---
         with st.sidebar.expander("🔍 Verifica estrazione dati"):
@@ -199,24 +190,27 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
             else:
                 st.table(anteprima_debug)
             
-            st.write(f"**P.IVA totali individuate:** {len(lista_piva_clienti)}")
+            st.write(f"**Identificativi trovati (P.IVA/CF):** {len(lista_piva_clienti)}")
             if lista_piva_clienti:
-                st.write("**Esempio valori:**", list(lista_piva_clienti)[:5])
+                st.write("**Esempio valori estratti:**", list(lista_piva_clienti)[:10])
 
         # --- 3. VERIFICA RISULTATI E MATCHING ---
         if not lista_piva_clienti:
-            st.error(f"⚠️ Nessuna P.IVA trovata in {uploaded_clienti.name}")
+            st.error(f"⚠️ Nessuna P.IVA o C.F. trovati in {uploaded_clienti.name}")
             return df_rna
 
         def check_stato(val):
-            rna_val = re.sub(r'\D', '', str(val))
+            # Pulizia del valore nel DB RNA per il confronto
+            rna_val = str(val).strip().upper()
             return "🟢 MATCH" if rna_val in lista_piva_clienti else "⚪ PROSPECT"
 
+        # Applichiamo il confronto sulla colonna del Codice Fiscale del beneficiario
         df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_stato)
+        
         return df_rna
 
     except Exception as e:
-        st.error(f"❌ Errore: {e}")
+        st.error(f"❌ Errore durante l'elaborazione: {e}")
         return df_rna
 
 
