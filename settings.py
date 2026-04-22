@@ -53,7 +53,6 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
     * *Esempio:* Se la **Mediana di Fe è il 15%**, significa che metà delle aziende analizzate dedica al settore target meno del 15% del proprio budget totale di aiuti, mentre l'altra metà di più. 
     * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel settore (per questo vedasi la sezione **Panoramica Settore Target**)
 
----
 ### 💡 Strategia
 Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
 Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmark)* del settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici.
