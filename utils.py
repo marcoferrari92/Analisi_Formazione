@@ -295,51 +295,62 @@ def genera_output_confronto_pdf(df_filtrato, uploaded_clienti):
                 return None
             
             # Normalizzazione righe (gestione colonne variabili per riga)
-            headers = all_data[0]
+            headers = [str(h).strip() for h in all_data[0]]
             num_cols = len(headers)
             clean_rows = []
             
             for row in all_data[1:]:
                 if row is None: continue
                 # Se la riga ha più o meno colonne dell'header, la aggiustiamo
-                if len(row) > num_cols:
-                    row = row[:num_cols-1] + [" ".join([str(i) for i in row[num_cols-1:] if i])]
-                elif len(row) < num_cols:
-                    row = list(row) + [""] * (num_cols - len(row))
-                clean_rows.append(row)
+                row_list = list(row)
+                if len(row_list) > num_cols:
+                    row_list = row_list[:num_cols-1] + [" ".join([str(i) for i in row_list[num_cols-1:] if i])]
+                elif len(row_list) < num_cols:
+                    row_list = row_list + [""] * (num_cols - len(row_list))
+                clean_rows.append(row_list)
             
             df_tuo = pd.DataFrame(clean_rows, columns=headers)
 
         # 3. IDENTIFICAZIONE COLONNA E MATCH
         regex_id = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
         col_piva_tua = None
+        
+        # Prova A: Cerca per nome colonna
         for col in df_tuo.columns:
-            if any(x in str(col).upper() for x in ["P.IVA", "PARTITA IVA", "C.F.", "P. IVA"]):
+            if any(x in str(col).upper() for x in ["P.IVA", "PARTITA IVA", "C.F.", "P. IVA", "CODICE FISCALE"]):
                 col_piva_tua = col
                 break
         
+        # Prova B: Cerca per contenuto (Corretto: analizza colonna per colonna)
         if not col_piva_tua:
-            # Fallback contenuto
             for col in df_tuo.columns:
-                if df_tuo[col].astype(str).str.contains(regex_id, regex=True).any():
+                # Controlliamo se almeno un valore nella colonna soddisfa la regex
+                if df_tuo[col].astype(str).apply(lambda x: bool(re.search(regex_id, x))).any():
                     col_piva_tua = col
                     break
 
+        if not col_piva_tua:
+            st.error("⚠️ Non ho trovato una colonna P.IVA o C.F. nel PDF.")
+            return None
+
+        # 4. FUNZIONE DI VERIFICA
         def verifica(val):
+            if not val: return "NON TROVATO"
             match = re.search(regex_id, str(val).strip().upper())
             if match and match.group(0) in piva_presenti_nel_periodo:
                 return "MATCH"
             return "NON TROVATO"
 
+        # Aggiunta colonna esito
         df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica)
         
+        # Riordino colonne
         cols = ['ESITO_AIUTI_RNA'] + [c for c in df_tuo.columns if c != 'ESITO_AIUTI_RNA']
         return df_tuo[cols]
 
     except Exception as e:
         st.error(f"Errore nel confronto PDF: {e}")
         return None
-
 
 
 
