@@ -188,7 +188,64 @@ if uploaded_file is not None:
                     use_container_width=True, 
                     config={'displayModeBar': False})
 
-        
+
+        # --- FUNNEL CHART (QUALIFICAZIONE) ---
+        st.write("")
+        st.write("")
+        with st.expander("🌪️ Funnel di Qualificazione del Mercato"):
+            
+            # 1. Recupero dei valori per i passaggi del funnel
+            val_totali = n_aziende
+            val_attive = n_aziende_live
+            val_target = n_aziende_target
+            
+            # Calcolo aziende clienti nel target (se il database clienti è caricato)
+            if 'STATO' in df.columns:
+                # Contiamo i CF univoci che sono sia in target che già clienti
+                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('Cliente', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
+            else:
+                val_clienti = 0
+
+            # Creazione del DataFrame per il grafico
+            funnel_df = pd.DataFrame({
+                "Fase": ["Aziende Totali", "Aziende Attive", "Aziende Target", "Aziende Clienti"],
+                "Numero": [val_totali, val_attive, val_target, val_clienti]
+            })
+
+            # Generazione del Grafico
+            fig_funnel = px.funnel(
+                funnel_df, 
+                x='Numero', 
+                y='Fase',
+                title="Conversione e Penetrazione del Mercato",
+                color_discrete_sequence=["#3498db"]
+            )
+            
+            fig_funnel.update_traces(textinfo="value+percent initial")
+            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))
+            
+            st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
+            
+            # --- ANALISI DEI PROSPECT ---
+            n_prospect = val_target - val_clienti
+            perc_penetrazione = (val_clienti / val_target * 100) if val_target > 0 else 0
+            
+            f_col1, f_col2 = st.columns(2)
+            with f_col1:
+                st.metric(
+                    label="🎯 Prospect da Conquistare", 
+                    value=f"{n_prospect}", 
+                    delta=f"{100 - perc_penetrazione:.1f}% del mercato target libero",
+                    delta_color="normal"
+                )
+            with f_col2:
+                st.info(f"""
+                **📊 Strategia di Conversione:**
+                * **Penetrazione:** Attualmente presidi il **{perc_penetrazione:.1f}%** delle aziende target identificate.
+                * **Focus:** Hai **{n_prospect}** aziende che operano già nel tuo settore ideale ma che non sono ancora censite come tuoi clienti. 
+                * **Azione:** Esporta la lista filtrata per 'Prospect' nella tabella in basso per avviare una campagna di acquisizione mirata.
+                """)
+                
 
         # --- ANALISI GEOGRAFICA ---
         st.write("")
