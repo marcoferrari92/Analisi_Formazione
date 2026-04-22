@@ -59,6 +59,21 @@ Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmar
 I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione **Analisi Dettaglia per Azienda**
 """
 
+GUIDA_OUTLIER = """
+* **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se è stretta, le aziende hanno comportamenti simili; se è larga, c'è molta disparità.
+    * **Quartili:** 
+        * **1° Quartile:** indica il valore sotto il quale si trova il 25% delle aziende "più piccole".
+        * **2° Quartile (Mediana):** È il "centro" del mercato. Indica che metà delle aziende ha ottenuto meno di quel valore e l'altra metà di più.
+        * **3° Quartile:** indica il valore sopra il quale si trova il 25% dei "top player".
+* **I "Baffi" (Fence):** Sono le linee che si estendono fuori dalla scatola. Rappresentano il limite della "normalità" statistica. 
+    * Tutto ciò che sta **dentro** i baffi è considerato un comportamento standard per il settore.
+    * Tutto ciò che sta **oltre** i baffi è un'anomalia.
+* **I Pallini (Outliers):** Ogni pallino è un'azienda reale.
+    * I pallini **dentro** i baffi sono la massa dei competitor.
+    * I pallini **oltre il baffo destro** sono gli **Outliers**: aziende eccezionali che hanno ottenuto risultati fuori scala (eccellenze o grandi gruppi).
+* **Dispersione Verticale:** I pallini sono "sparpagliati" in verticale solo per non sovrapporsi e permetterti di vederli tutti; l'unico valore che conta per il dato è la loro posizione sull'asse orizzontale.
+"""
+
 
 GUIDA_RICERCA = """
     **Dove cerchiamo le parole chiave?**
