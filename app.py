@@ -9,7 +9,7 @@ import requests
 
 # Caricamenti
 from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP
-from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto
+from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
 from analisi import create_centered_pie
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -77,8 +77,10 @@ if uploaded_file is not None:
 
         # Generiamo il file di confronto basandoci sul df filtrato per periodo
         if uploaded_clienti is not None:
-            
-            tuo_file_esito = genera_output_confronto(df, uploaded_clienti)
+            if uploaded_clienti.name.lower().endswith('.pdf'):
+                tuo_file_esito = genera_output_confronto_pdf(df, uploaded_clienti)
+            else:
+                tuo_file_esito = genera_output_confronto_csv(df, uploaded_clienti)
             
             if tuo_file_esito is not None:
                 st.sidebar.divider()
