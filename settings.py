@@ -36,10 +36,10 @@ GUIDA_BENCHMARK = """
 Il benchmark permette di confrontare la singola azienda con la **"linea di mezzo (mediana)"** del mercato di riferimento. 
 
 ### 📊 Mediana
-A differenza della media (che può essere influenzata da pochi valori estremi - **outlier** - come un'azienda che riceve milioni di euro), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
+A differenza della media (che è influenzata dai valori estremi - **outlier** - delle aziende più grosse), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
 Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti (sia grandi che piccoli).
 
-### 🌍 Indicatori del Mercato (Potenziale)
+### 🌍 Indicatori del Mercato
 Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponibili.
 * **Numero Aiuti per Azienda (Frequenza Operativa):** Indica quanti progetti di finanza agevolata le aziende hanno ricevuto mediamente nel periodo considerato. Una mediana alta indica un settore dinamico con molti bandi erogati, ma non necessariamente di grande impatto economico (che è, invece, definito dal **Budget per Azienda**)
 * **Budget per Azienda (Intensità Economica):** Rappresenta il valore monetario dei contributi ottenuti mediamente da ogni azienda. Confrontare la **Mediana Target** con la **Mediana Totale** chiarisce se i fondi nel settore d'interesse (target) sono mediamente più ricchi o più poveri rispetto a un bando generico.
@@ -48,12 +48,14 @@ Questi valori descrivono l'ambiente esterno e la taglia degli incentivi disponib
 ### 🏢 Indicatori dell'Azienda (Specializzazione)
 Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche della singola impresa.
 * **Fattore Fo (Specializzazione Operativa):** Misura la focalizzazione del "fare". È la percentuale di pratiche nel settore target rispetto al totale delle pratiche gestite per un'azienda media. Se è vicina al 100%, l'azienda opera quasi esclusivamente nel target.
-* **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business finanziario dell'azienda è strettamente legato al settore target.
+* **Fattore Fe (Specializzazione Economica):** Misura la focalizzazione del "valore". È la percentuale di budget target rispetto al budget totale incassato. Un valore alto indica che il core-business degli aiuti dell'azienda è strettamente legato al settore target.
     * *Esempio:* Se la **Mediana di F2 è il 15%**, significa che metà delle aziende analizzate dedica al settore target meno del 15% del proprio budget totale di aiuti, mentre l'altra metà di più. 
     * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel sistema.
 
 ---
-💡 **Strategia:** Le aziende sotto mediana rappresentano il segmento con il più alto potenziale di crescita per nuove pianificazioni finanziarie o investimenti mirati.
+💡 **Strategia:** Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
+In questa sezione viene quindi definito il benchmarck del settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici qui sotto.
+I valori di benchmark dovranno poi essere confrontati con quello dei singoli outlier grazie alla sezione **"Analisi Dettaglia per Azienda"**
 """
 
 
