@@ -202,66 +202,77 @@ def genera_output_confronto(df_filtrato, uploaded_clienti):
     import pandas as pd
     import pdfplumber
     import streamlit as st
-    
+    import io
+
     try:
-        # 1. Set di confronto (RNA)
+        # 1. Preparazione set di confronto (RNA)
         piva_presenti_nel_periodo = set(
             df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
             .astype(str).str.strip().str.upper().unique()
         )
 
-        rows_list = []
-        # Regex per identificare P.IVA o CF
-        regex_id = r'(\d{11}|[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])'
-
-        # 2. Estrazione dati dal PDF
+        # 2. CARICAMENTO DATI
         if uploaded_clienti.name.lower().endswith('.pdf'):
+            # Per i PDF manteniamo la logica di estrazione tabelle
             with pdfplumber.open(uploaded_clienti) as pdf:
+                all_data = []
                 for page in pdf.pages:
-                    table = page.extract_table()
-                    if table:
-                        for row in table:
-                            # Filtriamo i valori None e uniamo tutta la riga in una stringa
-                            line_text = " ".join([str(cell) for cell in row if cell is not None]).replace('\n', ' ')
-                            
-                            # Cerchiamo il codice fiscale nella riga
-                            match = re.search(regex_id, line_text)
-                            codice = match.group(0) if match else ""
-                            
-                            # Cerchiamo di isolare la Ragione Sociale (tutto ciò che sta prima del codice)
-                            # Nota: ipotizziamo che il progressivo sia all'inizio
-                            parts = re.split(regex_id, line_text)
-                            prefix = parts[0].strip() if len(parts) > 0 else ""
-                            
-                            rows_list.append({
-                                "DATI_ORIGINALI": line_text,
-                                "IDENTIFICATIVO_ESTRATTO": codice,
-                                "ESITO_AIUTI_RNA": "MATCH" if codice in piva_presenti_nel_periodo and codice != "" else "NON TROVATO"
-                            })
-            
-            df_tuo = pd.DataFrame(rows_list)
-            
+                    table = page.extract_table(table_settings={
+                        "vertical_strategy": "text",
+                        "horizontal_strategy": "text",
+                    })
+                    if table: all_data.extend(table)
+                if not all_data: return None
+                df_tuo = pd.DataFrame(all_data[1:], columns=all_data[0])
         else:
-            # Gestione CSV (molto più semplice)
-            df_tuo = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
-            # Cerchiamo la colonna identificativa nel CSV
-            col_target = None
+            # --- GESTIONE CSV: MANTENIAMO TUTTO ---
+            # Leggiamo il file cercando di azzeccare il separatore (punto e virgola per i tuoi file)
+            content = uploaded_clienti.getvalue().decode('utf-8-sig')
+            
+            # Determiniamo il separatore guardando la prima riga
+            first_line = content.split('\n')[0]
+            sep = ';' if ';' in first_line else ','
+            
+            # Carichiamo il DataFrame integrale
+            df_tuo = pd.read_csv(io.StringIO(content), sep=sep, dtype=str, engine='python').fillna('')
+
+        # 3. IDENTIFICAZIONE DELLA COLONNA PER IL MATCH
+        # Cerchiamo la colonna che contiene P.IVA o Codici Fiscali
+        regex_id = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
+        col_piva_tua = None
+        
+        # Priorità a nomi colonna noti
+        for col in df_tuo.columns:
+            if any(x in str(col).upper() for x in ["PARTITA IVA", "CODICE FISCALE", "P.IVA", "P. IVA", "C.F."]):
+                col_piva_tua = col
+                break
+        
+        # Fallback: scansione contenuto
+        if not col_piva_tua:
             for col in df_tuo.columns:
                 if df_tuo[col].astype(str).str.contains(regex_id, regex=True).any():
-                    col_target = col
+                    col_piva_tua = col
                     break
-            
-            if col_target:
-                df_tuo['IDENTIFICATIVO_ESTRATTO'] = df_tuo[col_target].str.extract(regex_id)
-                df_tuo['ESITO_AIUTI_RNA'] = df_tuo['IDENTIFICATIVO_ESTRATTO'].apply(
-                    lambda x: "MATCH" if str(x).upper() in piva_presenti_nel_periodo else "NON TROVATO"
-                )
 
-        # Rimuoviamo righe vuote o intestazioni duplicate se presenti
-        df_tuo = df_tuo[df_tuo['IDENTIFICATIVO_ESTRATTO'] != ""].copy()
+        if not col_piva_tua:
+            st.error("⚠️ Non ho trovato una colonna P.IVA o C.F. nel tuo file.")
+            return None
+
+        # 4. AGGIUNTA COLONNA MATCH (Senza alterare le altre)
+        def verifica(val):
+            val_str = str(val).strip().upper()
+            match = re.search(regex_id, val_str)
+            if match:
+                if match.group(0) in piva_presenti_nel_periodo:
+                    return "MATCH"
+            return "NON TROVATO"
+
+        # Aggiungiamo la colonna in fondo
+        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica)
         
-        # Ordiniamo per mettere i MATCH in cima
-        df_tuo = df_tuo.sort_values(by='ESITO_AIUTI_RNA', ascending=True)
+        # Spostiamo la colonna esito in PRIMA posizione per comodità
+        cols = ['ESITO_AIUTI_RNA'] + [c for c in df_tuo.columns if c != 'ESITO_AIUTI_RNA']
+        df_tuo = df_tuo[cols]
         
         return df_tuo
 
