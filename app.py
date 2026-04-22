@@ -190,31 +190,41 @@ if uploaded_file is not None:
             val_totali = n_aziende
             val_target = n_aziende_target
             
-            # --- CALCOLO CORRETTO PER IL FUNNEL ---
+            # Calcolo aziende clienti nel target (se il database clienti è caricato)
             if 'STATO' in df.columns:
-                # Trasformiamo tutto in stringa e cerchiamo 'MATCH' ignorando emoji e spazi
-                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
-                
+                # Contiamo i CF univoci che sono sia in target che già clienti
+                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
             else:
                 val_clienti = 0
-            
-            # --- AGGIORNAMENTO GRAFICO ---
+
+            # Creazione del DataFrame per il grafico
             funnel_df = pd.DataFrame({
-                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Match"],
+                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Clienti"],
                 "Numero": [val_totali, val_target, val_clienti]
             })
-            
+
+            # Generazione del Grafico
             fig_funnel = px.funnel(
-                funnel_df, x='Numero', y='Fase',
+                funnel_df, 
+                x='Numero', 
+                y='Fase',
                 title="Conversione e Penetrazione del Mercato",
                 color_discrete_sequence=["#3498db"]
             )
             
+            #fig_funnel.update_traces(textinfo="value+percent initial")
+
             # Applichiamo le due cifre decimali come richiesto
             fig_funnel.update_traces(
-                texttemplate="%{value} aziende<br>%{percentInitial:.2%}", 
-                textposition="inside"
+                textinfo="%{value} aziende<br>%{percentInitial:.2%}", 
+                textposition="outside"
             )
+            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))
+            
+            st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
+            
+            
+ 
                 
 
         # --- ANALISI GEOGRAFICA ---
