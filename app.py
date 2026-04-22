@@ -832,8 +832,10 @@ if uploaded_file is not None:
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
         if not df_plot.empty:
             with st.expander("📈 Analisi Outliers"):
-                with st.expander("💡 Consigli"):
-                    st.info(GUIDA_OUTLIER)
+
+                st.subheader("🔝 Analisi Outliers")
+                with st.expander("📖 Guida ai grafici"):
+                    st.markdown(GUIDA_OUTLIER)
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
