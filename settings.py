@@ -27,7 +27,7 @@ Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è
 3.  **Intersezione**: La linea tratteggiata verticale indica quante aziende controllano l'80% dei fondi totali del settore.
 
 **Cosa significa per te?**
-* **Retta verticale molto a sinistra:** Il mercato è concentrato. Ti basta acquisire pochi "Big Client" per dominare il settore, ma la competizione sarà maggiore.
+* **Retta verticale molto a sinistra:** Il mercato è concentrato. Ti basta acquisire pochi "Big Client" per dominare il settore, ma la competizione sarà maggiore. 
 * **Retta verticale molto a destra:** Il tuo pacchetto prospetti è frammentato. La strategia vincente è il volume e la capillarità commerciale.
 """
 
