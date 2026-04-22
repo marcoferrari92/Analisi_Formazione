@@ -55,7 +55,7 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
 
 ---
 💡 **Strategia:** Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
-Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmark)* settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici.
+Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmark)* del settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici.
 I valori di benchmark dovranno poi essere confrontati con quello dei singoli outlier grazie alla sezione **Analisi Dettaglia per Azienda**
 """
 
