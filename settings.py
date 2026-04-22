@@ -35,7 +35,7 @@ Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è
 GUIDA_BENCHMARK = """
 Il benchmark permette di definire gli *standard* del mercato di riferimento sui cui andranno valutate le singole aziende. 
 
-### 📊 Mediana
+#### 📊 Mediana
 A differenza della media (che è influenzata dai valori estremi - **outlier** - delle aziende più grosse), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
 Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti (sia grandi che piccoli).
 
@@ -54,7 +54,8 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
     * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel settore (per questo vedasi la sezione **Panoramica Settore Target**)
 
 ---
-💡 **Strategia:** Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
+### 💡 Strategia
+Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
 Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmark)* del settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici.
 I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione **Analisi Dettaglia per Azienda**
 """
