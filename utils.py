@@ -198,57 +198,84 @@ def verifica_stato_clienti(df_rna, uploaded_clienti):
 
 
 def genera_output_confronto(df_filtrato, uploaded_clienti):
+    import re
     try:
-        # 1. Creiamo il set di P.IVA presenti nel report filtrato (quelle che l'app sta visualizzando)
+        # 1. Creiamo il set di P.IVA/CF presenti nel report RNA (già filtrato per data nell'app)
+        # Usiamo upper() e strip() per garantire il match perfetto
         piva_presenti_nel_periodo = set(
             df_filtrato['RNA_CODICE_FISCALE_BENEFICIARIO']
             .astype(str)
-            .str.replace(r'\D', '', regex=True)
+            .str.strip()
+            .str.upper()
             .unique()
         )
 
-        # 2. Carichiamo il tuo file originale (quello da "marcare")
+        # 2. Carichiamo il tuo file originale
         if uploaded_clienti.name.lower().endswith('.pdf'):
             with pdfplumber.open(uploaded_clienti) as pdf:
-                data = []
+                all_data = []
                 for page in pdf.pages:
                     table = page.extract_table()
-                    if table: data.extend(table)
-                # Creiamo il DF usando la prima riga come header
-                df_tuo = pd.DataFrame(data[1:], columns=data[0])
+                    if table:
+                        all_data.extend(table)
+                
+                if not all_data:
+                    return None
+                
+                # Creiamo il DF. Se la prima riga è l'header, la usiamo
+                df_tuo = pd.DataFrame(all_data[1:], columns=all_data[0])
         else:
             df_tuo = pd.read_csv(uploaded_clienti, sep=None, engine='python', dtype=str).fillna('')
 
-        # 3. Trova la colonna P.IVA nel TUO file
+        # 3. IDENTIFICAZIONE COLONNA (Migliorata per gestire CF alfanumerici)
+        # Regex per P.IVA (11 cifre) o CF (16 caratteri)
+        regex_identificativo = r'\b\d{11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
+        
         col_piva_tua = None
         for col in df_tuo.columns:
-            # Test su un campione: cerchiamo la colonna con 11 cifre
-            sample = df_tuo[col].str.replace(r'\D', '', regex=True).dropna().head(20)
-            if any(len(str(x)) == 11 for x in sample):
+            # Testiamo se la colonna contiene valori che somigliano a P.IVA o CF
+            concatenated_samples = " ".join(df_tuo[col].astype(str).head(20).tolist()).upper()
+            if re.search(regex_identificativo, concatenated_samples):
                 col_piva_tua = col
                 break
 
         if not col_piva_tua:
-            st.error("⚠️ Impossibile trovare una colonna P.IVA nel file caricato.")
+            # Se fallisce la ricerca automatica, proviamo a cercare una colonna che contenga "P. IVA" o "C.F." nel nome
+            for col in df_tuo.columns:
+                if any(x in str(col).upper() for x in ["P. IVA", "C.F.", "PARTITA IVA", "CODICE FISCALE"]):
+                    col_piva_tua = col
+                    break
+
+        if not col_piva_tua:
+            st.error(f"⚠️ Impossibile trovare la colonna identificativi in {uploaded_clienti.name}")
             return None
 
-        # 4. LOGICA DI VERIFICA 
+        # 4. LOGICA DI VERIFICA
         def verifica_presenza(val):
-            clean_val = re.sub(r'\D', '', str(val))
-            if clean_val in piva_presenti_nel_periodo:
-                return "Match"
-            else:
-                return "Not Found"
+            if not val: return "Not Found"
+            # Puliamo il valore (rimuoviamo newline e spazi)
+            clean_val = str(val).strip().split('\n')[0].strip().upper()
+            
+            # Estraiamo il codice puro se la cella contiene altro testo
+            match = re.search(regex_identificativo, clean_val)
+            if match:
+                codice_estratto = match.group(0)
+                if codice_estratto in piva_presenti_nel_periodo:
+                    return "MATCH"
+            
+            return "NON TROVATO"
 
-        # Aggiungiamo la colonna dell'esito al tuo file originale
-        df_tuo['ESITO_FILTRO_ATTUALE'] = df_tuo[col_piva_tua].apply(verifica_presenza)
+        # Aggiungiamo la colonna dell'esito
+        df_tuo['ESITO_AIUTI_RNA'] = df_tuo[col_piva_tua].apply(verifica_presenza)
+        
+        # Ordiniamo per mettere i MATCH in alto nel file scaricabile
+        df_tuo = df_tuo.sort_values(by='ESITO_AIUTI_RNA', ascending=True)
         
         return df_tuo
 
     except Exception as e:
         st.error(f"Errore nel confronto: {e}")
         return None
-
 
 
 def colora_clienti(row):
