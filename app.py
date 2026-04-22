@@ -627,7 +627,7 @@ if uploaded_file is not None:
             
             # 1. Preparazione dati per la gerarchia
             # Nota: Adattiamo i nomi delle colonne se differiscono nel tuo file
-            col_strumento = 'RNA_DES_TIPO_STRUMENTO' # Es: Contributo in conto capitale, Garanzia, etc.
+            col_strumento = 'RNA_DES_STRUMENTO' 
             col_misura = 'RNA_TITOLO_MISURA'
             
             if col_strumento in df.columns:
