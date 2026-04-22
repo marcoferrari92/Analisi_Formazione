@@ -230,12 +230,7 @@ if uploaded_file is not None:
                     delta_color="normal"
                 )
             with f_col2:
-                st.info(f"""
-                **📊 Strategia di Conversione:**
-                * **Penetrazione:** Attualmente presidi il **{perc_penetrazione:.1f}%** delle aziende target identificate.
-                * **Focus:** Hai **{n_prospect}** aziende che operano già nel tuo settore ideale ma che non sono ancora censite come tuoi clienti. 
-                * **Azione:** Esporta la lista filtrata per 'Prospect' nella tabella in basso per avviare una campagna di acquisizione mirata.
-                """)
+                st.info("")
                 
 
         # --- ANALISI GEOGRAFICA ---
