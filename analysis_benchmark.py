@@ -78,6 +78,10 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     )
 
     # Iniezione dei quadranti basati sulle mediane assolute
+    
+    med_abs_budget_target = df_plot['Budget Target'].median()
+    med_abs_aiuti_target = df_plot['Aiuti Target'].median()
+    
     fig_vs.add_hline(y=med_abs_aiuti_target, line_dash="dot", line_color="green", 
                      annotation_text=f"Mediana Aiuti ({med_abs_aiuti_target:.0f})", 
                      annotation_position="bottom right")
