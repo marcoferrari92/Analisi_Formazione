@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
 from analisi import create_centered_pie
 
@@ -905,8 +905,15 @@ if uploaded_file is not None:
             with st.expander("📈 Analisi Outliers"):
 
                 st.subheader("🔝 Analisi Outliers")
-                with st.expander("📖 Guida ai grafici"):
-                    st.markdown(GUIDA_OUTLIER)
+                col_info1, col_info2, col_spacer = st.columns([0.2, 0.2, 0.6]) 
+                with col_info1:
+                    with st.popover("📖 Guida ai grafici"):
+                        st.markdown(GUIDA_OUTLIER)
+                with col_info2:   
+                    with st.popover("💡 Strategia"):
+                        st.info(STRATEGIA_OUTLIER)
+                    
+                
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
