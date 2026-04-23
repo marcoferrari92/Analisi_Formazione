@@ -897,6 +897,25 @@ if uploaded_file is not None:
                     st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
                     st.caption(f"La dimensione del pallino è il Num. Aiuti Target")
 
+           # --- GRAFICO 3: CONFRONTO (Aiuti Target vs Budget Target) ---
+            fig_ec = plot_scatter_median(
+                    df=df_plot, 
+                    x_col="Budget Target", 
+                    y_col="Aiuti Target", 
+                    color_col="Fe",
+                    title="Confronto specializzazioni (Num. Aiuti Target vs Budget Target)", 
+                    med_val=med_Fe, 
+                    custom_data=custom_data, 
+                    size_col="Budget",
+                    hover_template=custom_template, 
+                    line_color="Blue",  # Linea blu per i valori economici
+                    is_log=True         # Scala logaritmica per i budget
+                )
+                st.plotly_chart(fig_ec, use_container_width=True)
+                if med_Fe > 0:
+                    st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+                    st.caption(f"La dimensione del pallino è il Num. Aiuti Target")
+
 
             # --- GRAFICO 3D: MARKET POWER & SPECIALIZZAZIONE ---
             st.write("")
