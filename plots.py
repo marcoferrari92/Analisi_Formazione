@@ -57,7 +57,7 @@ def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data
         title=title,
         log_x=x_log, 
         log_y=y_log,
-        color_continuous_scale="Viridis" if is_log else "Plasma",
+        color_continuous_scale="Viridis" if (x_log or y_log) else "Plasma",
         # Usiamo size_max solo se effettivamente passiamo una colonna per la dimensione
         size_max=30 if size_col is not None else None 
     )
