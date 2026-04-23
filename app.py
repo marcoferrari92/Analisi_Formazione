@@ -856,10 +856,7 @@ if uploaded_file is not None:
             
             grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template)   
             
-    
-        # --- GRAFICI ---
-        df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
-        if not df_plot.empty:
+
             with st.expander("📈 Analisi Outliers"):
 
                 st.subheader("🔝 Analisi Outliers")
