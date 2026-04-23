@@ -8,7 +8,7 @@ import requests
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
 from analisi import create_centered_pie
 
@@ -826,7 +826,8 @@ if uploaded_file is not None:
                     sotto_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] < med_Fe])
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
-        
+        with st.expander("💡 Strategia"):
+                st.popover(STRATEGIA_BENCHMARK)
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
         # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
