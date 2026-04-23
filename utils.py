@@ -14,21 +14,11 @@ Carica i dati RNA e pulisce la colonna importi (rendendoli numeri).
 
 @st.cache_data
 def load_rna_data(file):
-    # 1. Carichiamo tutto il file come stringhe (dtype=str) 
-    # Questo è il modo più sicuro per non perdere mai gli zeri ovunque
-    df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False, dtype=str)
     
-    # 2. Pulizia Identificativo (CF/PIVA)
-    if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df.columns:
-        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = (
-            df['RNA_CODICE_FISCALE_BENEFICIARIO']
-            .astype(str)
-            .str.strip()
-            .str.replace(r'\.0$', '', regex=True) # Rimuove .0 se presente
-            .str.zfill(11)                        # Forza 11 cifre (ripristina lo zero)
-        )
+    # Caricamento file
+    df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False)
     
-    # 3. Pulizia Importo (Converte in numero per i calcoli)
+    # Pulizia colonna importo (trasforma stringa con virgola in numero)
     if 'RNA_ELEMENTO_DI_AIUTO' in df.columns:
         df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(
             df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.'), 
@@ -36,6 +26,7 @@ def load_rna_data(file):
         ).fillna(0)
         
     return df
+
 
 
 
