@@ -1,5 +1,8 @@
 pandas
 streamlit
-openpyxl
 plotly
+lxml
 pdfplumber
+openpyxl
+requests
+numpy
