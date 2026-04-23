@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template):
     
     from plots import plot_scatter_median
+    from setting import STRATEGIA_BENCHMARK
     
     if df_plot.empty:
         st.warning("Nessun dato disponibile per l'analisi degli outlier.")
@@ -15,6 +16,9 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     st.write("")
 
     with st.expander("📊 Grafici specializzazione"):
+
+        with st.popover("💡 Strategia"):
+            st.info(STRATEGIA_BENCHMARK)
     
         # --- 1. RIGA DEI GRAFICI 2D (OPERATIVO E ECONOMICO) ---
         col_graf_1, col_graf_2 = st.columns(2)
