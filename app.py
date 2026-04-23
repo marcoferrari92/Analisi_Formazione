@@ -933,62 +933,42 @@ if uploaded_file is not None:
         st.write("")
         
         if search_txt:
-            # Filtro per Ragione Sociale
-            azienda_details = df[df['RAGIONE SOCIALE'].str.contains(search_txt, case=False, na=False)].copy()
             azienda_stats = report_aziende[report_aziende['Ragione Sociale'].str.contains(search_txt, case=False, na=False)]
             
             if not azienda_stats.empty:
-                # Prendiamo la prima occorrenza (in caso di nomi simili)
                 row = azienda_stats.iloc[0]
-        
+                
                 st.markdown(f"#### 📊 Performance vs Benchmark: **{row['Ragione Sociale']}**")
-        
-                # Creiamo 4 colonne per il confronto diretto
+                
+                # Creiamo le colonne
                 b1, b2, b3, b4 = st.columns(4)
-        
+                
                 with b1:
-                    diff_aiuti = row['Aiuti Target'] - med_aiuti_target
-                    st.metric("Aiuti Target", f"{row['Aiuti Target']}", 
-                      delta=f"{diff_aiuti:+.1f} vs mediana", 
-                      delta_color="normal")
-            
+                    # Forziamo il valore a intero per essere sicuri che Streamlit lo legga
+                    val_aiuti = int(row['Aiuti Target'])
+                    st.metric("Aiuti Target", f"{val_aiuti}", 
+                              delta=f"{val_aiuti - med_aiuti_target:+.1f} vs med")
+                    
                 with b2:
-                    # 1. Calcolo numerico
-                    diff_budget = float(row['Budget Target'] - med_budget_target)
+                    # Forziamo il budget a float e usiamo una formattazione semplice
+                    val_budget = float(row['Budget Target'])
+                    st.metric("Budget Target", f"€ {val_budget:,.0f}".replace(',', '.'), 
+                              delta=f"€ {val_budget - med_budget_target:,.0f}".replace(',', '.'))
                     
-                    # 2. Formattazione Valore Principale (Punto per migliaia)
-                    valore_mostrato = f"€ {row['Budget Target']:,.0f}".replace(',', '.')
-                    
-                    # 3. Formattazione Delta: 
-                    # Usiamo il trucco di mettere il segno meno all'inizio se il numero è negativo
-                    if diff_budget >= 0:
-                        delta_mostrato = f"+€ {diff_budget:,.0f}".replace(',', '.')
-                    else:
-                        # Rimuoviamo il segno meno automatico per gestirlo manualmente prima dell'Euro
-                        delta_mostrato = f"-€ {abs(diff_budget):,.0f}".replace(',', '.')
-                    
-                    st.metric(
-                        label="Budget Target", 
-                        value=valore_mostrato, 
-                        delta=delta_mostrato,
-                        delta_color="normal"
-                    )
-            
                 with b3:
-                    diff_fo = row['Fo'] - med_Fo
-                    st.metric("Fattore Fo", f"{row['Fo']:.1f}%", 
-                      delta=f"{diff_fo:+.1f}% vs mediana")
-            
+                    val_fo = float(row['Fo'])
+                    st.metric("Fattore Fo", f"{val_fo:.1f}%", 
+                              delta=f"{val_fo - med_Fo:+.1f}% vs med")
+                    
                 with b4:
-                    diff_fe = row['Fe'] - med_Fe
-                    st.metric("Fattore Fe", f"{row['Fe']:.1f}%", 
-                      delta=f"{diff_fe:+.1f}% vs mediana")
+                    val_fe = float(row['Fe'])
+                    st.metric("Fattore Fe", f"{val_fe:.1f}%", 
+                              delta=f"{val_fe - med_Fe:+.1f}% vs med")
         
-                st.divider()
-
-            # Chiamata alla nuova funzione
-            fig_radar = crea_radar_azienda(row, med_Fo, med_Fe, med_aiuti_target, med_budget_target)
-            st.plotly_chart(fig_radar, use_container_width=True)
+                # Radar Chart: Assicurati di passare float(row[...]) se continua a darti zero
+                st.write("")
+                fig_radar = crea_radar_azienda(row, med_Fo, med_Fe, med_aiuti_target, med_budget_target)
+                st.plotly_chart(fig_radar, use_container_width=True)
             
                 
             if not azienda_details.empty:
