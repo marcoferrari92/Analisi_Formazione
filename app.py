@@ -896,7 +896,11 @@ if uploaded_file is not None:
 
             # --- GRAFICO 3: POSIZIONAMENTO 3D ---
 
-            # 1. Inizializziamo la figura
+            # Calcoliamo una scala per i pallini in modo che non diventino giganti o invisibili
+            # Usiamo la radice quadrata del budget totale per normalizzare la visualizzazione
+            size_factor = np.sqrt(df_plot['Budget']) 
+            size_factor = (size_factor / size_factor.max()) * 30 + 5 # Scala tra 5 e 35 pixel
+            
             fig_3d = go.Figure()
             fig_3d.add_trace(go.Scatter3d(
                 x=df_plot['Fo'],
@@ -906,12 +910,13 @@ if uploaded_file is not None:
                 hovertext=df_plot['Ragione Sociale'],
                 customdata=df_plot[custom_data],
                 marker=dict(
-                    size=7,
+                    size=size_factor,             # <-- DIMENSIONE DINAMICA BASATA SUL BUDGET TOTALE
                     color=df_plot['Budget Target'],
                     colorscale='Viridis',
-                    opacity=0.8,
+                    opacity=0.7,                  # Leggermente più trasparente per vedere i pallini sovrapposti
                     showscale=True,
-                    colorbar=dict(title="Budget Target €", thickness=15)
+                    colorbar=dict(title="Budget Target €", thickness=15),
+                    line=dict(width=1, color='DarkSlateGrey') # Aggiunge un bordo per distinguere i pallini vicini
                 ),
                 hovertemplate=custom_template
             ))
