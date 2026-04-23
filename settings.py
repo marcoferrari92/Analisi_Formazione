@@ -76,9 +76,9 @@ GUIDA_OUTLIER = """
     * I pallini **oltre il baffo destro** sono gli **outliers**: aziende eccezionali che hanno ottenuto risultati fuori scala.
 """
 STRATEGIA_OUTLIER = """
-* Step. 1. Controlla quali aziende sono sopra al 3° Qr. nel boxplot di Fo: sono le aziende per cui è importante investire nel settore target.
-* Step. 2: Verifica che queste aziende siano sopra al 3° Qr. nel boxplot del numero di aiuti target. Significa che ti permetteranno di avere un alto volume di vendite.
-* Step. 3: Verifica la potenza economica di queste aziende con il boxplot del Budget Target. Decidi se puntare a prendere pochi "pesci grossi" o se far volume con le aziende piccole.
+* **Step. 1.** Controlla quali aziende sono sopra al 3° Qr. nel boxplot di Fo: sono le aziende per cui è importante investire nel settore target.
+* **Step. 2.** Verifica che queste aziende siano sopra al 3° Qr. nel boxplot del numero di aiuti target. Significa che ti permetteranno di avere un alto volume di vendite.
+* **Step. 3.** Verifica la potenza economica di queste aziende con il boxplot del Budget Target. Decidi se puntare a prendere pochi "pesci grossi" o se far volume con le aziende piccole.
 """
 
 GUIDA_RICERCA = """
