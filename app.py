@@ -975,8 +975,6 @@ if uploaded_file is not None:
                 
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
-                    # 1. Definiamo i dati extra da includere nel DataFrame del grafico
-                    custom_data_cols = ["Aiuti", "Aiuti Target", "Fo", "Budget", "Budget Target", "Fe"]
                     
                     # 2. Creiamo il boxplot base
                     fig = px.box(
@@ -986,7 +984,7 @@ if uploaded_file is not None:
                         hover_name="Ragione Sociale",
                         title=titolo,
                         color_discrete_sequence=[colore],
-                        custom_data=custom_data_cols  
+                        custom_data=custom_data  
                     )
                     
                     # 3. Personalizziamo i punti e il tooltip
@@ -994,17 +992,7 @@ if uploaded_file is not None:
                         pointpos=0, 
                         jitter=0.7, 
                         marker=dict(opacity=0.6, size=7), 
-                        hovertemplate=(
-                            "<b>%{hovertext}</b><br>" +
-                            "------------------<br>" +
-                            "Aiuti: %{customdata[0]}<br>" +
-                            "Aiuti Target: %{customdata[1]}<br>" +
-                            "Fattore Fo: %{customdata[2]:.1f}%<br>" +
-                            "Budget Totale: €%{customdata[3]:,.0f}<br>" +
-                            "Budget Target: €%{customdata[4]:,.0f}<br>" +
-                            "Fattore Fe: %{customdata[5]:.1f}%<br>" +
-                            "<extra></extra>"
-                        )
+                        hovertemplate=custom_template
                     )
                     
                     fig.update_layout(
