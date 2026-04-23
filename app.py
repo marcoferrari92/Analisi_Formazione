@@ -875,6 +875,7 @@ if uploaded_file is not None:
                 st.plotly_chart(fig_op, use_container_width=True)
                 if med_Fo > 0:
                     st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
+                    st.caption(f"La dimensione del pallino è il Budget Target")
                 
             # --- GRAFICO 2: POSIZIONAMENTO ECONOMICO (Budget) ---
             with col_graf_2:
@@ -894,6 +895,7 @@ if uploaded_file is not None:
                 st.plotly_chart(fig_ec, use_container_width=True)
                 if med_Fe > 0:
                     st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+                    st.caption(f"La dimensione del pallino è il Num. Aiuti Target")
 
 
             # --- GRAFICO 3D: MARKET POWER & SPECIALIZZAZIONE ---
