@@ -66,7 +66,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             title="Confronto Specializzazioni (Num. Aiuti Target vs Budget Target)", 
             med_val=0, 
             custom_data=custom_data, 
-            size_col="Budget",
+            size_col="Log_Budget",
             hover_template=custom_template, 
             line_color="Blue", 
             x_log = True,
