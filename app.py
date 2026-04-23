@@ -826,8 +826,8 @@ if uploaded_file is not None:
                     sotto_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] < med_Fe])
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
-        with st.expander("💡 Strategia"):
-                st.popover(STRATEGIA_BENCHMARK)
+        with st.popover("💡 Strategia"):
+                st.markdown(STRATEGIA_BENCHMARK)
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
         # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
