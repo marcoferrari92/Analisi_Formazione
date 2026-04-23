@@ -894,72 +894,86 @@ if uploaded_file is not None:
                     st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
 
 
-            # --- GRAFICO 3: POSIZIONAMENTO 3D ---
-
-            # Calcoliamo una scala per i pallini in modo che non diventino giganti o invisibili
-            # Usiamo la radice quadrata del budget totale per normalizzare la visualizzazione
-            size_factor = np.sqrt(df_plot['Budget']) 
-            size_factor = (size_factor / size_factor.max()) * 30 + 5 # Scala tra 5 e 35 pixel
+            # --- GRAFICO 3D: MARKET POWER & SPECIALIZZAZIONE ---
+            st.write("")
+            st.subheader("🧊 Cubo del Market Power: Massa vs Frequenza")
             
-            fig_3d = go.Figure()
-            fig_3d.add_trace(go.Scatter3d(
-                x=df_plot['Fo'],
-                y=df_plot['Fe'],
+            with st.expander("📖 Come leggere i piani di benchmark"):
+                st.info("""
+                In questo spazio 3D, le aziende "normali" volano vicino ai due piani. Gli outlier scappano verso l'alto:
+                * **Sopra il Piano Blu (Fe):** Aziende che ottengono più budget target rispetto alla loro massa monetaria totale (Efficienza Economica).
+                * **Sopra il Piano Rosso (Fo):** Aziende che vincono più bandi target rispetto al volume totale di pratiche gestite (Efficienza Operativa).
+                """)
+            
+            # 1. Calcolo parametri per i piani
+            # Ticket Medio Target (Quanto vale mediamente un bando target in questo mercato)
+            ticket_target_med = (df_plot['Budget Target'] / df_plot['Aiuti Target']).median()
+            
+            # 2. Preparazione coordinate per le superfici
+            x_range = np.logspace(np.log10(df_plot['Budget'].min()), np.log10(df_plot['Budget'].max()), 2)
+            y_range = np.linspace(df_plot['Aiuti'].min(), df_plot['Aiuti'].max(), 2)
+            g_x, g_y = np.meshgrid(x_range, y_range)
+            
+            # Piano Fe: Z = X * (med_Fe / 100)
+            z_fe = g_x * (med_Fe / 100)
+            
+            # Piano Fo: Z = Y * (med_Fo / 100) * TicketTargetMedio
+            z_fo = g_y * (med_Fo / 100) * ticket_target_med
+            
+            # 3. Creazione Figura
+            fig_power = go.Figure()
+            
+            # Aggiunta punti (Aziende)
+            # Dimensione basata sul Budget Target per enfatizzare il successo
+            size_val = np.sqrt(df_plot['Budget Target'])
+            size_val = (size_val / size_val.max()) * 30 + 5
+            
+            fig_power.add_trace(go.Scatter3d(
+                x=df_plot['Budget'],
+                y=df_plot['Aiuti'],
                 z=df_plot['Budget Target'],
                 mode='markers',
                 hovertext=df_plot['Ragione Sociale'],
-                customdata=df_plot[custom_data],
+                customdata=df_plot[custom_data], # Usiamo le colonne definite prima
                 marker=dict(
-                    size=size_factor,             # <-- DIMENSIONE DINAMICA BASATA SUL BUDGET TOTALE
-                    color=df_plot['Budget Target'],
+                    size=size_val,
+                    color=df_plot['Aiuti Target'], # Colore basato sulla frequenza target
                     colorscale='Viridis',
-                    opacity=0.7,                  # Leggermente più trasparente per vedere i pallini sovrapposti
+                    opacity=0.7,
                     showscale=True,
-                    colorbar=dict(title="Budget Target €", thickness=15),
-                    line=dict(width=1, color='DarkSlateGrey') # Aggiunge un bordo per distinguere i pallini vicini
+                    colorbar=dict(title="N. Aiuti Target", thickness=15)
                 ),
-                hovertemplate=custom_template
+                hovertemplate=custom_template # Usiamo il tuo template universale
             ))
             
-            # 2. AGGIUNTA PIANI DELLE MEDIANE
-            # Definiamo i limiti degli assi per disegnare i piani
-            z_min, z_max = df_plot['Budget Target'].min(), df_plot['Budget Target'].max()
-            # Creiamo una griglia per i piani
-            grid_val = np.linspace(0, 100, 2)
-            z_grid = np.logspace(np.log10(z_min+1), np.log10(z_max), 2)
-            g_y, g_z = np.meshgrid(grid_val, z_grid)
-            g_x, g_z2 = np.meshgrid(grid_val, z_grid)
-            
-            # Piano Mediana Fo (Rosso - Specializzazione Operativa)
-            fig_3d.add_trace(go.Surface(
-                x=np.full_like(g_y, med_Fo), y=g_y, z=g_z,
-                opacity=0.15, showscale=False, colorscale=[[0, 'red'], [1, 'red']],
-                name=f"Mediana Fo ({med_Fo:.1f}%)"
-            ))
-            
-            # Piano Mediana Fe (Blu - Peso Economico)
-            fig_3d.add_trace(go.Surface(
-                x=g_x, y=np.full_like(g_x, med_Fe), z=g_z2,
+            # Aggiunta Superficie Fe (Blu)
+            fig_power.add_trace(go.Surface(
+                x=g_x, y=g_y, z=z_fe,
                 opacity=0.15, showscale=False, colorscale=[[0, 'blue'], [1, 'blue']],
-                name=f"Mediana Fe ({med_Fe:.1f}%)"
+                name="Benchmark Economico (Fe)"
             ))
             
-            # 3. Configurazione Layout
-            fig_3d.update_layout(
-                title="Cubo Strategico Outliers: Focalizzazione vs Massa",
+            # Aggiunta Superficie Fo (Rosso)
+            fig_power.add_trace(go.Surface(
+                x=g_x, y=g_y, z=z_fo,
+                opacity=0.15, showscale=False, colorscale=[[0, 'red'], [1, 'red']],
+                name="Benchmark Operativo (Fo)"
+            ))
+            
+            # Configurazione Layout
+            fig_power.update_layout(
                 scene=dict(
-                    xaxis_title="Fattore Fo (%)",
-                    yaxis_title="Fattore Fe (%)",
+                    xaxis_title="Budget Totale (€)",
+                    yaxis_title="N. Aiuti Totali",
                     zaxis_title="Budget Target (€)",
-                    zaxis_type="log", # Scala logaritmica per gestire gli sbalzi di budget
-                    xaxis=dict(range=[0, 100]),
-                    yaxis=dict(range=[0, 100])
+                    xaxis_type="log",
+                    zaxis_type="log"
                 ),
                 margin=dict(l=0, r=0, b=0, t=40),
-                height=750
+                height=800
             )
             
-            st.plotly_chart(fig_3d, use_container_width=True)         
+            st.plotly_chart(fig_power, use_container_width=True, key="market_power_cube_3d")         
                 
     
         # --- GRAFICI ---
