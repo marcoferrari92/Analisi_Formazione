@@ -33,7 +33,7 @@ Questo grafico utilizza la **Regola di Pareto (80/20)** per analizzare quanto è
 
 
 GUIDA_BENCHMARK = """
-Il benchmark permette di definire gli *standard* del mercato di riferimento sui cui andranno valutate le singole aziende. 
+Il *benchmark* permette di definire gli *standard* del mercato di riferimento sui cui dovranno essere valutate le singole aziende.
 
 #### 📊 Mediana
 A differenza della media (che è influenzata dai valori estremi - **outlier** - delle aziende più grosse), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
