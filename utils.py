@@ -363,3 +363,65 @@ def format_it(val):
 
 def format_pct(val):
     return f"{val:.1f}%".replace('.', ',')
+
+
+
+
+def crea_radar_azienda(row, med_Fo, med_Fe, med_aiuti_t, med_budget_t):
+                
+    # Categorie degli assi
+    categories = ['Specializzazione (Fo)', 'Peso Economico (Fe)', 'Volume Aiuti', 'Budget Ricevuto']
+    
+    # Funzione di normalizzazione (1.0 = Mediana del settore)
+    # Applichiamo un tetto a 3.0 per evitare che aziende enormi deformino il grafico
+    def norm(val, med):
+        if med == 0: return 0
+        return min(val / med, 3.0) 
+
+    # Valori dell'azienda specifica
+    valori_azienda = [
+        norm(row['Fo'], med_Fo),
+        norm(row['Fe'], med_Fe),
+        norm(row['Aiuti Target'], med_aiuti_t),
+        norm(row['Budget Target'], med_budget_t)
+    ]
+    
+    # Il benchmark è sempre 1.0 (la mediana)
+    valori_benchmark = [1, 1, 1, 1]
+
+    fig = go.Figure()
+
+    # Traccia Area Azienda
+    fig.add_trace(go.Scatterpolar(
+        r=valori_azienda + [valori_azienda[0]], # Chiudiamo il cerchio
+        theta=categories + [categories[0]],
+        fill='toself',
+        name=f"Profilo {row['Ragione Sociale'][:15]}...",
+        line_color='#e74c3c',
+        fillcolor='rgba(231, 76, 60, 0.4)'
+    ))
+    
+    # Traccia Area Mediana (Benchmark)
+    fig.add_trace(go.Scatterpolar(
+        r=valori_benchmark + [valori_benchmark[0]],
+        theta=categories + [categories[0]],
+        fill='toself',
+        name='Mediana Settore',
+        line_color='#34495e',
+        fillcolor='rgba(52, 73, 94, 0.1)'
+    ))
+
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 3],
+                tickvals=[1, 2, 3],
+                ticktext=['Mediana', '2x', '3x+']
+            )
+        ),
+        showlegend=True,
+        height=400,
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+    return fig
