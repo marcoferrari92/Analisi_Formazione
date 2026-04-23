@@ -63,7 +63,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             size_col="Budget Target",
             hover_template=custom_template, 
             line_color="Blue", 
-            is_log=True         
+            is_log=False         
     )
     st.plotly_chart(fig_vs, use_container_width=True)
     st.caption("Dimensione del pallino: Budget Totale dell'azienda.")
