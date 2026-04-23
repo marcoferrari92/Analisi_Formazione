@@ -933,42 +933,51 @@ if uploaded_file is not None:
         st.write("")
         
         if search_txt:
-            azienda_stats = report_aziende[report_aziende['Ragione Sociale'].str.contains(search_txt, case=False, na=False)]
+            # 1. Filtriamo il report
+            scelte = report_aziende[report_aziende['Ragione Sociale'].str.contains(search_txt, case=False, na=False)]
             
-            if not azienda_stats.empty:
-                row = azienda_stats.iloc[0]
-                
-                st.markdown(f"#### 📊 Performance vs Benchmark: **{row['Ragione Sociale']}**")
-                
-                # Creiamo le colonne
-                b1, b2, b3, b4 = st.columns(4)
-                
-                with b1:
-                    # Forziamo il valore a intero per essere sicuri che Streamlit lo legga
-                    val_aiuti = int(row['Aiuti Target'])
-                    st.metric("Aiuti Target", f"{val_aiuti}", 
-                              delta=f"{val_aiuti - med_aiuti_target:+.1f} vs med")
-                    
-                with b2:
-                    # Forziamo il budget a float e usiamo una formattazione semplice
-                    val_budget = float(row['Budget Target'])
-                    st.metric("Budget Target", f"€ {val_budget:,.0f}".replace(',', '.'), 
-                              delta=f"€ {val_budget - med_budget_target:,.0f}".replace(',', '.'))
-                    
-                with b3:
-                    val_fo = float(row['Fo'])
-                    st.metric("Fattore Fo", f"{val_fo:.1f}%", 
-                              delta=f"{val_fo - med_Fo:+.1f}% vs med")
-                    
-                with b4:
-                    val_fe = float(row['Fe'])
-                    st.metric("Fattore Fe", f"{val_fe:.1f}%", 
-                              delta=f"{val_fe - med_Fe:+.1f}% vs med")
+            if not scelte.empty:
+                # TRUCCO: Se ci sono più aziende, facciamo scegliere all'utente quella corretta
+                # così sei sicuro di non prendere una riga con valori a zero per errore
+                if len(scelte) > 1:
+                    nome_scelto = st.selectbox("Abbiamo trovato più aziende, seleziona quella corretta:", scelte['Ragione Sociale'].tolist())
+                    row = scelte[scelte['Ragione Sociale'] == nome_scelto].iloc[0]
+                else:
+                    row = scelte.iloc[0]
         
-                # Radar Chart: Assicurati di passare float(row[...]) se continua a darti zero
-                st.write("")
+                st.markdown(f"### 📊 Analisi: {row['Ragione Sociale']}")
+        
+                # --- QUI CI SONO I VALORI ---
+                b1, b2, b3, b4 = st.columns(4)
+        
+                with b1:
+                    valore_aiuti = row['Aiuti Target'] # <--- VALORE
+                    diff = valore_aiuti - med_aiuti_target
+                    st.metric(label="Aiuti Target", value=f"{valore_aiuti:.0f}", delta=f"{diff:+.1f} vs med")
+        
+                with b2:
+                    valore_budget = float(row['Budget Target']) # <--- VALORE
+                    diff_b = valore_budget - med_budget_target
+                    # Formattazione italiana (Punto per le migliaia)
+                    valore_str = f"€ {valore_budget:,.0f}".replace(',', '.')
+                    st.metric(label="Budget Target", value=valore_str, delta=f"€ {diff_b:,.0f}")
+        
+                with b3:
+                    valore_fo = row['Fo'] # <--- VALORE
+                    st.metric(label="Fattore Fo", value=f"{valore_fo:.1f}%", delta=f"{valore_fo - med_Fo:+.1f}% vs med")
+        
+                with b4:
+                    valore_fe = row['Fe'] # <--- VALORE
+                    st.metric(label="Fattore Fe", value=f"{valore_fe:.1f}%", delta=f"{valore_fe - med_Fe:+.1f}% vs med")
+        
+                # --- RADAR CHART ---
+                # Passiamo i valori espliciti alla funzione per evitare che disegni zeri
+                st.write("#### Profilo Strategico")
                 fig_radar = crea_radar_azienda(row, med_Fo, med_Fe, med_aiuti_target, med_budget_target)
                 st.plotly_chart(fig_radar, use_container_width=True)
+        
+            else:
+                st.error("Nessuna azienda trovata.")
             
                 
             if not azienda_details.empty:
