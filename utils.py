@@ -62,64 +62,78 @@ def is_target_row(row, keywords):
 
 
 
-def render_database_misure(df_rna):
-    # Avvolgiamo tutto il contenuto dentro un expander
-    st.subheader("🗄️ Database Bandi")
-    with st.expander("Elenco degli aiuti", expanded=False):
+def verifica_stato_clienti(df_rna, uploaded_clienti):
+    """
+    Estrae P.IVA/CF in modo robusto e aggiorna il database RNA.
+    """
+    try:
+        lista_piva_clienti = set()
         
-        st.markdown("""
-        Questa sezione raggruppa tutti i bandi trovati nel file RNA, indicando quante aziende li hanno utilizzati 
-        e il volume economico totale per ogni singolo aiuto.
-        """)
+        # --- 1. ESTRAZIONE DATI ---
+        if uploaded_clienti.name.lower().endswith('.pdf'):
+            # (Manteniamo la logica PDF con Regex perché lì il testo è libero)
+            regex_piva_cf = r'\b\d{10,11}\b|\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b'
+            with st.spinner("Analisi del PDF..."):
+                with pdfplumber.open(uploaded_clienti) as pdf:
+                    for page in pdf.pages:
+                        testo = page.extract_text() or ""
+                        lista_piva_clienti.update(re.findall(regex_piva_cf, testo))
+        else:
+            # --- GESTIONE CSV (IL TUO CASO) ---
+            # Leggiamo il CSV puntando direttamente alle colonne giuste
+            df_temp = pd.read_csv(uploaded_clienti, sep=';', dtype=str).fillna('')
+            df_temp.columns = [c.strip().upper() for c in df_temp.columns]
+            
+            # Funzione per pulire e normalizzare (fondamentale per i match)
+            def pulisci_dato(valore):
+                s = str(valore).strip().split('.')[0]
+                if s.isdigit() and len(s) < 11:
+                    return s.zfill(11) # Aggiunge lo zero se serve per il match con RNA
+                return s.upper()
 
-        # 1. Elaborazione dati: raggruppamento per Misura
-        df_rna['importo_numerico'] = pd.to_numeric(
-            df_rna['RNA_IMPORTO'].astype(str).str.replace(',', '.'), 
-            errors='coerce'
-        ).fillna(0)
+            if 'PARTITA IVA' in df_temp.columns:
+                pive = df_temp['PARTITA IVA'].apply(pulisci_dato).unique()
+                lista_piva_clienti.update(pive)
+            
+            if 'CODICE FISCALE' in df_temp.columns:
+                cf = df_temp['CODICE FISCALE'].apply(pulisci_dato).unique()
+                lista_piva_clienti.update(cf)
 
-        db_misure = df_rna.groupby('RNA_MISURA').agg({
-            'RAGIONE SOCIALE': 'nunique', 
-            'RNA_MISURA': 'count',        
-            'importo_numerico': 'sum'     
-        }).rename(columns={
-            'RAGIONE SOCIALE': 'Aziende_Coinvolte',
-            'RNA_MISURA': 'Numero_Erogazioni',
-            'importo_numerico': 'Valore_Totale_€'
-        }).reset_index()
+        # Rimuoviamo eventuali stringhe vuote
+        lista_piva_clienti.discard('')
 
-        # 2. Ordinamento
-        db_misure = db_misure.sort_values(by='Numero_Erogazioni', ascending=False)
+        # --- 2. DEBUG ---
+        with st.sidebar.expander("🔍 Verifica estrazione dati"):
+            st.write(f"**Identificativi trovati:** {len(lista_piva_clienti)}")
+            st.write("**Esempi estratti:**", list(lista_piva_clienti)[:5])
 
-        # 3. Visualizzazione Statistiche Veloci (ridotte per stare dentro l'expander)
-        m1, m2 = st.columns(2)
-        m1.metric("Misure Univoche", len(db_misure))
-        m2.metric("Volume Totale", f"€ {db_misure['Valore_Totale_€'].sum():,.0f}")
+        # --- 3. MATCHING SUL DATAFRAME RNA ---
+        if not lista_piva_clienti:
+            st.warning("Nessun codice trovato nel file caricato.")
+            df_rna['STATO'] = "⚪ PROSPECT"
+            return df_rna
 
-        # 4. Tabella interattiva
-        st.dataframe(
-            db_misure,
-            column_config={
-                "RNA_MISURA": st.column_config.TextColumn("Nome della Misura / Bando"),
-                "Valore_Totale_€": st.column_config.NumberColumn(format="%.2f €"),
-                "Aziende_Coinvolte": "N. Aziende",
-                "Numero_Erogazioni": "N. Totale Aiuti"
-            },
-            hide_index=True,
-            use_container_width=True
-        )
+        # Applichiamo il confronto normalizzando anche il DB RNA
+        def check_match(valore_rna):
+            codice_db = str(valore_rna).strip().upper()
+            # Se il codice nel DB RNA è numerico e corto, mettiamo lo zero per confrontarlo
+            if codice_db.isdigit() and len(codice_db) < 11:
+                codice_db = codice_db.zfill(11)
+            
+            return "🟢 MATCH" if codice_db in lista_piva_clienti else "⚪ PROSPECT"
 
-        # 5. Pulsante di Download
-        csv_misure = io.BytesIO()
-        db_misure.to_csv(csv_misure, index=False, sep=';', encoding='utf-8-sig')
+        if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df_rna.columns:
+            df_rna['STATO'] = df_rna['RNA_CODICE_FISCALE_BENEFICIARIO'].apply(check_match)
+            n_match = len(df_rna[df_rna['STATO'] == '🟢 MATCH'])
+            st.success(f"Confronto completato: {n_match} match trovati.")
+        else:
+            st.error("Colonna 'RNA_CODICE_FISCALE_BENEFICIARIO' non trovata nel DB RNA.")
         
-        st.download_button(
-            label="💾 Scarica Database Misure Univoche (CSV)",
-            data=csv_misure.getvalue(),
-            file_name="Database_Misure_RNA.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+        return df_rna
+
+    except Exception as e:
+        st.error(f"Errore durante la verifica: {e}")
+        return df_rna
 
 
 
