@@ -98,7 +98,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         )
 
         # Iniezione delle linee dei quadranti
-        fig_quad.add_hline(y=med_Fe, line_dash="dot", line_color="red", 
+        fig_quad.add_hline(y=med_Fe, line_dash="dot", line_color="blue", 
                            annotation_text=f"Mediana Fe ({med_Fe:.1f}%)", annotation_position="bottom right")
         fig_quad.add_vline(x=med_Fo, line_dash="dot", line_color="red", 
                            annotation_text=f"Mediana Fo ({med_Fo:.1f}%)", annotation_position="top left")
