@@ -986,6 +986,9 @@ if uploaded_file is not None:
                       delta=f"{diff_fe:+.1f}% vs mediana")
         
                 st.divider()
+
+
+            
                 
             if not azienda_details.empty:
                 # 1. Mapping di sicurezza (se i nomi nel DF sono diversi da quelli desiderati per la tabella)
