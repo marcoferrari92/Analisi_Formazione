@@ -26,7 +26,7 @@ def create_centered_pie(values):
 
 
 
-def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data, hover_template, size_col=None, line_color="Red", is_log=False):
+def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data, hover_template, size_col=None, line_color="Red", x_log=False, y_log=False):
     """
     Crea un grafico scatter 2D con dimensione dei punti variabile e linea di benchmark.
 
@@ -41,7 +41,8 @@ def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data
         custom_data (list):     Colonne per il tooltip.
         hover_template (str):   Template HTML per il tooltip.
         line_color (str):       Colore linea benchmark. Default "Red".
-        is_log (bool):          Scala logaritmica. Default False.
+        x_log (bool):           Scala logaritmica (asse X). Default False.
+        y_log (bool):           Scala logaritmica (asse Y). Default False.
     """
     
     # 1. Creazione Scatter
@@ -54,8 +55,8 @@ def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data
         hover_name="Ragione Sociale",
         custom_data=custom_data,
         title=title,
-        log_x=is_log, 
-        log_y=is_log,
+        log_x=x_log, 
+        log_y=y_log,
         color_continuous_scale="Viridis" if is_log else "Plasma",
         # Usiamo size_max solo se effettivamente passiamo una colonna per la dimensione
         size_max=30 if size_col is not None else None 
