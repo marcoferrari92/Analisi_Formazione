@@ -31,7 +31,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         )
         st.plotly_chart(fig_op, use_container_width=True)
         if med_Fo > 0:
-            st.caption(f"La linea rossa rappresenta la Mediana Fo ({med_Fo:.1f}%). Dimensione: Budget Target.")
+            st.caption(f"La linea rossa rappresenta la Mediana Fo ({med_Fo:.1f}%)")
+            st.caption(f"Dimensione pallini: Budget Target")
         
     with col_graf_2:
         fig_ec = plot_scatter_median(
@@ -50,7 +51,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         )
         st.plotly_chart(fig_ec, use_container_width=True)
         if med_Fe > 0:
-            st.caption(f"La linea blu rappresenta la Mediana Fe ({med_Fe:.1f}%). Dimensione: Num. Aiuti Target.")
+            st.caption(f"La linea blu rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+            st.caption(f"Dimensione pallini: Num. Aiuti Target")
 
     # --- 2. GRAFICO CONFRONTO TARGET ---
     st.write("")
@@ -69,7 +71,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             y_log = False
     )
     st.plotly_chart(fig_vs, use_container_width=True)
-    st.caption("Dimensione del pallino: Budget Totale dell'azienda.")
+    st.caption("Dimensione del pallino: Budget Totale")
 
     # --- 3. GRAFICO 3D: MARKET POWER ---
     st.write("")
