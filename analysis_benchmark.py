@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 
 
 def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template):
