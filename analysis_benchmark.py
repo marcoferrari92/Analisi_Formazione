@@ -55,8 +55,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     fig_vs = plot_scatter_median(
             df=df_plot, 
             x_col="Budget", 
-            y_col="Aiuti Target", 
-            color_col="Fe",
+            y_col="Aiuti", 
+            color_col="Aiuti Target",
             title="Confronto Specializzazioni (Num. Aiuti Target vs Budget Target)", 
             med_val=0, 
             custom_data=custom_data, 
