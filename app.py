@@ -827,7 +827,7 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
         with st.popover("💡 Strategia"):
-                st.markdown(STRATEGIA_BENCHMARK)
+                st.info(STRATEGIA_BENCHMARK)
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
         # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
