@@ -11,7 +11,8 @@ import numpy as np
 # Caricamenti
 from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
-from analisi import create_centered_pie, plot_scatter_median
+from plots import create_centered_pie, plot_scatter_median
+from analysis import analisi_benchmark
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
@@ -832,7 +833,6 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
 
-    
         # --- GRAFICI POSIZIONAMENTI ---
         
         # Definiamo le colonne da mappare e il template
@@ -854,150 +854,10 @@ if uploaded_file is not None:
         df_plot = report_aziende[report_aziende['Budget Target'] > 1].copy()
         
         if not df_plot.empty:
-            st.write("")
-            col_graf_1, col_graf_2 = st.columns(2)
+            st.write("")   
             
-            # --- GRAFICO 1: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
-            with col_graf_1:
-                fig_op = plot_scatter_median(
-                    df=df_plot, 
-                    x_col="Aiuti", 
-                    y_col="Aiuti Target", 
-                    color_col="Fo", 
-                    title="Specializzazione Operativa (N. Aiuti)", 
-                    med_val=med_Fo, 
-                    custom_data=custom_data, 
-                    hover_template=custom_template,
-                    size_col="Budget Target",
-                    line_color="Red",   
-                    is_log=False        
-                )
-                st.plotly_chart(fig_op, use_container_width=True)
-                if med_Fo > 0:
-                    st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
-                    st.caption(f"La dimensione del pallino è il Budget Target")
-                
-            # --- GRAFICO 2: POSIZIONAMENTO ECONOMICO (Budget) ---
-            with col_graf_2:
-                fig_ec = plot_scatter_median(
-                    df=df_plot, 
-                    x_col="Budget", 
-                    y_col="Budget Target", 
-                    color_col="Fe",
-                    title="Specializzazione Economica (Budget)", 
-                    med_val=med_Fe, 
-                    custom_data=custom_data, 
-                    size_col="Aiuti Target",
-                    hover_template=custom_template, 
-                    line_color="Blue",  # Linea blu per i valori economici
-                    is_log=True         # Scala logaritmica per i budget
-                )
-                st.plotly_chart(fig_ec, use_container_width=True)
-                if med_Fe > 0:
-                    st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
-                    st.caption(f"La dimensione del pallino è il Num. Aiuti Target")
-
-            # --- GRAFICO 3: CONFRONTO (Aiuti Target vs Budget Target) ---
-            fig_vs = plot_scatter_median(
-                    df=df_plot, 
-                    x_col="Budget Target", 
-                    y_col="Aiuti Target", 
-                    color_col="Fe",
-                    title="Confronto specializzazioni (Num. Aiuti Target vs Budget Target)", 
-                    med_val=med_Fe, 
-                    custom_data=custom_data, 
-                    size_col="Budget",
-                    hover_template=custom_template, 
-                    line_color="Blue",  # Linea blu per i valori economici
-                    is_log=True         # Scala logaritmica per i budget
-            )
-            st.plotly_chart(fig_vs, use_container_width=True)
-            if med_Fe > 0:
-                st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
-                st.caption(f"La dimensione del pallino è il Num. Aiuti Target")
-
-
-            # --- GRAFICO 3D: MARKET POWER & SPECIALIZZAZIONE ---
-            st.write("")
-            st.subheader("🧊 Cubo del Market Power: Massa vs Frequenza")
+            analisi_benchmark(df_plot, med_Fo, med_Fe, custom_data, custom_template)   
             
-            with st.expander("📖 Come leggere i piani di benchmark"):
-                st.info("""
-                In questo spazio 3D, le aziende "normali" volano vicino ai due piani. Gli outlier scappano verso l'alto:
-                * **Sopra il Piano Blu (Fe):** Aziende che ottengono più budget target rispetto alla loro massa monetaria totale (Efficienza Economica).
-                * **Sopra il Piano Rosso (Fo):** Aziende che vincono più bandi target rispetto al volume totale di pratiche gestite (Efficienza Operativa).
-                """)
-            
-            # 1. Calcolo parametri per i piani
-            # Ticket Medio Target (Quanto vale mediamente un bando target in questo mercato)
-            ticket_target_med = (df_plot['Budget Target'] / df_plot['Aiuti Target']).median()
-            
-            # 2. Preparazione coordinate per le superfici
-            x_range = np.logspace(np.log10(df_plot['Budget'].min()), np.log10(df_plot['Budget'].max()), 2)
-            y_range = np.linspace(df_plot['Aiuti'].min(), df_plot['Aiuti'].max(), 2)
-            g_x, g_y = np.meshgrid(x_range, y_range)
-            
-            # Piano Fe: Z = X * (med_Fe / 100)
-            z_fe = g_x * (med_Fe / 100)
-            
-            # Piano Fo: Z = Y * (med_Fo / 100) * TicketTargetMedio
-            z_fo = g_y * (med_Fo / 100) * ticket_target_med
-            
-            # 3. Creazione Figura
-            fig_power = go.Figure()
-            
-            # Aggiunta punti (Aziende)
-            # Dimensione basata sul Budget Target per enfatizzare il successo
-            size_val = np.sqrt(df_plot['Budget Target'])
-            size_val = (size_val / size_val.max()) * 30 + 5
-            
-            fig_power.add_trace(go.Scatter3d(
-                x=df_plot['Budget'],
-                y=df_plot['Aiuti'],
-                z=df_plot['Budget Target'],
-                mode='markers',
-                hovertext=df_plot['Ragione Sociale'],
-                customdata=df_plot[custom_data], # Usiamo le colonne definite prima
-                marker=dict(
-                    size=size_val,
-                    color=df_plot['Aiuti Target'], # Colore basato sulla frequenza target
-                    colorscale='Viridis',
-                    opacity=0.7,
-                    showscale=True,
-                    colorbar=dict(title="N. Aiuti Target", thickness=15)
-                ),
-                hovertemplate=custom_template # Usiamo il tuo template universale
-            ))
-            
-            # Aggiunta Superficie Fe (Blu)
-            fig_power.add_trace(go.Surface(
-                x=g_x, y=g_y, z=z_fe,
-                opacity=0.15, showscale=False, colorscale=[[0, 'blue'], [1, 'blue']],
-                name="Benchmark Economico (Fe)"
-            ))
-            
-            # Aggiunta Superficie Fo (Rosso)
-            fig_power.add_trace(go.Surface(
-                x=g_x, y=g_y, z=z_fo,
-                opacity=0.15, showscale=False, colorscale=[[0, 'red'], [1, 'red']],
-                name="Benchmark Operativo (Fo)"
-            ))
-            
-            # Configurazione Layout
-            fig_power.update_layout(
-                scene=dict(
-                    xaxis_title="Budget Totale (€)",
-                    yaxis_title="N. Aiuti Totali",
-                    zaxis_title="Budget Target (€)",
-                    xaxis_type="log",
-                    zaxis_type="log"
-                ),
-                margin=dict(l=0, r=0, b=0, t=40),
-                height=800
-            )
-            
-            st.plotly_chart(fig_power, use_container_width=True, key="market_power_cube_3d")         
-                
     
         # --- GRAFICI ---
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
