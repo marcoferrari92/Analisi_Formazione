@@ -58,7 +58,7 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
 
 STRATEGIA_BENCHMARK = """ 
 * **Aziende "Focalizzate":** aziende sopra la mediana (linea rossa). Agiscono sul target più della media dei competitor. Clienti fondamentali da acquisire. 
-* **Aziende "Disinteressate:** aziende sotto la mediana (linea rossa). Al momento il target è solo una componente minoritaria della loro attività. 
+* **Aziende "Disinteressate":** aziende sotto la mediana (linea rossa). Al momento il target è solo una componente minoritaria della loro attività. 
 Sono le aziende a più alto potenziale di crescita, ma anche quelle più complicate da coinvolgere. 
 """
 
