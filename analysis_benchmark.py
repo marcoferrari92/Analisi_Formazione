@@ -13,6 +13,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         return
 
     st.write("")
+
     
     # --- 1. RIGA DEI GRAFICI 2D (OPERATIVO E ECONOMICO) ---
     col_graf_1, col_graf_2 = st.columns(2)
@@ -57,6 +58,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             st.caption(f"La linea blu rappresenta la Mediana Fe ({med_Fe:.1f}%)")
             st.caption(f"Dimensione pallini: Num. Aiuti Target")
 
+    
     # --- 2. GRAFICO CONFRONTO TARGET ---
     df_plot['Sqrt_Budget'] = np.sqrt(df_plot['Budget'])
     st.write("")
@@ -74,6 +76,16 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             x_log = True,
             y_log = False
     )
+
+    # Iniezione dei quadranti basati sulle mediane assolute
+    fig_vs.add_hline(y=med_abs_aiuti_target, line_dash="dot", line_color="green", 
+                     annotation_text=f"Mediana Aiuti ({med_abs_aiuti_target:.0f})", 
+                     annotation_position="bottom right")
+    
+    fig_vs.add_vline(x=med_abs_budget_target, line_dash="dot", line_color="green", 
+                     annotation_text=f"Mediana Budget (€ {med_abs_budget_target:,.0f})", 
+                     annotation_position="top left")
+    
     st.plotly_chart(fig_vs, use_container_width=True)
     st.caption("Colore del pallino: Num. Aiuti Totale")
     st.caption("Dimensione del pallino: radice quadrata del Budget Totale")
