@@ -25,65 +25,48 @@ def create_centered_pie(values):
     return fig
 
 
-def analisi_incidenza(df_report):
+def crea_scatter_posizionamento(df, x_col, y_col, color_col, title, med_val, line_color="Red", is_log=False):
     """
-    Funzione per visualizzare l'istogramma dell'incidenza di volume
-    e spiegare il significato dei dati.
+    Crea un grafico scatter 2D con hover personalizzato e linea di benchmark (mediana) colorabile.
     """
-    st.subheader("📈 Analisi della Specializzazione: Incidenza Volume Target")
+    # 1. Definizione colonne per l'hover
+    custom_data_cols = ['Aiuti', 'Aiuti Target', 'Fo', 'Budget', 'Budget Target', 'Fe']
     
-    # 1. Preparazione Dati (Solo aziende con incidenza > 0)
-    df_attivi = df_report[df_report['INCIDENZA_VOL_%'] > 0].copy()
-    
-    if df_attivi.empty:
-        st.warning("Nessun dato di incidenza disponibile per le aziende selezionate.")
-        return
-
-    # 2. Creazione Grafico
-    fig = px.histogram(
-        df_attivi, 
-        x="INCIDENZA_VOL_%", 
-        nbins=20,
-        histnorm='percent',
-        title="Distribuzione % dell'Incidenza (Solo aziende attive nel Target)",
-        labels={'INCIDENZA_VOL_%': 'Incidenza Volume Target (%)', 'percent': 'Quota di Aziende (%)'},
-        color_discrete_sequence=['#27ae60'],
-        marginal="box" # Il boxplot sopra l'istogramma
+    # 2. Creazione Scatter
+    fig = px.scatter(
+        df, x=x_col, y=y_col, color=color_col,
+        hover_name="Ragione Sociale",
+        custom_data=custom_data_cols,
+        title=title,
+        log_x=is_log, log_y=is_log,
+        color_continuous_scale="Viridis" if is_log else "Plasma"
     )
 
-    fig.update_layout(
-        bargap=0.1,
-        xaxis_ticksuffix="%",
-        yaxis_ticksuffix="%"
+    # 3. Applicazione Hover Template Universale
+    fig.update_traces(
+        hovertemplate=(
+            "<b>%{hovertext}</b><br>" +
+            "------------------<br>" +
+            "Aiuti: %{customdata[0]}<br>" +
+            "Aiuti Target: %{customdata[1]}<br>" +
+            "Fattore Fo: %{customdata[2]:.1f}%<br>" +
+            "Budget Totale: €%{customdata[3]:,.0f}<br>" +
+            "Budget Target: €%{customdata[4]:,.0f}<br>" +
+            "Fattore Fe: %{customdata[5]:.1f}%<br>" +
+            "<extra></extra>"
+        )
     )
 
-    # 3. Layout Streamlit: Grafico a sinistra, Spiegazione a destra
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.markdown("### 🔍 Cosa stiamo guardando?")
-        
-        media = df_attivi['INCIDENZA_VOL_%'].mean()
-        mediana = df_attivi['INCIDENZA_VOL_%'].median()
-        
-        st.metric("Media Incidenza", f"{media:.1f}%")
-        st.metric("Mediana Incidenza", f"{mediana:.1f}%")
-        
-        st.info(f"""
-        **Interpretazione:**
-        - **La Media ({media:.1f}%)**: Rappresenta il 'punto di equilibrio'. Se è molto più alta della mediana, significa che pochi 'campioni' stanno alzando la media di tutto il gruppo.
-        - **La Mediana ({mediana:.1f}%)**: È il valore centrale. Ci dice che metà delle aziende attive investe meno del {mediana:.1f}% del proprio budget RNA in formazione.
-        """)
+    # 4. Aggiunta Linea di Benchmark con colore personalizzato
+    x_min, x_max = df[x_col].min(), df[x_col].max()
+    fig.add_shape(
+        type="line",
+        x0=x_min, y0=x_min * (med_val / 100),
+        x1=x_max, y1=x_max * (med_val / 100),
+        line=dict(color=line_color, width=3, dash="dash") # <-- Colore dinamico qui
+    )
 
-    # 4. Approfondimento didattico
-    with st.expander("💡 Guida alla lettura del grafico"):
-        st.write("""
-        L'**Incidenza Volume** misura quanto pesa la formazione sul totale degli aiuti ricevuti da un'azienda.
-        
-        * **Fascia 0-20% (Aziende Hardware-Centric):** Imprese che investono principalmente in macchinari e infrastrutture. La formazione è un complemento.
-        * **Fascia 80-100% (Aziende Skills-Centric):** Imprese (spesso di servizi o consulenza) il cui unico sostentamento pubblico deriva dallo sviluppo delle competenze.
-        * **Il Boxplot (riga sopra):** La 'scatola' mostra dove si concentra il 50% centrale del mercato. I puntini a destra sono i tuoi 'Top Spender' o specialisti.
-        """)
+    fig.update_layout(height=450, showlegend=False)
+    return fig
+
+
