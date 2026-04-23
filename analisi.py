@@ -26,46 +26,51 @@ def create_centered_pie(values):
 
 
 
-def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data, hover_template, line_color="Red", is_log=False):
+def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data, hover_template, size_col=None, line_color="Red", is_log=False):
     """
-    Crea un grafico scatter 2D avanzato con linea di benchmark e tooltip personalizzato.
+    Crea un grafico scatter 2D con dimensione dei punti variabile e linea di benchmark.
 
     Args:
-        df (pd.DataFrame):              Il DataFrame contenente i dati delle aziende.
-        x_col (str):                    Nome colonna per l'asse X (es. 'Aiuti' o 'Budget').
-        y_col (str):                    Nome colonna per l'asse Y (es. 'Aiuti Target' o 'Budget Target').
-        color_col (str):                Colonna per la scala cromatica dei punti (es. 'Fo' o 'Fe').
-        title (str):                    Titolo del grafico.
-        med_val (float):                Valore della mediana (0-100) per inclinazione linea di benchmark.
-        custom_data (list):             Lista delle colonne da mappare per l'uso nel hover_template.
-        hover_template (str):           Stringa di formattazione HTML per il tooltip di Plotly.
-        line_color (str, optional):     Colore della linea tratteggiata. Default "Red".
-        is_log (bool, optional):        Attiva la scala logaritmica su entrambi gli assi. Default False.
-
-    Returns:
-        plotly.graph_objects.Figure:    Oggetto figura di Plotly pronto per st.plotly_chart.
+        df (pd.DataFrame):      Il DataFrame contenente i dati.
+        x_col (str):            Colonna asse X.
+        y_col (str):            Colonna asse Y.
+        color_col (str):        Colonna per il colore (es. 'Aiuti Target').
+        size_col (str):         Colonna per la dimensione del pallino (es. 'Budget Target').
+        title (str):            Titolo del grafico.
+        med_val (float):        Valore mediana per la linea di benchmark.
+        custom_data (list):     Colonne per il tooltip.
+        hover_template (str):   Template HTML per il tooltip.
+        line_color (str):       Colore linea benchmark. Default "Red".
+        is_log (bool):          Scala logaritmica. Default False.
     """
     
-    # 1. Creazione Scatter base
-    # La scala colori cambia (Viridis/Plasma) per distinguere grafici logaritmici da lineari
+    # 1. Creazione Scatter
     fig = px.scatter(
-        df, x=x_col, y=y_col, color=color_col,
+        df, 
+        x=x_col, 
+        y=y_col, 
+        color=color_col,
+        size=size_col,          # Se size_col è None, Plotly usa la dimensione standard
         hover_name="Ragione Sociale",
         custom_data=custom_data,
         title=title,
-        log_x=is_log, log_y=is_log,
-        color_continuous_scale="Viridis" if is_log else "Plasma"
+        log_x=is_log, 
+        log_y=is_log,
+        color_continuous_scale="Viridis" if is_log else "Plasma",
+        # Usiamo size_max solo se effettivamente passiamo una colonna per la dimensione
+        size_max=30 if size_col is not None else None 
     )
 
-    # 2. Iniezione del template personalizzato per il tooltip
+    # 2. Iniezione del template
     fig.update_traces(hovertemplate=hover_template)
+    
+    # Se non c'è una colonna size, impostiamo una dimensione fissa gradevole per tutti
+    if size_col is None:
+        fig.update_traces(marker=dict(size=10))
 
-    # 3. Logica della Linea di Benchmark (Bisettrice della Mediana)
-    # Viene disegnata solo se esiste una mediana valida (> 0)
+    # 3. Logica della Linea di Benchmark
     if med_val > 0:
         x_min, x_max = df[x_col].min(), df[x_col].max()
-        
-        # Disegna una retta passante per l'origine con pendenza = mediana%
         fig.add_shape(
             type="line",
             x0=x_min, y0=x_min * (med_val / 100),
@@ -73,8 +78,7 @@ def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data
             line=dict(color=line_color, width=3, dash="dash")
         )
 
-    # 4. Pulizia estetica del layout
-    fig.update_layout(height=450, showlegend=False)
+    fig.update_layout(height=450, showlegend=True if size_col else False)
     
     return fig
 
