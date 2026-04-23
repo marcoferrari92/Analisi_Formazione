@@ -902,11 +902,12 @@ if uploaded_file is not None:
         # 1. Definiamo i dati extra da passare al grafico
         # L'ordine nella lista qui sotto deve corrispondere agli indici [0], [1], [2]... nel template
         custom_data_list = [
-            'Aiuti',          # index 0
-            'Aiuti Target',   # index 1
-            'Fo',             # index 2
-            'Budget Target',  # index 3
-            'Fe'              # index 4
+            'Aiuti',          
+            'Aiuti Target',   
+            'Fo',             
+            'Budget',
+            'Budget Target',  
+            'Fe'              
         ]
         
         fig_3d = px.scatter_3d(
@@ -933,9 +934,10 @@ if uploaded_file is not None:
                 "Aiuti: %{customdata[0]}<br>" +
                 "Aiuti Target: %{customdata[1]}<br>" +
                 "Fattore Fo: %{customdata[2]:.1f}%<br>" +
-                "Budget Target: €%{customdata[3]:,.0f}<br>" +
-                "Fattore Fe: %{customdata[4]:.1f}%<br>" +
-                "<extra></extra>" # Rimuove la scritta laterale col nome della traccia
+                "Budget Totale: €%{customdata[3]:,.0f}<br>" +
+                "Budget Target: €%{customdata[4]:,.0f}<br>" +
+                "Fattore Fe: %{customdata[5]:.1f}%<br>" +
+                "<extra></extra>" 
             )
         )
         
@@ -972,7 +974,7 @@ if uploaded_file is not None:
                 # Funzione helper per creare i grafici con lo stesso stile
                 def crea_box_orizzontale(df, col, titolo, colore):
                     # 1. Definiamo i dati extra da includere nel DataFrame del grafico
-                    custom_data_cols = ["Aiuti", "Aiuti Target", "Fo", "Budget Target", "Fe"]
+                    custom_data_cols = ["Aiuti", "Aiuti Target", "Fo", "Budget", "Budget Target", "Fe"]
                     
                     # 2. Creiamo il boxplot base
                     fig = px.box(
@@ -985,19 +987,20 @@ if uploaded_file is not None:
                         custom_data=custom_data_cols  
                     )
                     
-                    # 3. Personalizziamo i punti e il tooltip (qui va il hovertemplate)
+                    # 3. Personalizziamo i punti e il tooltip
                     fig.update_traces(
                         pointpos=0, 
                         jitter=0.7, 
-                        marker=dict(opacity=0.6, size=7), # <-- La virgola qui è fondamentale
+                        marker=dict(opacity=0.6, size=7), 
                         hovertemplate=(
                             "<b>%{hovertext}</b><br>" +
                             "------------------<br>" +
                             "Aiuti: %{customdata[0]}<br>" +
                             "Aiuti Target: %{customdata[1]}<br>" +
                             "Fattore Fo: %{customdata[2]:.1f}%<br>" +
-                            "Budget Target: €%{customdata[3]:,.0f}<br>" +
-                            "Fattore Fe: %{customdata[4]:.1f}%<br>" +
+                            "Budget Totale: €%{customdata[3]:,.0f}<br>" +
+                            "Budget Target: €%{customdata[4]:,.0f}<br>" +
+                            "Fattore Fe: %{customdata[5]:.1f}%<br>" +
                             "<extra></extra>"
                         )
                     )
