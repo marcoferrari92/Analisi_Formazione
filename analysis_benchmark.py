@@ -103,40 +103,40 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     # --- NUOVA SEZIONE: QUADRANTE DI EFFICIENZA (INTEGRATA) ---
     st.write("")
         
-        # Usiamo df_plot che ha già i dati filtrati necessari
-        fig_quad = plot_scatter_median(
-            df=df_plot,
-            x_col='Fo',
-            y_col='Fe',
-            color_col='Aiuti Target',
-            size_col='Budget Target',
-            title="Confronto specializzazioni: Fo vs Fe",
-            med_val=0, # Disattiviamo la linea diagonale
-            custom_data=custom_data,
-            hover_template=custom_template
-        )
+    # Usiamo df_plot che ha già i dati filtrati necessari
+    fig_quad = plot_scatter_median(
+        df=df_plot,
+        x_col='Fo',
+        y_col='Fe',
+        color_col='Aiuti Target',
+        size_col='Budget Target',
+        title="Confronto specializzazioni: Fo vs Fe",
+        med_val=0, # Disattiviamo la linea diagonale
+        custom_data=custom_data,
+        hover_template=custom_template
+    )
 
-        # Iniezione delle linee dei quadranti
-        fig_quad.add_hline(y=med_Fe, line_dash="dot", line_color="blue", 
-                           annotation_text=f"Mediana Fe ({med_Fe:.1f}%)", annotation_position="bottom right")
-        fig_quad.add_vline(x=med_Fo, line_dash="dot", line_color="red", 
-                           annotation_text=f"Mediana Fo ({med_Fo:.1f}%)", annotation_position="top left")
+    # Iniezione delle linee dei quadranti
+    fig_quad.add_hline(y=med_Fe, line_dash="dot", line_color="blue", 
+                       annotation_text=f"Mediana Fe ({med_Fe:.1f}%)", annotation_position="bottom right")
+    fig_quad.add_vline(x=med_Fo, line_dash="dot", line_color="red", 
+                       annotation_text=f"Mediana Fo ({med_Fo:.1f}%)", annotation_position="top left")
 
-        fig_quad.update_layout(
-            xaxis=dict(range=[-5, 105], ticksuffix="%"),
-            yaxis=dict(range=[-5, 105], ticksuffix="%"),
-            height=600
-        )
+    fig_quad.update_layout(
+        xaxis=dict(range=[-5, 105], ticksuffix="%"),
+        yaxis=dict(range=[-5, 105], ticksuffix="%"),
+        height=600
+    )
 
-        st.plotly_chart(fig_quad, use_container_width=True, key="quadrante_efficienza_internal")
+    st.plotly_chart(fig_quad, use_container_width=True, key="quadrante_efficienza_internal")
 
-        c1, c2 = st.columns(2)
-        with c1:
-            st.success("**Top-Right (I Campioni)**: Alta specializzazione e alto valore. Lead prioritari.")
-            st.warning("**Bottom-Right (Gli Specialisti)**: Alta frequenza target, ma piccoli importi.")
-        with c2:
-            st.info("**Top-Left (I Giganti)**: Grandi importi target, ma dispersi in molta altra attività.")
-            st.error("**Bottom-Left (Gli Occasionali)**: Basso interesse strategico.")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.success("**Top-Right (I Campioni)**: Alta specializzazione e alto valore. Lead prioritari.")
+        st.warning("**Bottom-Right (Gli Specialisti)**: Alta frequenza target, ma piccoli importi.")
+    with c2:
+        st.info("**Top-Left (I Giganti)**: Grandi importi target, ma dispersi in molta altra attività.")
+        st.error("**Bottom-Left (Gli Occasionali)**: Basso interesse strategico.")
 
     
     # --- 3. GRAFICO 3D: MARKET POWER ---
