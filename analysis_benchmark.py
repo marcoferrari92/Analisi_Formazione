@@ -1,13 +1,10 @@
 import streamlit as st
 
 
-
-def analisi_benchmark(df_plot, med_Fo, med_Fe, custom_data, custom_template):
+def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template):
+    
     from plots import plot_scatter_median
-    """
-    Gestisce il rendering della sezione dedicata agli outlier, 
-    inclusi i grafici 2D e il cubo 3D del Market Power.
-    """
+    
     if df_plot.empty:
         st.warning("Nessun dato disponibile per l'analisi degli outlier.")
         return
