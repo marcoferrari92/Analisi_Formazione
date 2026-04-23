@@ -765,17 +765,21 @@ if uploaded_file is not None:
 
         
         # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
-        # Usiamo il report_aziende creato precedentemente
+        # --- CALCOLO BENCHMARK (Sposta questo blocco in alto, subito dopo la creazione di report_aziende) ---
         df_benchmark_1 = report_aziende[report_aziende['Budget Target'] > 0]
         df_benchmark_2 = report_aziende[report_aziende['Budget'] > 0]
-
+        
         if not df_benchmark_1.empty:
             med_aiuti              = df_benchmark_2['Aiuti'].median()
             med_budget             = df_benchmark_2['Budget'].median()
-            med_budget_target      = df_benchmark_1['Budget Target'].median()
-            med_aiuti_target       = df_benchmark_1['Aiuti Target'].median()
-            med_Fo                 = df_benchmark_1['Fo'].median()
-            med_Fe                 = df_benchmark_1['Fe'].median()
+            med_aiuti_target       = float(df_benchmark_1['Aiuti Target'].median())
+            med_budget_target      = float(df_benchmark_1['Budget Target'].median())
+            med_Fo                 = float(df_benchmark_1['Fo'].median())
+            med_Fe                 = float(df_benchmark_1['Fe'].median())
+        else:
+            # Valori di fallback per evitare divisioni per zero se il file è vuoto
+            med_aiuti_target, med_budget_target, med_Fo, med_Fe = 1.0, 1.0, 1.0, 1.0
+            
 
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
