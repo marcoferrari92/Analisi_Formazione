@@ -864,11 +864,11 @@ if uploaded_file is not None:
                     x_col="Aiuti", 
                     y_col="Aiuti Target", 
                     color_col="Fo", 
-                    size_col="Budget Target",
                     title="Specializzazione Operativa (N. Aiuti)", 
                     med_val=med_Fo, 
                     custom_data=custom_data, 
-                    hover_template=custom_template, 
+                    hover_template=custom_template,
+                    size_col="Budget Target",
                     line_color="Red",   
                     is_log=False        
                 )
@@ -883,10 +883,10 @@ if uploaded_file is not None:
                     x_col="Budget", 
                     y_col="Budget Target", 
                     color_col="Fe",
-                    size_col="Aiuti Target",
                     title="Specializzazione Economica (Budget)", 
                     med_val=med_Fe, 
                     custom_data=custom_data, 
+                    size_col="Aiuti Target",
                     hover_template=custom_template, 
                     line_color="Blue",  # Linea blu per i valori economici
                     is_log=True         # Scala logaritmica per i budget
