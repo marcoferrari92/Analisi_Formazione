@@ -897,7 +897,50 @@ if uploaded_file is not None:
                 fig_budget_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_budget_scatter, use_container_width=True)
                 st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
-            
+
+                # --- GRAFICO 3D DI POSIZIONAMENTO ---
+                st.write("")
+                st.subheader("🧊 Analisi Tridimensionale delle Performance")
+                
+                with st.expander("📖 Come leggere il grafico 3D"):
+                    st.info("""
+                    Questo grafico incrocia tre dimensioni fondamentali:
+                    1. **Asse X (Aiuti):** Quantità di bandi vinti (Frequenza).
+                    2. **Asse Y (Budget):** Potenza economica totale (Massa).
+                    3. **Asse Z (Budget Target):** Successo nel settore specifico (Obiettivo).
+                    
+                    **Strategia:** Le aziende più interessanti sono quelle che "volano alto" (Asse Z elevato) pur avendo una massa totale contenuta, indicando una specializzazione estrema.
+                    """)
+                
+                # Creazione del grafico 3D
+                fig_3d = px.scatter_3d(
+                    df_plot,
+                    x='Aiuti',
+                    y='Budget',
+                    z='Budget Target',
+                    color='Fe',           # Il colore indica la specializzazione economica
+                    size='Aiuti Target',  # La grandezza del pallino indica quanti aiuti target ha preso
+                    hover_name='Ragione Sociale',
+                    log_y=True,           # Usiamo la scala log per il budget perché spesso ha sbalzi enormi
+                    log_z=True,           # Anche per il budget target
+                    title="Cubo Strategico: Massa, Frequenza e Specializzazione",
+                    labels={'Fe': 'Specializzazione %', 'Aiuti': 'N. Aiuti Totali'},
+                    color_continuous_scale='Viridis',
+                    opacity=0.8
+                )
+                
+                # Miglioriamo l'estetica e la dimensione
+                fig_3d.update_layout(
+                    height=700,
+                    margin=dict(l=0, r=0, b=0, t=50),
+                    scene=dict(
+                        xaxis_title='N. Aiuti Totali',
+                        yaxis_title='Budget Totale (€)',
+                        zaxis_title='Budget Target (€)'
+                    )
+                )
+                
+                st.plotly_chart(fig_3d, use_container_width=True, key="grafico_3d_strategico")
     
         # --- GRAFICI ---
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
