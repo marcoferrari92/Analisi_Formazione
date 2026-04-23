@@ -116,7 +116,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             color_col='Aiuti Target',
             size_col='Budget Target',
             title="Confronto specializzazioni: Fo vs Fe",
-            med_val=0, # Disattiviamo la linea diagonale
+            med_val=0, 
             custom_data=custom_data,
             hover_template=custom_template
         )
@@ -134,14 +134,10 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         )
     
         st.plotly_chart(fig_quad, use_container_width=True, key="quadrante_efficienza_internal")
-    
-        c1, c2 = st.columns(2)
-        with c1:
-            st.success("**Top-Right (I Campioni)**: Alta specializzazione e alto valore. Lead prioritari.")
-            st.warning("**Bottom-Right (Gli Specialisti)**: Alta frequenza target, ma piccoli importi.")
-        with c2:
-            st.info("**Top-Left (I Giganti)**: Grandi importi target, ma dispersi in molta altra attività.")
-            st.error("**Bottom-Left (Gli Occasionali)**: Basso interesse strategico.")
+        st.caption(f"La linea rossa rappresenta la Mediana Fo ({med_Fo:.1f}%)")
+        st.caption(f"La linea blu rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+        st.caption(f"Dimensione pallini: Budget Target")
+
     
         
         # --- 3. GRAFICO 3D: MARKET POWER ---
