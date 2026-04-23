@@ -987,7 +987,9 @@ if uploaded_file is not None:
         
                 st.divider()
 
-
+            # Chiamata alla nuova funzione
+            fig_radar = crea_radar_azienda(row, med_Fo, med_Fe, med_aiuti_target, med_budget_target)
+            st.plotly_chart(fig_radar, use_container_width=True)
             
                 
             if not azienda_details.empty:
