@@ -379,7 +379,7 @@ if uploaded_file is not None:
             
             # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
             st.subheader("📈 Evoluzione del Budget nel Tempo")
-            with st.expander("💡 Strategia"):
+            with st.popover("💡 Strategia"):
                 st.info(GUIDA_TIMELINE)
             
             # Aggreghiamo Totale e Target
@@ -436,7 +436,7 @@ if uploaded_file is not None:
         
             # --- HEATMAP (STAGIONALITÀ) ---
             st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
-            with st.expander("💡 Strategia"):
+            with st.popover("💡 Strategia"):
                 st.info(GUIDA_TIMEMAP)
                   
             df_heat_data = df[df['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -863,7 +863,7 @@ if uploaded_file is not None:
         
                 fig_aiuti_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_aiuti_scatter, use_container_width=True)
-                st.caption(f"La linea tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
+                st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
                 
             # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
             with col_graf_2:
@@ -896,13 +896,8 @@ if uploaded_file is not None:
 
                 fig_budget_scatter.update_layout(height=450, showlegend=False)
                 st.plotly_chart(fig_budget_scatter, use_container_width=True)
-                st.caption(f"La linea tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+                st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
             
-            st.info("""
-            **Interpretazione dei quadranti:**
-            - **Sopra la linea rossa:** Aziende "Focalizzate" (agiscono sul target più della media dei competitor).
-            - **Sotto la linea rossa:** Aziende "Disinteressate" (il target è solo una componente minoritaria della loro attività).
-            """)
     
         # --- GRAFICI ---
         df_plot = report_aziende[report_aziende['Budget Target'] > 0].copy()
