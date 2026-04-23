@@ -11,7 +11,7 @@ import numpy as np
 # Caricamenti
 from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
-#from analisi import create_centered_pie
+from analisi import create_centered_pie, plot_scatter_median
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
@@ -832,72 +832,66 @@ if uploaded_file is not None:
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
 
-        # --- SCATTER PLOTS DI POSIZIONAMENTO ---
-        # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
-        df_plot = report_aziende[report_aziende['Budget Target'] > 1].copy()
-        if not df_plot.empty:
-            st.write("")
-            col_graf_1, col_graf_2 = st.columns(2)
-            
-            # --- GRAFICO 2: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
-            with col_graf_1:
-                # Pendenza basata sulla Mediana Fo
-                pendenza_Fo = med_Fo / 100
-                max_x_aiuti = df_plot["Aiuti"].max()
+    
+    # --- GRAFICI POSIZIONAMENTI ---
+    
+    # Definiamo le colonne da mappare e il template
+    mie_colonne = ['Aiuti', 'Aiuti Target', 'Fo', 'Budget', 'Budget Target', 'Fe']
+    
+    mio_template = (
+        "<b>%{hovertext}</b><br>" +
+        "------------------<br>" +
+        "Aiuti: %{customdata[0]}<br>" +
+        "Aiuti Target: %{customdata[1]}<br>" +
+        "Fattore Fo: %{customdata[2]:.1f}%<br>" +
+        "Budget Totale: €%{customdata[3]:,.0f}<br>" +
+        "Budget Target: €%{customdata[4]:,.0f}<br>" +
+        "Fattore Fe: %{customdata[5]:.1f}%<br>" +
+        "<extra></extra>"
+    )
+    
+    # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
+    df_plot = report_aziende[report_aziende['Budget Target'] > 1].copy()
+    
+    if not df_plot.empty:
+        st.write("")
+        col_graf_1, col_graf_2 = st.columns(2)
         
-                fig_aiuti_scatter = px.scatter(
-                    df_plot,
-                    x="Aiuti",
-                    y="Aiuti Target",
-                    hover_name="Ragione Sociale",
-                    color="Fo",
-                    title="Specializzazione Operativa (N. Aiuti)",
-                    labels={"Aiuti": "Totale Aiuti", "Aiuti Target": "Aiuti Target"},
-                    color_continuous_scale="Plasma"
-                )
-        
-                # Linea Mediana Fo
-                fig_aiuti_scatter.add_shape(
-                    type="line", x0=0, y0=0, x1=max_x_aiuti, y1=max_x_aiuti * pendenza_Fo,
-                    line=dict(color="Red", width=2, dash="dash")
-                )
-        
-                fig_aiuti_scatter.update_layout(height=450, showlegend=False)
-                st.plotly_chart(fig_aiuti_scatter, use_container_width=True)
+        # --- GRAFICO 1: POSIZIONAMENTO OPERATIVO (N. Aiuti) ---
+        with col_graf_1:
+            fig_op = plot_scatter_median(
+                df=df_plot, 
+                x_col="Aiuti", 
+                y_col="Aiuti Target", 
+                color_col="Fo", 
+                title="Specializzazione Operativa (N. Aiuti)", 
+                med_val=med_Fo, 
+                custom_data=mie_colonne, 
+                hover_template=mio_template, 
+                line_color="Red",   
+                is_log=False        
+            )
+            st.plotly_chart(fig_op, use_container_width=True)
+            if med_Fo > 0:
                 st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fo ({med_Fo:.1f}%)")
-                
-            # --- GRAFICO 1: POSIZIONAMENTO ECONOMICO (Budget) ---
-            with col_graf_2:
-                fig_budget_scatter = px.scatter(
-                df_plot,
-                x="Budget",
-                y="Budget Target",
-                log_x=True, 
-                log_y=True,
-                hover_name="Ragione Sociale",
-                color="Fe",
-                title="Specializzazione Economica (Scala Log)",
-                labels={"Budget": "Totale (€)", "Budget Target": "Target (€)"},
-                color_continuous_scale="Viridis"
-                )
-                # 1. Calcoliamo i limiti del grafico per far attraversare tutto lo spazio alla linea
-                x_min = df_plot["Budget"].min()
-                x_max = df_plot["Budget"].max()
-
-                # 2. La linea deve seguire l'equazione: y = x * (mediana/100)
-                # Su scala logaritmica, questa rimane una retta se disegnata correttamente
-                fig_budget_scatter.add_shape(
-                    type="line",
-                    x0=x_min, 
-                    y0=x_min * (med_Fe / 100),
-                    x1=x_max, 
-                    y1=x_max * (med_Fe / 100),
-                    line=dict(color="Red", width=3, dash="dash")
-                )
-
-                fig_budget_scatter.update_layout(height=450, showlegend=False)
-                st.plotly_chart(fig_budget_scatter, use_container_width=True)
-                st.caption(f"La linea rossa tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
+            
+        # --- GRAFICO 2: POSIZIONAMENTO ECONOMICO (Budget) ---
+        with col_graf_2:
+            fig_ec = plot_scatter_median(
+                df=df_plot, 
+                x_col="Budget", 
+                y_col="Budget Target", 
+                color_col="Fe", 
+                title="Specializzazione Economica (Scala Log)", 
+                med_val=med_Fe, 
+                custom_data=mie_colonne, 
+                hover_template=mio_template, 
+                line_color="Blue",  # Linea blu per i valori economici
+                is_log=True         # Scala logaritmica per i budget
+            )
+            st.plotly_chart(fig_ec, use_container_width=True)
+            if med_Fe > 0:
+                st.caption(f"La linea blu tratteggiata rappresenta la Mediana Fe ({med_Fe:.1f}%)")
 
 
 
