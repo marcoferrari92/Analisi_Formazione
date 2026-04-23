@@ -1,5 +1,7 @@
 import streamlit as st
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template):
