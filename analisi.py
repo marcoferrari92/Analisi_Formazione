@@ -25,48 +25,56 @@ def create_centered_pie(values):
     return fig
 
 
-def crea_scatter_posizionamento(df, x_col, y_col, color_col, title, med_val, line_color="Red", is_log=False):
+
+def plot_scatter_median(df, x_col, y_col, color_col, title, med_val, custom_data, hover_template, line_color="Red", is_log=False):
     """
-    Crea un grafico scatter 2D con hover personalizzato e linea di benchmark (mediana) colorabile.
+    Crea un grafico scatter 2D avanzato con linea di benchmark e tooltip personalizzato.
+
+    Args:
+        df (pd.DataFrame):              Il DataFrame contenente i dati delle aziende.
+        x_col (str):                    Nome colonna per l'asse X (es. 'Aiuti' o 'Budget').
+        y_col (str):                    Nome colonna per l'asse Y (es. 'Aiuti Target' o 'Budget Target').
+        color_col (str):                Colonna per la scala cromatica dei punti (es. 'Fo' o 'Fe').
+        title (str):                    Titolo del grafico.
+        med_val (float):                Valore della mediana (0-100) per inclinazione linea di benchmark.
+        custom_data (list):             Lista delle colonne da mappare per l'uso nel hover_template.
+        hover_template (str):           Stringa di formattazione HTML per il tooltip di Plotly.
+        line_color (str, optional):     Colore della linea tratteggiata. Default "Red".
+        is_log (bool, optional):        Attiva la scala logaritmica su entrambi gli assi. Default False.
+
+    Returns:
+        plotly.graph_objects.Figure:    Oggetto figura di Plotly pronto per st.plotly_chart.
     """
-    # 1. Definizione colonne per l'hover
-    custom_data_cols = ['Aiuti', 'Aiuti Target', 'Fo', 'Budget', 'Budget Target', 'Fe']
     
-    # 2. Creazione Scatter
+    # 1. Creazione Scatter base
+    # La scala colori cambia (Viridis/Plasma) per distinguere grafici logaritmici da lineari
     fig = px.scatter(
         df, x=x_col, y=y_col, color=color_col,
         hover_name="Ragione Sociale",
-        custom_data=custom_data_cols,
+        custom_data=custom_data,
         title=title,
         log_x=is_log, log_y=is_log,
         color_continuous_scale="Viridis" if is_log else "Plasma"
     )
 
-    # 3. Applicazione Hover Template Universale
-    fig.update_traces(
-        hovertemplate=(
-            "<b>%{hovertext}</b><br>" +
-            "------------------<br>" +
-            "Aiuti: %{customdata[0]}<br>" +
-            "Aiuti Target: %{customdata[1]}<br>" +
-            "Fattore Fo: %{customdata[2]:.1f}%<br>" +
-            "Budget Totale: €%{customdata[3]:,.0f}<br>" +
-            "Budget Target: €%{customdata[4]:,.0f}<br>" +
-            "Fattore Fe: %{customdata[5]:.1f}%<br>" +
-            "<extra></extra>"
+    # 2. Iniezione del template personalizzato per il tooltip
+    fig.update_traces(hovertemplate=hover_template)
+
+    # 3. Logica della Linea di Benchmark (Bisettrice della Mediana)
+    # Viene disegnata solo se esiste una mediana valida (> 0)
+    if med_val > 0:
+        x_min, x_max = df[x_col].min(), df[x_col].max()
+        
+        # Disegna una retta passante per l'origine con pendenza = mediana%
+        fig.add_shape(
+            type="line",
+            x0=x_min, y0=x_min * (med_val / 100),
+            x1=x_max, y1=x_max * (med_val / 100),
+            line=dict(color=line_color, width=3, dash="dash")
         )
-    )
 
-    # 4. Aggiunta Linea di Benchmark con colore personalizzato
-    x_min, x_max = df[x_col].min(), df[x_col].max()
-    fig.add_shape(
-        type="line",
-        x0=x_min, y0=x_min * (med_val / 100),
-        x1=x_max, y1=x_max * (med_val / 100),
-        line=dict(color=line_color, width=3, dash="dash") # <-- Colore dinamico qui
-    )
-
+    # 4. Pulizia estetica del layout
     fig.update_layout(height=450, showlegend=False)
+    
     return fig
-
 
