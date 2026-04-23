@@ -2,7 +2,7 @@
 
 
 
-def render_analisi_outliers(df_plot, med_Fo, med_Fe, custom_data, custom_template):
+def analisi_benchmark(df_plot, med_Fo, med_Fe, custom_data, custom_template):
     """
     Gestisce il rendering della sezione dedicata agli outlier, 
     inclusi i grafici 2D e il cubo 3D del Market Power.
