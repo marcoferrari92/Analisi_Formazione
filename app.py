@@ -778,8 +778,7 @@ if uploaded_file is not None:
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
             
-            col_info1, col_info2 = st.columns(2)
-            
+            col_info1, col_info2, col_spacer = st.columns([0.2, 0.2, 0.6]) 
             with col_info1:
                 with st.popover("📖 Metodologia"):
                     st.markdown(GUIDA_BENCHMARK)
