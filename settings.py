@@ -54,10 +54,13 @@ Fattori di FOCALIZZAZIONE (F). Questi valori dipendono dalle scelte strategiche 
     * **Nota bene:** Questo valore indica il comportamento "tipo" delle aziende, ma non ci dice nulla su quanti soldi totali (massa monetaria) ci sono nel settore (per questo vedasi la sezione **Panoramica Settore Target**)
 
 ### 💡 Strategia
-Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
+Aziende sotto la mediana:** rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
 Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmark)* del settore target grazie ai parametri visti, e possono essere identificati gli **outlier** (in positivo e in negativo) tramite i grafici.
 I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione **Analisi Dettaglia per Azienda**
 """
+
+STRATEGIA_BENCHMARK = """Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
+Per comprenderlo, in questa sezione viene quindi definito lo standard (benchmark) del settore target grazie ai parametri visti, e possono essere identificati gli outlier (in positivo e in negativo) tramite i grafici. I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione Analisi Dettaglia per Azienda
 
 GUIDA_OUTLIER = """
 * **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se il box è stretto, le aziende hanno comportamenti simili; se è largo, c'è molta disparità.
