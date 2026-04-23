@@ -38,7 +38,7 @@ GUIDA_BENCHMARK = """
 Il *benchmark* permette di definire gli *standard* del mercato di riferimento sui cui dovranno essere valutate le singole aziende.
 
 ##### 📊 Mediana
-Gli standard saranno denifiti con la **Mediana**. A differenza della media (che è influenzata dai valori estremi - **outlier** - delle aziende più grosse), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
+Gli standard saranno denifiti con la **Mediana**. A differenza della media (che è influenzata dai valori estremi - **outliers** - delle aziende d'eccezione), la **Mediana** è il valore che divide esattamente in due la popolazione: il 50% delle aziende si trova sopra questo valore e il 50% sotto. 
 Rappresenta quindi l'**azienda tipica** del settore: se un'azienda è sotto la mediana, significa che sta ottenendo meno della metà dei suoi competitor diretti (sia grandi che piccoli).
 
 ### 🌍 Indicatori del Mercato
