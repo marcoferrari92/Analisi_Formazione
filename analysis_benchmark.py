@@ -74,6 +74,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     st.caption("Colore del pallino: Num. Aiuti Target")
     st.caption("Dimensione del pallino: Budget Target")
 
+
+    
     # --- 3. GRAFICO 3D: MARKET POWER ---
     st.write("")
     st.subheader("🧊 Cubo del Market Power: Massa vs Frequenza")
