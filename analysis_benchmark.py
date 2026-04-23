@@ -88,7 +88,12 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
     
     fig_vs.add_vline(x=med_abs_budget_target, line_dash="dot", line_color="blue", 
                      annotation_text=f"Mediana Budget (€ {med_abs_budget_target:,.0f})", 
-                     annotation_position="bottom right")
+                     annotation_position="top left")
+
+    # Assicuriamoci che l'asse X parta da un valore positivo (>0), 
+    # altrimenti il logaritmo fallisce e le annotazioni spariscono.
+    x_min = df_plot['Budget Target'][df_plot['Budget Target'] > 0].min() * 0.5
+    x_max = df_plot['Budget Target'].max() * 1.5
     
     st.plotly_chart(fig_vs, use_container_width=True)
     st.caption("Colore del pallino: Num. Aiuti Totale")
