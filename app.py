@@ -11,8 +11,8 @@ import numpy as np
 # Caricamenti
 from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import  load_rna_data, is_target_row, format_it, format_pct, render_database_misure, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf
-from plots import create_centered_pie, plot_scatter_median
-from analysis import analisi_benchmark
+from plots import create_centered_pie
+from analysis_benchmark import grafici_posizionamento
 
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="RNA Business Intelligence", layout="wide")
@@ -856,7 +856,7 @@ if uploaded_file is not None:
         if not df_plot.empty:
             st.write("")   
             
-            analisi_benchmark(df_plot, med_Fo, med_Fe, custom_data, custom_template)   
+            grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template)   
             
     
         # --- GRAFICI ---
