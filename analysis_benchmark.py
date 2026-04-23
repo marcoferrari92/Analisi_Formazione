@@ -67,7 +67,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             x_col="Budget Target", 
             y_col="Aiuti Target", 
             color_col="Aiuti",
-            title="Confronto Specializzazioni (Num. Aiuti Target vs Budget Target)", 
+            title="Confronto Specializzazioni: Num. Aiuti Target vs Budget Target", 
             med_val=0, 
             custom_data=custom_data, 
             size_col="Sqrt_Budget",
@@ -102,8 +102,6 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
 
     # --- NUOVA SEZIONE: QUADRANTE DI EFFICIENZA (INTEGRATA) ---
     st.write("")
-    with st.expander("🎯 Quadrante di Efficienza (Specializzazione vs Valore)", expanded=True):
-        st.subheader("Analisi Incrociata Fo (Frequenza) vs Fe (Peso Economico)")
         
         # Usiamo df_plot che ha già i dati filtrati necessari
         fig_quad = plot_scatter_median(
@@ -112,7 +110,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             y_col='Fe',
             color_col='Aiuti Target',
             size_col='Budget Target',
-            title="Mappa del Posizionamento Strategico: Fo vs Fe",
+            title="Confronto specializzazioni: Fo vs Fe",
             med_val=0, # Disattiviamo la linea diagonale
             custom_data=custom_data,
             hover_template=custom_template
