@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import json
 import requests
+import numpy as np
 
 
 # Caricamenti
