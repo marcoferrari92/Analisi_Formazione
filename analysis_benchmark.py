@@ -55,6 +55,7 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             st.caption(f"Dimensione pallini: Num. Aiuti Target")
 
     # --- 2. GRAFICO CONFRONTO TARGET ---
+    df_plot['Log_Budget'] = np.log10(df_plot['Budget'] + 1)
     st.write("")
     fig_vs = plot_scatter_median(
             df=df_plot, 
