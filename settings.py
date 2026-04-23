@@ -59,9 +59,6 @@ Per comprenderlo, in questa sezione viene quindi definito lo *standard (benchmar
 I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione **Analisi Dettaglia per Azienda**
 """
 
-STRATEGIA_BENCHMARK = """Aziende sotto la mediana rappresentano il segmento con il più alto potenziale di crescita, ma può indicare anche che tali aziende sono poco interessate a quel settore. 
-Per comprenderlo, in questa sezione viene quindi definito lo standard (benchmark) del settore target grazie ai parametri visti, e possono essere identificati gli outlier (in positivo e in negativo) tramite i grafici. I valori di benchmark dovranno poi essere confrontati con quello di tali outlier grazie alla sezione Analisi Dettaglia per Azienda
-
 GUIDA_OUTLIER = """
 * **Il Box:** Contiene il 50% centrale del mercato ed è divisa in tre quartili. Se il box è stretto, le aziende hanno comportamenti simili; se è largo, c'è molta disparità.
     * *1° Quartile:* indica il valore sotto il quale si trova il 25% delle aziende.
