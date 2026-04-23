@@ -14,24 +14,21 @@ Carica i dati RNA e pulisce la colonna importi (rendendoli numeri).
 
 @st.cache_data
 def load_rna_data(file):
-    # 1. Caricamento file: forziamo la colonna identificativa come stringa (str)
-    # Specifichiamo dtype per evitare che Pandas "indovini" e tolga gli zeri
-    df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False, dtype={
-        'RNA_CODICE_FISCALE_BENEFICIARIO': str,
-        'RNA_COD_STRUMENTO': str
-    })
+    # 1. Carichiamo tutto il file come stringhe (dtype=str) 
+    # Questo è il modo più sicuro per non perdere mai gli zeri ovunque
+    df = pd.read_csv(file, sep=';', encoding='utf-8-sig', low_memory=False, dtype=str)
     
-    # 2. Pulizia colonna identificativa (Sicurezza extra)
+    # 2. Pulizia Identificativo (CF/PIVA)
     if 'RNA_CODICE_FISCALE_BENEFICIARIO' in df.columns:
-        # Togliamo spazi e forziamo a stringa. 
-        # Se lo zero era già sparito nel file sorgente, qui non possiamo sapere 
-        # se era una P.IVA o un CF numerico, ma lo zfill(11) aiuta per le P.IVA.
-        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = df['RNA_CODICE_FISCALE_BENEFICIARIO'].astype(str).str.strip()
-        
-        # Opzionale: se sai che lavori solo con P.IVA numeriche, aggiungi:
-        # df['RNA_CODICE_FISCALE_BENEFICIARIO'] = df['RNA_CODICE_FISCALE_BENEFICIARIO'].str.zfill(11)
-
-    # 3. Pulizia colonna importo
+        df['RNA_CODICE_FISCALE_BENEFICIARIO'] = (
+            df['RNA_CODICE_FISCALE_BENEFICIARIO']
+            .astype(str)
+            .str.strip()
+            .str.replace(r'\.0$', '', regex=True) # Rimuove .0 se presente
+            .str.zfill(11)                        # Forza 11 cifre (ripristina lo zero)
+        )
+    
+    # 3. Pulizia Importo (Converte in numero per i calcoli)
     if 'RNA_ELEMENTO_DI_AIUTO' in df.columns:
         df['RNA_ELEMENTO_DI_AIUTO'] = pd.to_numeric(
             df['RNA_ELEMENTO_DI_AIUTO'].astype(str).str.replace(',', '.'), 
