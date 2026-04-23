@@ -206,3 +206,5 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
         )
         
         st.plotly_chart(fig_power, use_container_width=True, key="market_power_cube_3d")
+
+st.write("")
