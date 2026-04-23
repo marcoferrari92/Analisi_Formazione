@@ -26,7 +26,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             hover_template=custom_template,
             size_col="Budget Target",
             line_color="Red",   
-            is_log=False        
+            x_log = False,  
+            y_log = False
         )
         st.plotly_chart(fig_op, use_container_width=True)
         if med_Fo > 0:
@@ -44,7 +45,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             size_col="Aiuti Target",
             hover_template=custom_template, 
             line_color="Blue", 
-            is_log=True         
+            x_log=True,
+            y_log=True 
         )
         st.plotly_chart(fig_ec, use_container_width=True)
         if med_Fe > 0:
@@ -63,7 +65,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             size_col="Budget Target",
             hover_template=custom_template, 
             line_color="Blue", 
-            is_log=False         
+            x_log = True,
+            y_log = False
     )
     st.plotly_chart(fig_vs, use_container_width=True)
     st.caption("Dimensione del pallino: Budget Totale dell'azienda.")
