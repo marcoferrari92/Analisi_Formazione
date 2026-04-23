@@ -778,9 +778,14 @@ if uploaded_file is not None:
             # --- 2. UI: RIQUADRO BENCHMARK ---
             st.subheader("📈 Benchmark Settore Target")
             
-            with st.expander("📖 Metodologia"):
-                st.markdown(GUIDA_BENCHMARK)
-                
+            col_info1, col_info2 = st.columns(2)
+            
+            with col_info1:
+                with st.popover("📖 Metodologia"):
+                    st.markdown(GUIDA_BENCHMARK)
+            with col_info2:   
+                with st.popover("💡 Strategia"):
+                    st.info(STRATEGIA_BENCHMARK)
                 
             # Creiamo un contenitore con bordo (stile card)
             with st.container(border=True):
@@ -826,8 +831,6 @@ if uploaded_file is not None:
                     sotto_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] < med_Fe])
                     st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
                     
-        with st.popover("💡 Strategia"):
-                st.info(STRATEGIA_BENCHMARK)
 
         # --- SCATTER PLOTS DI POSIZIONAMENTO ---
         # Filtriamo: Budget Target deve essere > 1 per eliminare centesimi o errori di sistema
