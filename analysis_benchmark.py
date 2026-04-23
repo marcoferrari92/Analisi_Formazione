@@ -73,8 +73,8 @@ def grafici_posizionamento(df_plot, med_Fo, med_Fe, custom_data, custom_template
             y_log = False
     )
     st.plotly_chart(fig_vs, use_container_width=True)
-    st.caption("Colore del pallino: Num. Aiuti Target")
-    st.caption("Dimensione del pallino: Budget Target")
+    st.caption("Colore del pallino: Num. Aiuti Totale")
+    st.caption("Dimensione del pallino: radice quadrata del Budget Totale")
 
 
     
