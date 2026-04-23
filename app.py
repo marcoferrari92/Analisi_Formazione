@@ -730,6 +730,21 @@ if uploaded_file is not None:
         }
         report_aziende = report_aziende.rename(columns=mappa_nomi)
 
+        # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
+        df_benchmark_1 = report_aziende[report_aziende['Budget Target'] > 0]
+        df_benchmark_2 = report_aziende[report_aziende['Budget'] > 0]
+        
+        if not df_benchmark_1.empty:
+            med_aiuti              = df_benchmark_2['Aiuti'].median()
+            med_budget             = df_benchmark_2['Budget'].median()
+            med_aiuti_target       = float(df_benchmark_1['Aiuti Target'].median())
+            med_budget_target      = float(df_benchmark_1['Budget Target'].median())
+            med_Fo                 = float(df_benchmark_1['Fo'].median())
+            med_Fe                 = float(df_benchmark_1['Fe'].median())
+        else:
+            # Valori di fallback per evitare divisioni per zero se il file è vuoto
+            med_aiuti_target, med_budget_target, med_Fo, med_Fe = 1.0, 1.0, 1.0, 1.0
+
         # Ordiniamo le colonne per assicurarci che la Regione sia dopo Ragione Sociale
         ordine_colonne = ['P.IVA', 'Ragione Sociale', 'Regione'] + [c for c in report_aziende.columns if c not in ['P.IVA', 'Ragione Sociale', 'Regione']]
         report_aziende = report_aziende[ordine_colonne]
@@ -764,22 +779,6 @@ if uploaded_file is not None:
         st.write("")
 
         
-        # --- 1. CALCOLO BENCHMARK (Solo su aziende con attività Target) ---
-        df_benchmark_1 = report_aziende[report_aziende['Budget Target'] > 0]
-        df_benchmark_2 = report_aziende[report_aziende['Budget'] > 0]
-        
-        if not df_benchmark_1.empty:
-            med_aiuti              = df_benchmark_2['Aiuti'].median()
-            med_budget             = df_benchmark_2['Budget'].median()
-            med_aiuti_target       = float(df_benchmark_1['Aiuti Target'].median())
-            med_budget_target      = float(df_benchmark_1['Budget Target'].median())
-            med_Fo                 = float(df_benchmark_1['Fo'].median())
-            med_Fe                 = float(df_benchmark_1['Fe'].median())
-        else:
-            # Valori di fallback per evitare divisioni per zero se il file è vuoto
-            med_aiuti_target, med_budget_target, med_Fo, med_Fe = 1.0, 1.0, 1.0, 1.0
-            
-
         # --- 2. UI: RIQUADRO BENCHMARK ---
         st.subheader("📈 Benchmark Settore Target")
         
