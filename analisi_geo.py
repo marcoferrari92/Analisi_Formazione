@@ -97,17 +97,21 @@ def geo_analysis(df):
 
     
     # --- 3. PREPARAZIONE DATI MAPPE ---
+    # Aggregazione Mercato Totale
     df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz_agg.columns = ['Regione', 'Aiuti Totali', 'Budget Totale']
 
-    df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
+    # Recuperiamo il Match_Key già pulito dal dataframe principale
+    # Creiamo una tabella di conversione Regione -> Match_Key senza duplicati
+    lookup_geo = df_c[['Regione', 'Match_Key']].drop_duplicates()
+    df_mappe = pd.merge(df_naz_agg, lookup_geo, on='Regione', how='left')
+
+    # Aggregazione Mercato Target
     df_targ_agg = df_targ_raw.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_targ_agg.columns = ['Regione', 'Aiuti Target', 'Budget Target']
 
-    df_mappe = pd.merge(df_naz_agg, df_targ_agg, on='Regione', how='left').fillna(0)
-    df_mappe['Match_Key'] = df_mappe['Regione'].str.lower()
-    mapping_geo = {"Friuli-Venezia Giulia": "friuli venezia giulia", "Trentino-Alto Adige": "trentino-alto adige/südtirol", "Valle d'Aosta": "valle d'aosta/vallée d'aoste"}
-    for k, v in mapping_geo.items(): df_mappe.loc[df_mappe['Regione'] == k, 'Match_Key'] = v
+    # Uniamo i dati target a df_mappe
+    df_mappe = pd.merge(df_mappe, df_targ_agg, on='Regione', how='left').fillna(0)
 
     @st.cache_data
     def get_geojson(): return requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json").json()
