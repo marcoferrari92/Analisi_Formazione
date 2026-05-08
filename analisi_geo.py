@@ -106,34 +106,34 @@ def geo_analysis(df):
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
     
-    # --- 5. TREEMAP CON LEADER E QUOTE (FORMATTAZIONE SICURA) ---
+    # --- 5. TREEMAP CON LEADER E QUOTE ---
     st.write("")
     st.markdown("### 🔍 Drill-down Geografico")
 
-    # 1. Identificazione Leader per CAP (Metodo solido senza idxmax)
-    c_l_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs], dropna=True)[col_budget].sum().reset_index()
-    cap_leaders = c_l_data.sort_values(col_budget, ascending=False).drop_duplicates(['Regione', 'Provincia', 'CAP'])
-    cap_leaders = cap_leaders.rename(columns={col_rs: 'L_Nome', col_budget: 'L_Budget'})
+    # 1. Prepariamo i dati a livello CAP
+    cap_leader_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
+    
+    # Identifichiamo il leader per ogni CAP (Usa questo metodo che è più sicuro)
+    idx_max = cap_leader_data.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].idxmax()
+    cap_leaders = cap_leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
 
-    # 2. Dataset per Treemap
+    # 2. Dataset per treemap
     df_tree_agg = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
-    df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'B_Target']
-    df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'L_Nome', 'L_Budget']], on='CAP', how='left')
+    df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'Budget_Target']
+    df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
     
     # 3. Creazione Grafico
     fig_tree = px.treemap(
         df_tree_final, 
         path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
-        values='B_Target', 
-        color='B_Target', 
-        color_continuous_scale='Reds',
-        custom_data=['L_Nome', 'L_Budget', 'B_Target']
+        values='Budget_Target', color='Budget_Target', color_continuous_scale='Reds',
+        custom_data=['Leader_Nome', 'Leader_Budget', 'Budget_Target']
     )
 
-    # 4. Hovertemplate su riga singola per evitare il bug del "codice blu"
-    h_template = "<b>%{label}</b><br>Budget Nodo: € %{value:,.2f}<br>🏆 Leader CAP: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<br>Quota: %{customdata[1]/customdata[2]:.1%}<extra></extra>"
-    
-    fig_tree.update_traces(hovertemplate=h_template)
+    # 4. Hovertemplate (SCRITTO SU UNA RIGA SOLA PER NON ROMPERE L'EDITOR)
+    h_text = "<b>%{label}</b><br>Budget Nodo: € %{value:,.2f}<br>🏆 Leader CAP: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<br>Quota Leader: %{customdata[1]/customdata[2]:.1%}<extra></extra>"
+    fig_tree.update_traces(hovertemplate=h_text)
+
     fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
     st.plotly_chart(fig_tree, use_container_width=True)
 
