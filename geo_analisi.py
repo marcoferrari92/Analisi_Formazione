@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 
-def render_geographic_analysis(df):
+def geo_analysis(df):
     
     """
     Renderizza l'analisi geografica con mappe, treemap e tabella dati.
