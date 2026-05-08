@@ -186,7 +186,7 @@ if uploaded_file is not None:
         # --- FUNNEL CHART (QUALIFICAZIONE) ---
         st.write("")
         st.write("")
-        with st.expander("💼 Funnel Chart"):
+        with st.expander("👁️ Pentrazione Settore Target"):
             
             # 1. Recupero dei valori per i passaggi del funnel
             val_totali = n_aziende
