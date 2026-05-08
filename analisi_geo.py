@@ -4,7 +4,7 @@ import plotly.express as px
 import requests
 
 def geo_analysis(df):
-    
+
     """
     Renderizza l'analisi geografica con mappe, treemap e tabella dati.
     """
