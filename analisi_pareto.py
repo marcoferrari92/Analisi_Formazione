@@ -40,13 +40,15 @@ def pareto_analysis(df, guida_pareto=""):
     )
     st.plotly_chart(fig_top, use_container_width=True, key="bar_top_10")
 
-    st.divider()
+    
 
     # --- 2. ANALISI DI PARETO (80/20) ---
-    st.subheader("📉 Analisi di Concentrazione (Curva di Pareto)")
+    st.divider()
+    st.subheader("📉 Concentrazione Mercato Target (Curva di Pareto)")
     
     if guida_pareto:
-        with st.expander("📖 Metodologia e guida ai grafici"):
+        st.write("")
+        with st.pophover("📖 Metodologia"):
             st.markdown(guida_pareto)
 
     # Preparazione dati Pareto
@@ -77,7 +79,7 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.add_trace(go.Scatter(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['Percentage'],
-        name="% Cumulata Budget",
+        name="% Cumulata Budget Target",
         line=dict(color='#e74c3c', width=3),
         yaxis="y2"
     ))
@@ -110,7 +112,7 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.update_layout(
         xaxis_title="Numero di Aziende (Ordinate per Budget Target)",
         yaxis_title="Budget Target della Singola Azienda (€)",
-        yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
+        yaxis2=dict(title="% Cumulata del Budget Target", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
         legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center"),
         margin=dict(l=0, r=0, t=60, b=0),
         height=550,
