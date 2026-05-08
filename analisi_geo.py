@@ -50,6 +50,12 @@ def geo_analysis(df):
 
     # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA ---
     df_c = df.copy()
+    col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else ('CAP' if 'CAP' in df_c.columns else None)
+    
+    if col_cap is None:
+        st.warning("⚠️ Non è possibile eseguire l'analisi geografica: colonna CAP non trovata nel file.")
+        return # Esci dalla funzione per evitare errori successivi
+        
     col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else 'CAP'
     col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
     
