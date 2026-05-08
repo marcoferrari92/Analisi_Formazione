@@ -48,7 +48,7 @@ def pareto_analysis(df, guida_pareto=""):
     
     if guida_pareto:
         st.write("")
-        with st.pophover("📖 Metodologia"):
+        with st.popover("📖 Metodologia"):
             st.markdown(guida_pareto)
 
     # Preparazione dati Pareto
