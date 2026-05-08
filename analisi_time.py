@@ -18,7 +18,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
 
   
     # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
-    st.subheader("📈 Evoluzione del Budget nel Tempo")
+    st.write("")
     if guida_timeline:
         with st.popover("💡 Strategia"):
             st.info(guida_timeline)
