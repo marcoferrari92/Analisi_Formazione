@@ -13,6 +13,7 @@ from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUI
 from utils import load_rna_data, is_target_row, format_it, format_pct, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf, crea_radar_azienda
 from plots import create_centered_pie
 from geo_analisi import geo_analysis
+from time_analisi import time_analysis
 from analysis_benchmark import grafici_posizionamento
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -222,8 +223,6 @@ if uploaded_file is not None:
             
             
  
-                
-
         # --- ANALISI GEOGRAFICA ---
         st.write("")
         st.write("")
@@ -234,11 +233,19 @@ if uploaded_file is not None:
         st.write("")
 
 
+        # --- SEZIONE TEMPORALE ---
+        with st.expander("📅 Distribuzione Temporale Settore Target"):
+            st.write("")
+            render_temporal_analysis(
+                df, 
+                guida_timeline=GUIDA_TIMELINE, 
+                guida_timemap=GUIDA_TIMEMAP
+            )
+        st.write("")
+        st.write("")
+
 
         
-
-
-
         
         # --- SEZIONE RANKING E ANALISI PARETO ---
         with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
