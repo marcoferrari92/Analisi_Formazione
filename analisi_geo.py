@@ -50,7 +50,7 @@ def geo_analysis(df):
 
     # --- 2. VERIFICA E PULIZIA ---
     df_c = df.copy()
-    col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else ('CAP' if 'CAP' in df_c.columns else None)
+    col_cap = 'CAP' if 'CAP' in df_c.columns else None
     
     if col_cap is None:
         st.warning("⚠️ Colonna CAP non trovata.")
@@ -59,6 +59,8 @@ def geo_analysis(df):
     col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
     col_piva = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
     col_rs = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
+
+    # --- 3. CALCOLO LEADERSHIP ---
     
     # Derivazione geo standard
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
@@ -71,7 +73,6 @@ def geo_analysis(df):
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
 
     if not df_targ_raw.empty and col_piva:
-        # --- 3. CALCOLO LEADERSHIP ---
         
         # A. Leader Nazionale (L'azienda con la somma budget più alta in assoluto)
         naz_totals = df_targ_raw.groupby([col_piva])[col_budget].sum()
