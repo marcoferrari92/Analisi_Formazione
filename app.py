@@ -249,7 +249,7 @@ if uploaded_file is not None:
         # --- ANALISI RANKING E PARETO ---
         with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
             st.write("")
-            render_ranking_pareto_analysis(df, guida_pareto=GUIDA_PARETO)
+            pareto_analysis(df, guida_pareto=GUIDA_PARETO)
         st.write("")
         st.write("")
 
