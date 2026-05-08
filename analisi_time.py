@@ -207,23 +207,22 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
-    # Anno di partenza per il calcolo del CAGR
+    # Anno di partenza
     anno_start = df_annual['Anno'].min()
     vol_start = df_annual['Vol_Tot'].iloc[0]
     prat_start = df_annual['Aiuti_Tot'].iloc[0]
 
-    # --- Calcolo Metriche Avanzate ---
-    # 1. Percentuali di incidenza
-    df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
-    df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
-
-    # 2. CAGR Dinamico (rispetto all'inizio del dataset)
+    # Funzione CAGR sicura
     def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
         if n_anni <= 0 or start_val <= 0 or current_val <= 0:
-            return 0
+            return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
+    # Calcoli
+    df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
+    df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
+    
     df_annual['CAGR Pratiche'] = df_annual.apply(
         lambda x: calc_cagr(x['Aiuti_Tot'], prat_start, x['Anno'], anno_start), axis=1
     )
@@ -231,38 +230,33 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start), axis=1
     )
 
-    # --- Formattazione per la Tabella ---
+    # --- Formattazione Stringhe (Parentesi) ---
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
     
-    # Creazione delle stringhe con parentesi per le percentuali
-    df_view['Aiuti Target (% su Tot)'] = df_view.apply(
+    df_view['Aiuti Target (%)'] = df_view.apply(
         lambda x: f"{int(x['Aiuti_Target'])} ({x['Incidenza Aiuti (%)']:.1%})", axis=1
     )
-    df_view['Volume Target (% su Tot)'] = df_view.apply(
+    df_view['Volume Target (%)'] = df_view.apply(
         lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
     )
 
-    # Selezione e rinomina colonne finali
+    # Selezione Colonne
     df_final = df_view[[
-        'Anno', 'Aiuti_Tot', 'Aiuti Target (% su Tot)', 'CAGR Pratiche',
-        'Vol_Tot', 'Volume Target (% su Tot)', 'CAGR Volume'
+        'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche',
+        'Vol_Tot', 'Volume Target (%)', 'CAGR Volume'
     ]]
-    
-    df_final.columns = [
-        'Anno', 'Aiuti Totali', 'Aiuti Target (%)', 'CAGR Pratiche',
-        'Volume Totale', 'Volume Target (%)', 'CAGR Volume'
-    ]
 
-    # --- Rendering ---
+    # --- Rendering con Formattazione Corretta ---
     st.dataframe(
         df_final,
         hide_index=True,
         use_container_width=True,
         column_config={
-            "Anno": st.column_config.NumberColumn(format="%d"),
-            "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
-            "Volume Totale": st.column_config.NumberColumn(format="€ %,.0f"),
-            "CAGR Pratiche": st.column_config.NumberColumn(format="%.2%"),
-            "CAGR Volume": st.column_config.NumberColumn(format="%.2%")
+            "Anno": st.column_config.NumberColumn("Anno", format="%d"),
+            "Aiuti Totali": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
+            "Volume Totale": st.column_config.NumberColumn("Volume Totale", format="€ %,.0f"),
+            # Cambiato formato qui per evitare l'errore sprintf
+            "CAGR Pratiche": st.column_config.NumberColumn("CAGR Pratiche", format="%.2f"),
+            "CAGR Volume": st.column_config.NumberColumn("CAGR Volume", format="%.2f")
         }
     )
