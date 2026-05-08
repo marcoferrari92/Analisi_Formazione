@@ -48,70 +48,70 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     
 
 
-  # --- 2. GRAFICO VALORI ASSOLUTI (SCALA RADICE QUADRATA) ---
-  # Calcoliamo i valori in milioni per la visualizzazione
-  df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
-  df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
-  
-  fig_line = px.line(
-      df_time_plot, 
-      x='Periodo', 
-      y=['Mercato_Mln', 'Target_Mln'],
-      color_discrete_map={"Mercato_Mln": "#3498db", "Target_Mln": "#e74c3c"},
-      title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
-      template="plotly_white", 
-      line_shape="spline"
-  )
-  
-  fig_line.update_layout(
-      legend=dict(
-          orientation="h", 
-          yanchor="bottom", 
-          y=1.02, 
-          xanchor="right", 
-          x=1,
-          title=""
-      ),
-      margin=dict(l=60, r=20, t=50, b=50), 
-      height=400,
-      xaxis_title="Periodo",
-      # Applicazione scala 'type=date' o 'linear' con trasformazione asse
-      yaxis_type="linear", 
-      yaxis_title="Budget (Mln €)"
-  )
-  
-  # Applichiamo la trasformazione "sqrt" all'asse Y tramite update_yaxes
-  fig_line.update_yaxes(
-      # 'type="log"' è quello che non volevi, usiamo una scala lineare 
-      # ma chiediamo a Plotly di gestire i tick in modo che il target sia visibile
-      range=[0, (df_time_plot['Mercato_Mln'].max() ** 0.5) * 1.1] # Gestione manuale range se necessario
-  )
-  
-  # Nota: Plotly non ha 'type="sqrt"'. Per simulare visivamente lo scalamento 
-  # senza cambiare i dati reali, la tecnica migliore è mappare i dati sulla radice:
-  fig_line_sqrt = px.line(
-      df_time_plot, 
-      x='Periodo', 
-      y=[np.sqrt(df_time_plot['Mercato_Mln']), np.sqrt(df_time_plot['Target_Mln'])],
-      color_discrete_map={"index": "#3498db", "value": "#e74c3c"},
-      title="Evoluzione Temporale (Mln €) - Scalamento Radice Quadrata",
-      template="plotly_white",
-      line_shape="spline"
-  )
-  
-  # Sovrascriviamo le etichette dell'asse Y per mostrare i valori reali (mln) e non la radice
-  max_val = df_time_plot['Mercato_Mln'].max()
-  ticks = np.linspace(0, np.sqrt(max_val), 6) # 6 punti distribuiti
-  fig_line_sqrt.update_layout(
-      yaxis = dict(
-          tickmode = 'array',
-          tickvals = ticks,
-          ticktext = [f"{x**2:.1f}" for x in ticks], # Mostra il valore reale (quadrato del tick)
-          title = "Budget (Mln €)"
-      ),
-      legend=dict(orientation="h", y=1.05, x=1),
-      height=400
-  )
+    # --- 2. GRAFICO VALORI ASSOLUTI (SCALA RADICE QUADRATA) ---
+    # Calcoliamo i valori in milioni per la visualizzazione
+    df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
+    df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
+    
+    fig_line = px.line(
+        df_time_plot, 
+        x='Periodo', 
+        y=['Mercato_Mln', 'Target_Mln'],
+        color_discrete_map={"Mercato_Mln": "#3498db", "Target_Mln": "#e74c3c"},
+        title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
+        template="plotly_white", 
+        line_shape="spline"
+    )
+    
+    fig_line.update_layout(
+        legend=dict(
+            orientation="h", 
+            yanchor="bottom", 
+            y=1.02, 
+            xanchor="right", 
+            x=1,
+            title=""
+        ),
+        margin=dict(l=60, r=20, t=50, b=50), 
+        height=400,
+        xaxis_title="Periodo",
+        # Applicazione scala 'type=date' o 'linear' con trasformazione asse
+        yaxis_type="linear", 
+        yaxis_title="Budget (Mln €)"
+    )
+    
+    # Applichiamo la trasformazione "sqrt" all'asse Y tramite update_yaxes
+    fig_line.update_yaxes(
+        # 'type="log"' è quello che non volevi, usiamo una scala lineare 
+        # ma chiediamo a Plotly di gestire i tick in modo che il target sia visibile
+        range=[0, (df_time_plot['Mercato_Mln'].max() ** 0.5) * 1.1] # Gestione manuale range se necessario
+    )
+    
+    # Nota: Plotly non ha 'type="sqrt"'. Per simulare visivamente lo scalamento 
+    # senza cambiare i dati reali, la tecnica migliore è mappare i dati sulla radice:
+    fig_line_sqrt = px.line(
+        df_time_plot, 
+        x='Periodo', 
+        y=[np.sqrt(df_time_plot['Mercato_Mln']), np.sqrt(df_time_plot['Target_Mln'])],
+        color_discrete_map={"index": "#3498db", "value": "#e74c3c"},
+        title="Evoluzione Temporale (Mln €) - Scalamento Radice Quadrata",
+        template="plotly_white",
+        line_shape="spline"
+    )
+    
+    # Sovrascriviamo le etichette dell'asse Y per mostrare i valori reali (mln) e non la radice
+    max_val = df_time_plot['Mercato_Mln'].max()
+    ticks = np.linspace(0, np.sqrt(max_val), 6) # 6 punti distribuiti
+    fig_line_sqrt.update_layout(
+        yaxis = dict(
+            tickmode = 'array',
+            tickvals = ticks,
+            ticktext = [f"{x**2:.1f}" for x in ticks], # Mostra il valore reale (quadrato del tick)
+            title = "Budget (Mln €)"
+        ),
+        legend=dict(orientation="h", y=1.05, x=1),
+        height=400
+    )
   
 
     
