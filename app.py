@@ -230,6 +230,8 @@ if uploaded_file is not None:
         with st.expander("🗺️ Distribuzione Geografica Settore Target"):
             st.write("")
             geo_analysis(df)
+        st.write("")
+        st.write("")
 
 
 
