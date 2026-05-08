@@ -95,9 +95,8 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         row=2, col=1
     )
 
-    # --- C. CONFIGURAZIONE LAYOUT E ASSI (Versione Linea Continua) ---
-    
-    # Tick asse Y inferiore
+    # --- C. CONFIGURAZIONE LAYOUT E ASSI (La parte complessa) ---
+    # Calcolo Tick asse Y inferiore (Scala Radice Quadrata)
     max_mln = df_time_plot['Mercato_Mln'].max()
     potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
     tick_vals = potential_ticks[potential_ticks <= max_mln]
@@ -105,42 +104,30 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
 
     fig.update_layout(
         template="plotly_white",
-        height=750,
-        margin=dict(l=100, r=40, t=50, b=50),
+        height=700, # Altezza totale aumentata per contenere entrambi
+        margin=dict(l=80, r=40, t=50, b=50), # Margini fissi per allineamento
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        hovermode="x unified", # Questo unifica i tooltip
+        
+        # --- HOVER UNIFICATO: La soluzione al tuo problema ---
+        # Traccia una linea verticale attraverso TUTTA la figura (entrambi i grafici)
+        hovermode="x unified",
+        
+        # Configurazione estetica della linea verticale (Spike)
+        xaxis=dict(
+            showspikes=True,
+            spikemode='across+marker',
+            spikethickness=1,
+            spikedash='dash',
+            spikecolor='#999999'
+        )
     )
 
-    # CONFIGURAZIONE COMUNE ASSI X (Fondamentale ripetere per entrambi)
-    # Creiamo un dizionario di stile per non sbagliare
-    spike_style = dict(
-        showspikes=True,
-        spikemode='across',   # 'across' deve essere attivo su entrambi
-        spikesnap='cursor',   # Forza la linea a seguire il mouse, non i punti
-        spikethickness=1,
-        spikedash='dash',
-        spikecolor='#333333',
-        showline=True,
-        range=[x_min, x_max],
-        constrain='domain',
-        gridcolor="#e1e1e1",
-        griddash="dot"
-    )
-
-    # Applichiamo lo stile al primo asse (Sopra)
-    fig.update_xaxes(spike_style, row=1, col=1)
-    
-    # Applichiamo lo stile al secondo asse (Sotto)
-    fig.update_xaxes(spike_style, row=2, col=1)
-    
-    # Specifichiamo i titoli degli assi singolarmente
-    fig.update_xaxes(title_text="", row=1, col=1)
-    fig.update_xaxes(title_text="Periodo", row=2, col=1)
-
-    # Configurazione Assi Y
+    # Configurazione specifica Assi Y (yaxis per row 1, yaxis2 per row 2)
     fig.update_yaxes(
-        title_text="Quota Target (%)", ticksuffix="%", 
-        automargin=False, gridcolor="#f0f0f0", row=1, col=1
+        title_text="Quota Target (%)", 
+        ticksuffix="%", 
+        gridcolor="#f0f0f0", 
+        row=1, col=1
     )
     
     fig.update_yaxes(
@@ -148,13 +135,31 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         tickmode='array',
         tickvals=np.sqrt(tick_vals),
         ticktext=[f"{v:.1f}" for v in tick_vals],
-        automargin=False, gridcolor="#f0f0f0", row=2, col=1
+        gridcolor="#f0f0f0",
+        row=2, col=1
     )
 
-    st.plotly_chart(fig, use_container_width=True, key="temporal_subplots_v3")
+    # Configurazione specifica Assi X (xaxis per row 1, xaxis2 per row 2)
+    #shared_xaxes=True nasconde automaticamente l'asse X del primo grafico
+    fig.update_xaxes(
+        range=[x_min, x_max], 
+        constrain='domain', 
+        gridcolor="#e1e1e1", 
+        griddash="dot", 
+        row=1, col=1
+    )
+    
+    fig.update_xaxes(
+        title_text="Periodo", 
+        range=[x_min, x_max], 
+        constrain='domain', 
+        gridcolor="#e1e1e1", 
+        griddash="dot", 
+        row=2, col=1
+    )
 
-    # --- 3. HEATMAP (STAGIONALITÀ) - Invariata e separata ---
-    # ... (Codice Heatmap qui sotto come prima) ...
+    # Rendering
+    st.plotly_chart(fig, use_container_width=True, key="temporal_subplots")
     
     st.divider()
 
