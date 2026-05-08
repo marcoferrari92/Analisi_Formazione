@@ -45,20 +45,33 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         height=350
     )
     
-    # --- 2. GRAFICO VALORI ASSOLUTI ---
+    # --- 2. GRAFICO VALORI ASSOLUTI (CON SCALA LOGARITMICA) ---
     fig_line = px.line(
         df_time_plot, x='Periodo', y=['Mercato Totale', 'Settore Target'],
         color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
-        title="Evoluzione Temporale del Mercato",
-        template="plotly_white", line_shape="spline"
+        title="Evoluzione Temporale del Mercato (Scala Logaritmica)",
+        template="plotly_white", 
+        line_shape="spline",
+        log_y=True  # <--- Attiva la scala logaritmica direttamente qui
     )
     
     fig_line.update_layout(
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        legend=dict(
+            orientation="h", 
+            yanchor="bottom", 
+            y=1.02, 
+            xanchor="right", 
+            x=1
+        ),
         margin=dict(l=60, r=20, t=50, b=50), 
         height=350,
         xaxis_title="Periodo",
-        yaxis_title="Budget (€)"
+        yaxis_title="Budget (€) - Scala Log",
+        # Opzionale: per mostrare i valori reali invece delle potenze di 10 (es. 10k invece di 10^4)
+        yaxis=dict(
+            dtick="D1", # Mostra tick lineari su scala logaritmica
+            exponentformat="none"
+        )
     )
     
     st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
