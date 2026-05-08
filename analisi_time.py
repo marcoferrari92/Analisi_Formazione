@@ -196,68 +196,73 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
 
-    # --- 1. Calcolo Concentrazione Annuale Allineato ---
-    st.subheader("📊 Concentrazione Annuale del Budget")
+    # --- 1. Calcolo Concentrazione Annuale Evoluta ---
+    st.subheader("📊 Analisi Storica e CAGR")
 
-    # Raggruppamento che distingue Totale e Target per evitare confusione
-    df_annual = df_temp.groupby('Anno').agg({
-        'RNA_ELEMENTO_DI_AIUTO': 'sum', # Mercato Totale
-        'IS_TARGET': 'sum'              # Numero pratiche target
-    }).reset_index()
+    # Raggruppamento base
+    df_annual = df_temp.groupby('Anno').agg(
+        Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
+        Aiuti_Target=('IS_TARGET', 'sum'),
+        Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
+    ).reset_index().sort_values('Anno')
 
-    # Calcolo specifico per il Settore Target (quello che vedi nella Heatmap)
-    df_annual_target = df_temp[df_temp['IS_TARGET'] == 1].groupby('Anno')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    df_annual_target.columns = ['Anno', 'Budget Target']
+    # Anno di partenza per il calcolo del CAGR
+    anno_start = df_annual['Anno'].min()
+    vol_start = df_annual['Vol_Tot'].iloc[0]
+    prat_start = df_annual['Aiuti_Tot'].iloc[0]
 
-    # Merge dei dati
-    df_final_annual = pd.merge(df_annual, df_annual_target, on='Anno', how='left').fillna(0)
-    df_final_annual = df_final_annual.sort_values('Anno')
+    # --- Calcolo Metriche Avanzate ---
+    # 1. Percentuali di incidenza
+    df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
+    df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
 
-    # Variazioni YoY basate sul TARGET (coerenti con Heatmap)
-    df_final_annual['Var. Target (%)'] = df_final_annual['Budget Target'].pct_change()
-    df_final_annual['Var. Pratiche (%)'] = df_final_annual['IS_TARGET'].pct_change()
+    # 2. CAGR Dinamico (rispetto all'inizio del dataset)
+    def calc_cagr(current_val, start_val, current_year, start_year):
+        n_anni = current_year - start_year
+        if n_anni <= 0 or start_val <= 0 or current_val <= 0:
+            return 0
+        return (current_val / start_val) ** (1 / n_anni) - 1
 
-    # Prepariamo la tabella (Anno decrescente)
-    df_view = df_final_annual.sort_values('Anno', ascending=False).copy()
-    df_view.columns = [
-        'Anno', 'Mercato Tot (€)', 'Pratiche Target', 
-        'Settore Target (€)', 'Var. Target YoY', 'Var. Pratiche YoY'
+    df_annual['CAGR Pratiche'] = df_annual.apply(
+        lambda x: calc_cagr(x['Aiuti_Tot'], prat_start, x['Anno'], anno_start), axis=1
+    )
+    df_annual['CAGR Volume'] = df_annual.apply(
+        lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start), axis=1
+    )
+
+    # --- Formattazione per la Tabella ---
+    df_view = df_annual.sort_values('Anno', ascending=False).copy()
+    
+    # Creazione delle stringhe con parentesi per le percentuali
+    df_view['Aiuti Target (% su Tot)'] = df_view.apply(
+        lambda x: f"{int(x['Aiuti_Target'])} ({x['Incidenza Aiuti (%)']:.1%})", axis=1
+    )
+    df_view['Volume Target (% su Tot)'] = df_view.apply(
+        lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
+    )
+
+    # Selezione e rinomina colonne finali
+    df_final = df_view[[
+        'Anno', 'Aiuti_Tot', 'Aiuti Target (% su Tot)', 'CAGR Pratiche',
+        'Vol_Tot', 'Volume Target (% su Tot)', 'CAGR Volume'
+    ]]
+    
+    df_final.columns = [
+        'Anno', 'Aiuti Totali', 'Aiuti Target (%)', 'CAGR Pratiche',
+        'Volume Totale', 'Volume Target (%)', 'CAGR Volume'
     ]
 
-    # --- 2. Metriche e Tabella ---
-    # Identifichiamo l'Anno Record basandoci sul TARGET
-    idx_max_targ = df_final_annual['Budget Target'].idxmax()
-    anno_rec_target = df_final_annual.loc[idx_max_targ]
-
-    col_m, col_t = st.columns([1, 2])
-
-    with col_m:
-        st.metric(
-            "Anno Record (Settore Target)", 
-            f"{int(anno_rec_target['Anno'])}", 
-            f"€ {anno_rec_target['Budget Target']/1e6:.2f} Mln"
-        )
-        
-        # Nota sul Mercato Totale per trasparenza
-        st.caption(f"Volume totale mercato nell'anno: € {anno_rec_target['RNA_ELEMENTO_DI_AIUTO']/1e6:.1f} Mln")
-
-        if len(df_final_annual) > 1:
-            v_final = df_final_annual['Budget Target'].iloc[-1]
-            v_start = df_final_annual['Budget Target'].iloc[0]
-            n_anni = len(df_final_annual) - 1
-            cagr = ((v_final / v_start)**(1/n_anni) - 1) * 100 if v_start > 0 else 0
-            st.metric("CAGR Settore Target", f"{cagr:.1f}%")
-
-    with col_t:
-        st.dataframe(
-            df_view,
-            hide_index=True,
-            use_container_width=True,
-            column_config={
-                "Anno": st.column_config.NumberColumn(format="%d"),
-                "Mercato Tot (€)": st.column_config.NumberColumn(format="€ %,.0f"),
-                "Settore Target (€)": st.column_config.NumberColumn(format="€ %,.0f"),
-                "Var. Target YoY": st.column_config.NumberColumn(format="%.1f%%"),
-                "Var. Pratiche YoY": st.column_config.NumberColumn(format="%.1f%%")
-            }
-        )
+    # --- Rendering ---
+    st.dataframe(
+        df_final,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Anno": st.column_config.NumberColumn(format="%d"),
+            "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
+            "Volume Totale": st.column_config.NumberColumn(format="€ %,.0f"),
+            "CAGR Pratiche": st.column_config.NumberColumn(format="%.2%"),
+            "CAGR Volume": st.column_config.NumberColumn(format="%.2%")
+        }
+    )
