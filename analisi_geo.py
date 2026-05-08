@@ -115,26 +115,48 @@ def geo_analysis(df):
     fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
     st.plotly_chart(fig_tree, use_container_width=True)
 
-    # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
+    # --- 6. FUNZIONE AGGREGAZIONE TABELLE CON AZIENDA LEADER ---
     def get_table_data(groupby_col):
+        # 1. Calcolo Dati Totali
         tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         tot.columns = [groupby_col, 'Aiuti Totali', 'Budget Totale']
-        targ = df_c[df_c['IS_TARGET'] == 1].groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
+        
+        # 2. Calcolo Dati Target
+        df_t = df_c[df_c['IS_TARGET'] == 1].copy()
+        targ = df_t.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         targ.columns = [groupby_col, 'Aiuti Target', 'Budget Target']
+        
+        # 3. Logica Azienda Leader (per ogni riga del raggruppamento)
+        col_nome = 'SOGGETTO_BENEFICIARIO' if 'SOGGETTO_BENEFICIARIO' in df_c.columns else 'Beneficiario'
+        
+        # Uniamo i dati numerici
         final = pd.merge(tot, targ, on=groupby_col, how='left').fillna(0)
+        
+        if col_nome in df_t.columns:
+            # Troviamo per ogni gruppo chi ha il Budget Target massimo
+            leaders = df_t.sort_values(col_budget, ascending=False).drop_duplicates(groupby_col)
+            leaders = leaders[[groupby_col, col_nome]]
+            leaders.columns = [groupby_col, 'Azienda Leader']
+            final = pd.merge(final, leaders, on=groupby_col, how='left').fillna("-")
+        
         return final.sort_values('Budget Target', ascending=False)
 
-    st.markdown("---")
+    # Configurazione colonne comune
     common_config = {
         "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
         "Aiuti Target": st.column_config.NumberColumn(format="%d"),
         "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
-        "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")
+        "Budget Target": st.column_config.NumberColumn(format="€ %,.2f"),
+        "Azienda Leader": st.column_config.TextColumn("🏆 Azienda Leader")
     }
 
+    st.markdown("---")
+    
     # --- 7. TABELLA NAZIONALE ---
     st.markdown("### 🇮🇹 1. Analisi Nazionale")
     df_naz = get_table_data('Regione')
+    # Assicuriamoci che l'Azienda Leader sia l'ultima colonna
+    df_naz = df_naz[['Regione', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True, column_config=common_config)
 
@@ -144,7 +166,8 @@ def geo_analysis(df):
     df_prov = get_table_data('Provincia')
     reg_map = df_c[['Provincia', 'Regione']].drop_duplicates()
     df_prov = pd.merge(df_prov, reg_map, on='Provincia', how='left')
-    df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
+    # Ordine colonne
+    df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True, column_config=common_config)
 
@@ -154,7 +177,8 @@ def geo_analysis(df):
     df_loc = get_table_data('CAP')
     loc_map = df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates()
     df_loc = pd.merge(df_loc, loc_map, on='CAP', how='left')
-    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
+    # Ordine colonne (CAP come terza colonna)
+    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
     
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True, column_config=common_config)
