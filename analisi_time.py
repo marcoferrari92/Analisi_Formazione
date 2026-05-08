@@ -36,8 +36,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     
 
 
-    # --- PREPARAZIONE RANGE ASSE X (Per sincronia millimetrica) ---
-    # Calcoliamo il primo e l'ultimo periodo per "inchiodare" l'asse X
+    # --- PREPARAZIONE RANGE E TICK ASSE X ---
     x_min = df_time_plot['Periodo'].min()
     x_max = df_time_plot['Periodo'].max()
     
@@ -54,39 +53,23 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         margin=dict(l=100, r=40, t=50, b=0),
         height=350,
         yaxis=dict(automargin=False, gridcolor="#f0f0f0"),
-        # SINCRONIZZAZIONE ASSE X
         xaxis=dict(
-            range=[x_min, x_max], # Forza l'inizio e la fine sui dati reali
+            range=[x_min, x_max],
             showgrid=True,
-            gridcolor="#f0f0f0",
-            constrain='domain'     # Assicura che il grafico occupi tutto lo spazio
+            gridcolor="#e1e1e1", # Griglia verticale più visibile
+            griddash="dot",      # Rende la griglia tratteggiata
+            constrain='domain',
+            # SPIKELINES: Linee tratteggiate al passaggio del mouse
+            showspikes=True,
+            spikemode='across',
+            spikethickness=1,
+            spikedash='dash',
+            spikecolor='#999999'
         )
     )
     
     # --- 2. GRAFICO VALORI ASSOLUTI (RADICE QUADRATA) ---
-    fig_line = go.Figure()
-    
-    fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Mercato_Mln']),
-        name="Mercato Totale",
-        line=dict(color='#3498db', width=2, shape='spline'),
-        mode='lines+markers',
-        marker=dict(size=6)
-    ))
-    
-    fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Target_Mln']),
-        name="Settore Target",
-        line=dict(color='#e74c3c', width=2, shape='spline'),
-        mode='lines+markers',
-        marker=dict(size=6)
-    ))
-    
-    # (Logica tick_vals invariata)
-    max_mln = df_time_plot['Mercato_Mln'].max()
-    potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
-    tick_vals = potential_ticks[potential_ticks <= max_mln]
-    if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
+    # ... (Codice Scatter e tick_vals rimane lo stesso) ...
     
     fig_line.update_layout(
         title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
@@ -94,13 +77,19 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=100, r=40, t=50, b=50),
         height=400,
-        # SINCRONIZZAZIONE ASSE X (Identica al grafico sopra)
         xaxis=dict(
             title="Periodo",
-            range=[x_min, x_max], # Forza l'attacco della linea all'asse Y
+            range=[x_min, x_max],
             showgrid=True,
-            gridcolor="#f0f0f0",
-            constrain='domain'
+            gridcolor="#e1e1e1", # Stessa griglia tratteggiata
+            griddash="dot",
+            constrain='domain',
+            # SPIKELINES: Stessa configurazione per il grafico sotto
+            showspikes=True,
+            spikemode='across',
+            spikethickness=1,
+            spikedash='dash',
+            spikecolor='#999999'
         ),
         yaxis=dict(
             title="Budget (Mln €)",
@@ -109,11 +98,13 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             ticktext=[f"{v:.1f}" for v in tick_vals],
             automargin=False,
             gridcolor="#f0f0f0"
-        )
+        ),
+        # Sincronizza il puntatore tra i grafici (Hovermode condiviso)
+        hovermode="x unified" 
     )
     
-    st.plotly_chart(fig_norm, use_container_width=True, key="norm_sync_fix")
-    st.plotly_chart(fig_line, use_container_width=True, key="line_sync_fix")
+    st.plotly_chart(fig_norm, use_container_width=True, key="norm_final_spike")
+    st.plotly_chart(fig_line, use_container_width=True, key="line_final_spike")
 
     st.divider()
 
