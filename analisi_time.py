@@ -162,10 +162,11 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     # Rendering
     st.plotly_chart(fig, use_container_width=True, key="temporal_subplots")
     
-    st.divider()
+    
 
   
     # --- HEATMAP (STAGIONALITÀ) ---
+    st.divider()
     st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
     if guida_timemap:
         with st.popover("💡 Strategia"):
@@ -197,6 +198,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
 
 
     # --- 1. Calcolo Concentrazione Annuale Evoluta ---
+    st.divider()
     st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
 
     # Raggruppamento Unico: Calcoliamo tutto in un solo passaggio
