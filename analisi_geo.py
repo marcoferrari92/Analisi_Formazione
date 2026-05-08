@@ -109,29 +109,37 @@ def geo_analysis(df):
         fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
-    # --- 5. TREEMAP CON LEADER E QUOTE ---
-    st.write("")
-    st.markdown("### 🔍 Drill-down Geografico")
+    # --- 5. TREEMAP CON LEADER (Senza Quota) ---
+    if not df_targ_raw.empty:
+        st.write("")
+        st.markdown("### 🔍 Drill-down Geografico")
 
-    cap_leader_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
-    
-    idx_max = cap_leader_data.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].idxmax()
-    cap_leaders = cap_leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
+        # 1. Identificazione Leader per CAP
+        cap_leader_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
+        idx_max = cap_leader_data.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].idxmax()
+        cap_leaders = cap_leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
 
-    df_tree_agg = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
-    df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'Budget_Target']
-    df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
-    
-    fig_tree = px.treemap(
-        df_tree_final, path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
-        values='Budget_Target', color='Budget_Target', color_continuous_scale='Reds',
-        custom_data=['Leader_Nome', 'Leader_Budget', 'Budget_Target']
-    )
+        # 2. Dataset per Treemap
+        df_tree_agg = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
+        df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'Budget_Target']
+        df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
+        
+        # 3. Creazione Grafico
+        fig_tree = px.treemap(
+            df_tree_final, 
+            path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
+            values='Budget_Target', 
+            color='Budget_Target', 
+            color_continuous_scale='Reds',
+            custom_data=['Leader_Nome', 'Leader_Budget']
+        )
 
-    h_text = "<b>%{label}</b><br>Budget Target Nodo: € %{value:,.2f}<br>🏆 Leader CAP: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<br>Quota Leader: %{customdata[1]/customdata[2]:.1%}<extra></extra>"
-    fig_tree.update_traces(hovertemplate=h_text)
-    fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
-    st.plotly_chart(fig_tree, use_container_width=True)
+        # 4. Hovertemplate semplificato
+        h_text = "<b>%{label}</b><br>Budget Target Nodo: € %{value:,.2f}<br>🏆 Leader CAP: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<extra></extra>"
+        
+        fig_tree.update_traces(hovertemplate=h_text)
+        fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
+        st.plotly_chart(fig_tree, use_container_width=True)
 
     # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
@@ -161,12 +169,14 @@ def geo_analysis(df):
     df_naz = get_table_data('Regione')[['Regione', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
+    st.write()
     st.write("### 🏛️ Analisi Regionale")
     df_prov = get_table_data('Provincia')
     df_prov = pd.merge(df_prov, df_c[['Provincia', 'Regione']].drop_duplicates(), on='Provincia', how='left')
     df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
+    st.write()
     st.write("### 📍 Analisi Locale")
     df_loc = get_table_data('CAP')
     df_loc = pd.merge(df_loc, df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates(), on='CAP', how='left')
