@@ -219,7 +219,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
-    # --- 1. Calcolo Dati (Logica Invariata) ---
+    # --- 1. Calcolo Dati e Punti di Partenza Target ---
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
@@ -227,50 +227,46 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
+    # DEFINIAMO I PUNTI DI PARTENZA SUL TARGET
     anno_start = df_annual['Anno'].min()
-    vol_start = df_annual['Vol_Tot'].iloc[0]
-    prat_start = df_annual['Aiuti_Tot'].iloc[0]
+    prat_target_start = df_annual['Aiuti_Target'].iloc[0] # Partenza Pratiche Target
+    vol_target_start = df_annual['Vol_Target'].iloc[0]   # Partenza Volume Target
 
-    # Calcolo Incidenze e CAGR (decimali)
+    # --- 2. Calcolo CAGR sul SETTORE TARGET ---
+    # Calcolo Incidenze
     df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
     df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
     
-    # Moltiplichiamo x100 qui per la visualizzazione tabellare
-    df_annual['CAGR Pratiche'] = df_annual.apply(
-        lambda x: calc_cagr(x['Aiuti_Tot'], prat_start, x['Anno'], anno_start) * 100, axis=1
+    # Calcolo CAGR (Riferito solo al Target)
+    df_annual['CAGR Pratiche Target'] = df_annual.apply(
+        lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1
     )
-    df_annual['CAGR Volume'] = df_annual.apply(
-        lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start) * 100, axis=1
+    df_annual['CAGR Volume Target'] = df_annual.apply(
+        lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1
     )
 
-    # --- 2. Formattazione Stringhe (Sintesi Mln €) ---
+    # --- 3. Formattazione e Rinomina ---
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
     
-    # Aiuti Target con parentesi
     df_view['Aiuti Target (%)'] = df_view.apply(
         lambda x: f"{int(x['Aiuti_Target'])} ({x['Incidenza Aiuti (%)']:.1%})", axis=1
     )
-    
-    # Volume Totale SINTETICO
     df_view['Vol_Tot_Sint'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.1f}M")
-    
-    # Volume Target SINTETICO con parentesi
     df_view['Vol_Target_Sint'] = df_view.apply(
         lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
     )
 
-    # --- 3. Selezione e Rinomina ---
     df_final = df_view[[
-        'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche',
-        'Vol_Tot_Sint', 'Vol_Target_Sint', 'CAGR Volume'
+        'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche Target',
+        'Vol_Tot_Sint', 'Vol_Target_Sint', 'CAGR Volume Target'
     ]].copy()
 
     df_final.columns = [
-        'Anno', 'Aiuti Totali', 'Aiuti Target (%)', 'CAGR Pratiche',
-        'Volume Totale', 'Volume Target (%)', 'CAGR Volume'
+        'Anno', 'Aiuti Totali', 'Aiuti Target (%)', 'CAGR Pratiche Target',
+        'Volume Totale', 'Volume Target (%)', 'CAGR Volume Target'
     ]
 
-    # --- 4. Rendering Finale ---
+    # --- 4. Rendering ---
     st.dataframe(
         df_final,
         hide_index=True,
@@ -278,9 +274,9 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         column_config={
             "Anno": st.column_config.NumberColumn("Anno", format="%d"),
             "Aiuti Totali": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
-            "Volume Totale": st.column_config.TextColumn("Volume Totale"), # Text perché già formattato
+            "Volume Totale": st.column_config.TextColumn("Volume Totale"),
             "Volume Target (%)": st.column_config.TextColumn("Volume Target (%)"),
-            "CAGR Pratiche": st.column_config.NumberColumn("CAGR Pratiche", format="%.2f %%"),
-            "CAGR Volume": st.column_config.NumberColumn("CAGR Volume", format="%.2f %%")
+            "CAGR Pratiche Target": st.column_config.NumberColumn("CAGR Pratiche Target", format="%.2f %%"),
+            "CAGR Volume Target": st.column_config.NumberColumn("CAGR Volume Target", format="%.2f %%")
         }
     )
