@@ -244,6 +244,69 @@ def geo_analysis(df):
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
 
+    # --- NUOVA SEZIONE: ANALISI SATURAZIONE E POTENZIALE ---
+    st.markdown("---")
+    st.markdown("### 🌡️ Analisi Saturazione e Aree Fredde")
+
+    # 1. Calcolo Saturazione per Provincia
+    # (Riusiamo df_bubbles e df_bubbles_t calcolati per le mappe)
+    df_sat = pd.merge(df_bubbles, df_bubbles_t, on=['Regione', 'Provincia'], how='left').fillna(0)
+    
+    # Calcolo % Saturazione (Target su Totale)
+    df_sat['Saturazione (%)'] = (df_sat['Budget Target'] / df_sat['Budget']) * 100
+    
+    # Media Nazionale per confronto
+    media_naz_sat = df_sat['Saturazione (%)'].mean()
+
+    # 2. Introduzione Variabile "Dimensione Mercato" (Proxy Popolazione/Volume)
+    # Usiamo la mediana del Budget Totale come soglia per definire aree "Grandi" o "Piccole"
+    soglia_mediana = df_sat['Budget'].median()
+
+    def classify_area(row):
+        if row['Budget'] >= soglia_mediana:
+            return "Mercato Grande" if row['Saturazione (%)'] >= media_naz_sat else "POTENZIALE ALTO (Area Fredda)"
+        else:
+            return "Mercato Nicchia" if row['Saturazione (%)'] >= media_naz_sat else "Area Marginale"
+
+    df_sat['Classificazione'] = df_sat.apply(classify_area, axis=1)
+
+    # 3. Visualizzazione: Mappa della Saturazione
+    fig_sat = px.choropleth(
+        df_sat, geojson=geojson_data, locations='Regione', 
+        locationmode='country names', # Nota: qui andrebbe Match_Key se usi il geojson precedente
+        color='Saturazione (%)',
+        color_continuous_scale='RdYlGn',
+        title="Mappa della Saturazione (Verde = Alta Quota Target, Rosso = Bassa)",
+        hover_name='Provincia',
+        hover_data=['Budget', 'Budget Target', 'Classificazione']
+    )
+    st.plotly_chart(fig_sat, use_container_width=True)
+
+    # 4. Tabella Opportunità (Le vere "Aree Fredde" ad alto budget)
+    st.markdown("#### 🎯 Focus: Aree con Alto Budget Totale ma Bassa Saturazione Target")
+    
+    # Filtriamo le aree dove il budget totale è sopra la mediana (mercato ricco) 
+    # ma la saturazione è sotto la media nazionale (poco target)
+    df_opportunita = df_sat[
+        (df_sat['Budget'] > soglia_mediana) & 
+        (df_sat['Saturazione (%)'] < media_naz_sat)
+    ].sort_values('Budget', ascending=False)
+
+    col_sat_config = {
+        "Budget": st.column_config.NumberColumn("Mercato Totale", format="€ %,.2f"),
+        "Budget Target": st.column_config.NumberColumn("Mercato Target", format="€ %,.2f"),
+        "Saturazione (%)": st.column_config.NumberColumn("Quota Target", format="%.1f%%"),
+        "Classificazione": st.column_config.TextColumn("Status")
+    }
+
+    st.dataframe(
+        df_opportunita[['Regione', 'Provincia', 'Budget', 'Budget Target', 'Saturazione (%)', 'Classificazione']],
+        use_container_width=True,
+        hide_index=True,
+        column_config=col_sat_config
+    )
+
+    
     st.success("Analisi completata con Leadership Level")
     
     # Restituiamo il dataframe arricchito
