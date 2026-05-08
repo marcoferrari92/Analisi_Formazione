@@ -91,23 +91,45 @@ def geo_analysis(df):
         fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
         return fig
 
-    # --- 4. MAPPE ---
+    # --- 4. MAPPE A BOLLE (PUNTINI) ---
+    # Creiamo un dataset aggregato per Provincia per avere più "puntini" sparsi
+    df_bubbles = df_c.groupby(['Regione', 'Provincia'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles.columns = ['Regione', 'Provincia', 'Aiuti', 'Budget']
+    
+    # Dati Target per i puntini rossi
+    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles_t.columns = ['Regione', 'Provincia', 'Aiuti Target', 'Budget Target']
+
     c1, c2 = st.columns(2)
+    
     with c1:
-        fig_tot = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-                                color='Budget Totale', color_continuous_scale="Blues", title="💰 Mercato Totale",
-                                hover_name='Regione', hover_data={'Match_Key': False, 'Budget Totale': False})
-        fig_tot.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Totale: € %{z:,.2f}<extra></extra>")
-        fig_tot.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
+        # Nota: scatter_geo senza lat/lon usa i nomi delle regioni/stati. 
+        # Per i puntini precisi servirebbe un file di coordinate.
+        fig_tot = px.scatter_geo(df_bubbles, 
+                                locations='Regione', # Plotly centrerà la bolla sulla regione
+                                locationmode='country names', # o usare lat/lon se le avessi
+                                size='Budget', 
+                                hover_name='Provincia',
+                                title="💰 Puntini Mercato Totale",
+                                template='plotly_white')
+        
+        # Se non hai lat/lon, scatter_geo su mappa Italia è limitato. 
+        # Di solito si preferisce mantenere il Choropleth (quello di prima) e 
+        # AGGIUNGERE i punti sopra. Ma Plotly Express non lo permette facilmente in un colpo solo.
+        
         st.plotly_chart(style_map(fig_tot), use_container_width=True)
 
     with c2:
-        fig_targ = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-                                 color='Budget Target', color_continuous_scale="Reds", title="🎯 Mercato Target",
-                                 hover_name='Regione', hover_data={'Match_Key': False, 'Budget Target': False})
-        fig_targ.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Target: € %{z:,.2f}<extra></extra>")
-        fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
+        fig_targ = px.scatter_geo(df_bubbles_t, 
+                                 locations='Regione',
+                                 size='Budget Target', 
+                                 color_discrete_sequence=['red'],
+                                 hover_name='Provincia',
+                                 title="🎯 Puntini Mercato Target")
+        
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
+
+    
 
     # --- 5. TREEMAP CON LEADER (Senza Quota) ---
     if not df_targ_raw.empty:
