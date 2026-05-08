@@ -113,11 +113,12 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
       height=400
   )
   
-  st.plotly_chart(fig_line_sqrt, use_container_width=True)
+
     
     
     st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
-    st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto_log")
+    st.plotly_chart(fig_line_sqrt, use_container_width=True)
+    #st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto_log")
 
     st.divider()
 
