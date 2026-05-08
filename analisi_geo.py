@@ -5,10 +5,11 @@ import requests
 
 def geo_analysis(df):
     """
-    Analisi geografica completa con auto-rilevamento province da CAP.
+    Analisi geografica completa con auto-rilevamento province da CAP,
+    drill-down Regione > Provincia > CAP e tabelle con barre di progresso.
     """
-    
-    # --- 1. DIZIONARIO DECODIFICA CAP (Prime 2 cifre) ---
+
+    # --- 1. DIZIONARIO DECODIFICA CAP -> PROVINCIA ---
     cap_to_prov = {
         '00': 'Roma', '01': 'Viterbo', '02': 'Rieti', '03': 'Frosinone', '04': 'Latina',
         '05': 'Terni', '06': 'Perugia', '07': 'Sassari', '08': 'Nuoro', '09': 'Cagliari',
@@ -31,16 +32,18 @@ def geo_analysis(df):
     }
 
     # --- 2. PREPARAZIONE DATI PER MAPPE E TABELLA ---
+    # Aggregazione per Regione (Tutto il mercato)
     df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
     df_geo_all.columns = ['Regione', 'Aiuti_Tot', 'Budget_Tot']
 
+    # Aggregazione per Regione (Solo Target)
     df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
     df_geo_target.columns = ['Regione', 'Aiuti_Targ', 'Budget_Targ']
 
-    # Unione per df_mappe (fondamentale per le mappe e la tabella)
+    # Unione Dati
     df_mappe = pd.merge(df_geo_all, df_geo_target, on='Regione', how='left').fillna(0)
     
-    # Mapping GeoJSON
+    # Preparazione per GeoJSON
     df_mappe['Regione_Match'] = df_mappe['Regione'].str.strip().str.lower()
     mapping_geo = {
         "friuli-venezia giulia": "friuli venezia giulia",
@@ -49,19 +52,20 @@ def geo_analysis(df):
     }
     df_mappe['Regione_Match'] = df_mappe['Regione_Match'].replace(mapping_geo)
 
-    # --- 3. PREPARAZIONE DATI PER TREEMAP (CAP e Province) ---
+    # --- 3. PREPARAZIONE DATI PER TREEMAP (Esplosione Blindata) ---
     colonna_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df.columns else 'CAP'
     
+    # Aggreghiamo specificando la gerarchia per evitare errori di posizionamento (es. Vicenza in Liguria)
     df_tree_raw = df[df['IS_TARGET'] == 1].groupby(['RNA_REGIONE_BENEFICIARIO', colonna_cap])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     df_tree_raw.columns = ['Regione', 'CAP_Raw', 'Budget_Target']
     
-    # Pulizia CAP e associazione Provincia
+    # Pulizia CAP e creazione Provincia tramite prefisso
     df_tree_raw['CAP_Str'] = df_tree_raw['CAP_Raw'].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
-    df_tree_raw['Prov_Key'] = df_tree_raw['CAP_Str'].str[:2]
-    df_tree_raw['Provincia'] = df_tree_raw['Prov_Key'].map(cap_to_prov).fillna("Altro (" + df_tree_raw['Prov_Key'] + ")")
+    df_tree_raw['Prefix'] = df_tree_raw['CAP_Str'].str[:2]
+    df_tree_raw['Provincia'] = df_tree_raw['Prefix'].map(cap_to_prov).fillna("Area " + df_tree_raw['Prefix'])
     df_tree_raw['CAP_Label'] = "CAP " + df_tree_raw['CAP_Str']
 
-    # --- 4. GEOJSON E STILE ---
+    # --- 4. GEOJSON E HELPER STYLE ---
     @st.cache_data
     def get_geojson():
         url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
@@ -78,38 +82,45 @@ def geo_analysis(df):
         fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450, coloraxis_colorbar_title_text="")
         return fig
 
-    # --- 5. VISUALIZZAZIONE: MAPPE ---
+    # --- 5. VISUALIZZAZIONE: MAPPE AFFIANCATE ---
     col_map1, col_map2 = st.columns(2)
+    
     with col_map1:
-        fig_tot = px.choropleth(df_mappe, geojson=geojson_data, locations='Regione_Match', 
-                                featureidkey="properties.name", color='Budget_Tot', 
-                                color_continuous_scale="Blues", title="💰 Mercato Totale (€)",
-                                labels={'Budget_Tot': 'Budget'})
+        fig_tot = px.choropleth(
+            df_mappe, geojson=geojson_data, locations='Regione_Match', 
+            featureidkey="properties.name", color='Budget_Tot', 
+            color_continuous_scale="Blues", title="💰 Mercato Totale (€)",
+            labels={'Budget_Tot': 'Budget'}
+        )
         st.plotly_chart(apply_italy_style(fig_tot), use_container_width=True)
     
     with col_map2:
-        fig_targ = px.choropleth(df_mappe, geojson=geojson_data, locations='Regione_Match', 
-                                 featureidkey="properties.name", color='Budget_Targ', 
-                                 color_continuous_scale="Reds", title="🎯 Mercato Target (€)",
-                                 labels={'Budget_Targ': 'Budget Target'})
+        fig_targ = px.choropleth(
+            df_mappe, geojson=geojson_data, locations='Regione_Match', 
+            featureidkey="properties.name", color='Budget_Targ', 
+            color_continuous_scale="Reds", title="🎯 Mercato Target (€)",
+            labels={'Budget_Targ': 'Budget Target'}
+        )
         st.plotly_chart(apply_italy_style(fig_targ), use_container_width=True)
 
-    # --- 6. VISUALIZZAZIONE: TREEMAP ---
-    st.write("### 🔍 Drill-down Geografico: Province e CAP")
+    # --- 6. VISUALIZZAZIONE: TREEMAP (DRILL-DOWN) ---
+    st.write("### 🔍 Esplosione Geografica (Regione > Provincia > CAP)")
     fig_tree = px.treemap(
         df_tree_raw, 
         path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP_Label'],
         values='Budget_Target', 
         color='Budget_Target',
         color_continuous_scale='Reds',
+        title="Dettaglio Gerarchico: Clicca sulla Regione per le Province",
         labels={'Budget_Target': 'Budget', 'CAP_Label': 'CAP'},
         hover_data={'Budget_Target': ':,.0f'}
     )
-    fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
-    st.plotly_chart(fig_tree, use_container_width=True)
+    fig_tree.update_layout(margin=dict(t=50, l=10, r=10, b=10), height=600)
+    st.plotly_chart(fig_tree, use_container_width=True, key="tree_drilldown_final")
 
-    # --- 7. VISUALIZZAZIONE: TABELLA ---
-    st.write("### 📊 Riepilogo Regionale")
+    # --- 7. VISUALIZZAZIONE: TABELLA ANALITICA ---
+    st.write("### 📊 Dettaglio Regionale (Ordinato per Budget Target)")
+    
     df_tab = df_mappe.sort_values(by='Budget_Targ', ascending=False)
     
     st.dataframe(
@@ -123,6 +134,7 @@ def geo_analysis(df):
             "Budget_Tot": st.column_config.NumberColumn("Budget Tot (€)", format="€ %,.0f"),
             "Budget_Targ": st.column_config.ProgressColumn(
                 "Budget Target (€)",
+                help="Intensità del budget nel settore target",
                 format="€ %,.0f",
                 min_value=0,
                 max_value=df_tab['Budget_Targ'].max()
