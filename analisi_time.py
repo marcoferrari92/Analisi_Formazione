@@ -54,31 +54,31 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
     df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
 
-    # Creazione tracce manuali per massimo controllo su colori e nomi
     import plotly.graph_objects as go
     fig_line = go.Figure()
 
-    # Traccia Mercato Totale (Blu)
+    # Traccia Mercato Totale (Blu) con pallini
     fig_line.add_trace(go.Scatter(
         x=df_time_plot['Periodo'], 
         y=np.sqrt(df_time_plot['Mercato_Mln']),
         name="Mercato Totale",
-        line=dict(color='#3498db', width=2.5, shape='spline'),
-        mode='lines'
+        line=dict(color='#3498db', width=2, shape='spline'),
+        mode='lines+markers', # Aggiunti pallini
+        marker=dict(size=6)
     ))
 
-    # Traccia Settore Target (Rosso)
+    # Traccia Settore Target (Rosso) con pallini
     fig_line.add_trace(go.Scatter(
         x=df_time_plot['Periodo'], 
         y=np.sqrt(df_time_plot['Target_Mln']),
         name="Settore Target",
-        line=dict(color='#e74c3c', width=2.5, shape='spline'),
-        mode='lines'
+        line=dict(color='#e74c3c', width=2, shape='spline'),
+        mode='lines+markers', # Aggiunti pallini
+        marker=dict(size=6)
     ))
 
-    # Definizione dei Tick "Umani" (mostriamo valori reali su scala radice)
+    # Definizione dei Tick per asse Y
     max_mln = df_time_plot['Mercato_Mln'].max()
-    # Generiamo tick realistici (es: 0, 1, 10, 50, 100...) adattandoli al range
     potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
     tick_vals = potential_ticks[potential_ticks <= max_mln]
     if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
@@ -86,7 +86,6 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     fig_line.update_layout(
         title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
         template="plotly_white",
-        # Legenda in alto per non disallineare l'asse X
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -94,7 +93,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             xanchor="right",
             x=1
         ),
-        # Margine sinistro fissato a 80 per sincronia perfetta con il grafico sopra
+        # Margine sinistro a 80 per allineamento con grafico quota %
         margin=dict(l=80, r=20, t=50, b=50),
         height=400,
         xaxis_title="Periodo",
