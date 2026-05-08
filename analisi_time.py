@@ -197,20 +197,16 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
 
 
     # --- 1. Calcolo Concentrazione Annuale Evoluta ---
-    st.subheader("📊 Analisi Storica e CAGR")
+    st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
 
-    # Raggruppamento base
+    # Raggruppamento Unico: Calcoliamo tutto in un solo passaggio
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
         Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
+        # Calcoliamo il volume target filtrando direttamente nella lambda
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
-
-    # Anno di partenza
-    anno_start = df_annual['Anno'].min()
-    vol_start = df_annual['Vol_Tot'].iloc[0]
-    prat_start = df_annual['Aiuti_Tot'].iloc[0]
 
     # Funzione CAGR sicura
     def calc_cagr(current_val, start_val, current_year, start_year):
@@ -219,25 +215,17 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
-    # --- 1. Calcolo Dati e Punti di Partenza Target ---
-    df_annual = df_temp.groupby('Anno').agg(
-        Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
-        Aiuti_Target=('IS_TARGET', 'sum'),
-        Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
-    ).reset_index().sort_values('Anno')
-
-    # DEFINIAMO I PUNTI DI PARTENZA SUL TARGET
+    # DEFINIAMO I PUNTI DI PARTENZA SUL TARGET (Base del calcolo CAGR)
     anno_start = df_annual['Anno'].min()
-    prat_target_start = df_annual['Aiuti_Target'].iloc[0] # Partenza Pratiche Target
-    vol_target_start = df_annual['Vol_Target'].iloc[0]   # Partenza Volume Target
+    prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
+    vol_target_start = df_annual['Vol_Target'].iloc[0]
 
-    # --- 2. Calcolo CAGR sul SETTORE TARGET ---
-    # Calcolo Incidenze
-    df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
-    df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
+    # --- 2. Calcolo Incidenze e CAGR sul SETTORE TARGET ---
+    # Calcolo Incidenze (Quota di mercato del target rispetto al totale)
+    df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot']).fillna(0)
+    df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot']).fillna(0)
     
-    # Calcolo CAGR (Riferito solo al Target)
+    # Calcolo CAGR moltiplicato per 100 per la visualizzazione corretta
     df_annual['CAGR Pratiche Target'] = df_annual.apply(
         lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1
     )
@@ -245,17 +233,23 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1
     )
 
-    # --- 3. Formattazione e Rinomina ---
+    # --- 3. Formattazione Stringhe Complesse ---
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
     
+    # Formattazione: "Valore (Percentuale%)"
     df_view['Aiuti Target (%)'] = df_view.apply(
         lambda x: f"{int(x['Aiuti_Target'])} ({x['Incidenza Aiuti (%)']:.1%})", axis=1
     )
+    
+    # Formattazione Volume Totale in Milioni
     df_view['Vol_Tot_Sint'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.1f}M")
+    
+    # Formattazione Volume Target: "€ ValoreM (Quota%)"
     df_view['Vol_Target_Sint'] = df_view.apply(
         lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
     )
 
+    # Selezione e Rinomina Finale
     df_final = df_view[[
         'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche Target',
         'Vol_Tot_Sint', 'Vol_Target_Sint', 'CAGR Volume Target'
@@ -266,7 +260,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         'Volume Totale', 'Volume Target (%)', 'CAGR Volume Target'
     ]
 
-    # --- 4. Rendering ---
+    # --- 4. Rendering Tabella ---
     st.dataframe(
         df_final,
         hide_index=True,
