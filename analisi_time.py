@@ -196,31 +196,48 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
 
-    # --- 1. Calcolo Concentrazione Annuale (da aggiungere prima della Heatmap) ---
+    # --- 1. Calcolo Concentrazione Annuale ---
     st.subheader("📊 Concentrazione Annuale del Budget")
     
     # Raggruppamento per anno
     df_annual = df_temp.groupby('Anno').agg({
         'RNA_ELEMENTO_DI_AIUTO': 'sum',
-        'IS_TARGET': 'sum' # Conteggio pratiche target
+        'IS_TARGET': 'sum' 
     }).reset_index()
     
-    # Creazione di due colonne per metriche rapide
-    m1, m2, m3 = st.columns(3)
-    
-    # Calcolo dell'anno record
-    anno_record = df_annual.loc[df_annual['RNA_ELEMENTO_DI_AIUTO'].idxmax()]
-    
-    m1.metric("Anno Record (Volume)", f"{int(anno_record['Anno'])}", f"€ {anno_record['RNA_ELEMENTO_DI_AIUTO']/1e6:.1f} Mln")
-    
-    # Calcolo CAGR semplice (Compound Annual Growth Rate) se ci sono più anni
-    if len(df_annual) > 1:
-        v_final = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[-1]
-        v_start = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[0]
-        n_anni = len(df_annual) - 1
-        cagr = ((v_final / v_start)**(1/n_anni) - 1) * 100
-        m2.metric("CAGR Mercato", f"{cagr:.1f}%")
+    # Ordiniamo per anno decrescente per la tabella
+    df_annual_table = df_annual.sort_values('Anno', ascending=False).copy()
+    df_annual_table.columns = ['Anno', 'Budget Totale (€)', 'Pratiche Target']
 
-    # --- 2. Grafico di Pareto Temporale (Opzionale) ---
-    # Potresti aggiungere un grafico che mostra la somma cumulativa nel tempo
-    # per vedere quando è stato raggiunto il 50% del budget totale dell'anno.
+    # Calcolo dell'anno record
+    idx_max = df_annual['RNA_ELEMENTO_DI_AIUTO'].idxmax()
+    anno_record = df_annual.loc[idx_max]
+    
+    # Layout con Metriche e Tabella
+    col_metrics, col_table = st.columns([1, 1])
+
+    with col_metrics:
+        st.metric(
+            "Anno Record (Volume)", 
+            f"{int(anno_record['Anno'])}", 
+            f"€ {anno_record['RNA_ELEMENTO_DI_AIUTO']/1e6:.1f} Mln"
+        )
+        
+        if len(df_annual) > 1:
+            v_final = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[-1]
+            v_start = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[0]
+            n_anni = len(df_annual) - 1
+            cagr = ((v_final / v_start)**(1/n_anni) - 1) * 100
+            st.metric("CAGR Mercato", f"{cagr:.1f}%")
+
+    with col_table:
+        st.dataframe(
+            df_annual_table,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "Anno": st.column_config.NumberColumn(format="%d"),
+                "Budget Totale (€)": st.column_config.NumberColumn(format="€ %,.0f"),
+                "Pratiche Target": st.column_config.NumberColumn(format="%d")
+            }
+        )
