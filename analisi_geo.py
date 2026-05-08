@@ -122,41 +122,40 @@ def geo_analysis(df):
         fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
         return fig
 
-    # --- 4. PREPARAZIONE DATI AGGREGATI ---
-    # Includiamo Match_Key nella groupby
-    df_bubbles = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
-    
-    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles_t.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti Target', 'Budget Target']
-
+    # --- 4. MAPPE COROPLETICHE (MERCATO TOTALE E TARGET) ---
+    st.write("")
     c1, c2 = st.columns(2)
     
     with c1:
-        # Nota: scatter_geo senza lat/lon usa i nomi delle regioni/stati. 
-        # Per i puntini precisi servirebbe un file di coordinate.
-        fig_tot = px.scatter_geo(df_bubbles, 
-                                locations='Regione', # Plotly centrerà la bolla sulla regione
-                                locationmode='country names', # o usare lat/lon se le avessi
-                                size='Budget', 
-                                hover_name='Provincia',
-                                title="💰 Mercato Totale",
-                                template='plotly_white')
-        
-        # Se non hai lat/lon, scatter_geo su mappa Italia è limitato. 
-        # Di solito si preferisce mantenere il Choropleth (quello di prima) e 
-        # AGGIUNGERE i punti sopra. Ma Plotly Express non lo permette facilmente in un colpo solo.
-        
+        fig_tot = px.choropleth(
+            df_mappe, 
+            geojson=geojson_data, 
+            locations='Match_Key', 
+            featureidkey="properties.name",
+            color='Budget Totale', 
+            color_continuous_scale="Blues", 
+            title="💰 Mercato Totale",
+            hover_name='Regione', 
+            hover_data={'Match_Key': False, 'Budget Totale': False}
+        )
+        fig_tot.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Totale: € %{z:,.2f}<extra></extra>")
+        fig_tot.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_tot), use_container_width=True)
 
     with c2:
-        fig_targ = px.scatter_geo(df_bubbles_t, 
-                                 locations='Regione',
-                                 size='Budget Target', 
-                                 color_discrete_sequence=['red'],
-                                 hover_name='Provincia',
-                                 title="🎯 Mercato Target")
-        
+        fig_targ = px.choropleth(
+            df_mappe, 
+            geojson=geojson_data, 
+            locations='Match_Key', 
+            featureidkey="properties.name",
+            color='Budget Target', 
+            color_continuous_scale="Reds", 
+            title="🎯 Mercato Target",
+            hover_name='Regione', 
+            hover_data={'Match_Key': False, 'Budget Target': False}
+        )
+        fig_targ.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Target: € %{z:,.2f}<extra></extra>")
+        fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
     
