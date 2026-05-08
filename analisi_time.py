@@ -33,7 +33,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     x_max = df_time_plot['Periodo'].max()
 
     # --- INIZIO COSTRUZIONE FIGURA UNICA ---
-    st.subheader("📈 Evoluzione Temporale del Settore Target")
+    st.write("")
     if guida_timeline:
         with st.popover("💡 Strategia"):
             st.info(guida_timeline)
