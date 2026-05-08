@@ -168,9 +168,11 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     # --- HEATMAP (STAGIONALITÀ) ---
     st.divider()
     st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
+    st.write("")
     if guida_timemap:
         with st.popover("💡 Strategia"):
             st.info(guida_timemap)
+    st.write("")
               
     df_heat_data = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
@@ -200,6 +202,8 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     # --- 1. Calcolo Concentrazione Annuale Evoluta ---
     st.divider()
     st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
+    st.write("")
+    st.write("")
 
     # Raggruppamento Unico: Calcoliamo tutto in un solo passaggio
     df_annual = df_temp.groupby('Anno').agg(
