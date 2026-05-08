@@ -220,6 +220,19 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         return (current_val / start_val) ** (1 / n_anni) - 1
 
     # Calcoli
+    # --- 1. Calcolo e Preparazione Dati (Invariato) ---
+    df_annual = df_temp.groupby('Anno').agg(
+        Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
+        Aiuti_Target=('IS_TARGET', 'sum'),
+        Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].sum())
+    ).reset_index().sort_values('Anno')
+
+    anno_start = df_annual['Anno'].min()
+    vol_start = df_annual['Vol_Tot'].iloc[0]
+    prat_start = df_annual['Aiuti_Tot'].iloc[0]
+
+    # Calcoli CAGR e Incidenze
     df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
     df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
     
@@ -230,7 +243,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start), axis=1
     )
 
-    # --- Formattazione Stringhe (Parentesi) ---
+    # --- 2. Formattazione Stringhe Complesse ---
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
     
     df_view['Aiuti Target (%)'] = df_view.apply(
@@ -240,13 +253,18 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
     )
 
-    # Selezione Colonne
+    # --- 3. RINOMINA COLONNE FISICA (Per evitare errori di mapping) ---
     df_final = df_view[[
         'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche',
         'Vol_Tot', 'Volume Target (%)', 'CAGR Volume'
-    ]]
+    ]].copy()
 
-    # --- Rendering con Formattazione Corretta ---
+    df_final.columns = [
+        'Anno', 'Aiuti Totali', 'Aiuti Target (%)', 'CAGR Pratiche',
+        'Volume Totale', 'Volume Target (%)', 'CAGR Volume'
+    ]
+
+    # --- 4. RENDERING CON FORMATTAZIONE BLOCCATA ---
     st.dataframe(
         df_final,
         hide_index=True,
@@ -255,7 +273,6 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             "Anno": st.column_config.NumberColumn("Anno", format="%d"),
             "Aiuti Totali": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
             "Volume Totale": st.column_config.NumberColumn("Volume Totale", format="€ %,.0f"),
-            # Cambiato formato qui per evitare l'errore sprintf
             "CAGR Pratiche": st.column_config.NumberColumn("CAGR Pratiche", format="%.2f"),
             "CAGR Volume": st.column_config.NumberColumn("CAGR Volume", format="%.2f")
         }
