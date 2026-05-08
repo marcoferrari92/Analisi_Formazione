@@ -4,9 +4,11 @@ import plotly.express as px
 import requests
 
 def render_geographic_analysis(df):
+    
     """
     Renderizza l'analisi geografica con mappe, treemap e tabella dati.
     """
+    
     # 1. Preparazione Dati
     df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
         'RNA_TITOLO_MISURA': 'count', 
