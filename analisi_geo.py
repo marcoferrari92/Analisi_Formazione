@@ -5,12 +5,13 @@ import requests
 
 def geo_analysis(df):
     """
-    Analisi geografica completa con nomi colonne standardizzati:
-    - Mappe con tooltip Nome Regione e Budget Target
-    - Tre tabelle: Nazionale, Regionale, Locale con colonne specifiche
+    Analisi geografica definitiva:
+    1. Nazionale (Regioni)
+    2. Regionale (Province)
+    3. Locale (CAP come terza colonna)
     """
 
-    # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA (CAP -> PROVINCIA, REGIONE) ---
+    # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA ---
     geo_db = {
         "00": ("Roma", "Lazio"), "01": ("Viterbo", "Lazio"), "02": ("Rieti", "Lazio"),
         "03": ("Frosinone", "Lazio"), "04": ("Latina", "Lazio"), "05": ("Terni", "Umbria"),
@@ -55,16 +56,16 @@ def geo_analysis(df):
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
     df_c['Prefix'] = df_c['CAP_Str'].str[:2]
     
-    df_c['Regione_Auto'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
-    df_c['Provincia_Auto'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-    df_c['Area_CAP'] = "CAP " + df_c['CAP_Str']
+    df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
+    df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
+    df_c['CAP'] = df_c['CAP_Str'] # Colonna dedicata per la tabella locale
 
     # --- 3. PREPARAZIONE DATI MAPPE ---
-    df_naz_agg = df_c.groupby('Regione_Auto')[col_budget].agg(['count', 'sum']).reset_index()
+    df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz_agg.columns = ['Regione', 'Aiuti Totali', 'Budget Totale']
 
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
-    df_targ_agg = df_targ_raw.groupby('Regione_Auto')[col_budget].agg(['count', 'sum']).reset_index()
+    df_targ_agg = df_targ_raw.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_targ_agg.columns = ['Regione', 'Aiuti Target', 'Budget Target']
 
     df_mappe = pd.merge(df_naz_agg, df_targ_agg, on='Regione', how='left').fillna(0)
@@ -85,28 +86,22 @@ def geo_analysis(df):
     # --- 4. MAPPE ---
     c1, c2 = st.columns(2)
     with c1:
-        fig_tot = px.choropleth(
-            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-            color='Budget Totale', color_continuous_scale="Blues", title="💰 Mercato Totale",
-            labels={'Regione': 'Nome Regione'},
-            hover_name='Regione',
-            hover_data={'Match_Key': False, 'Regione': False, 'Budget Totale': ':,.2f €'}
-        )
+        fig_tot = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+                                color='Budget Totale', color_continuous_scale="Blues", title="💰 Mercato Totale",
+                                labels={'Regione': 'Nome Regione'}, hover_name='Regione',
+                                hover_data={'Match_Key': False, 'Regione': False, 'Budget Totale': ':,.2f €'})
         fig_tot.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_tot), use_container_width=True)
 
     with c2:
-        fig_targ = px.choropleth(
-            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-            color='Budget Target', color_continuous_scale="Reds", title="🎯 Mercato Target",
-            labels={'Regione': 'Nome Regione'},
-            hover_name='Regione',
-            hover_data={'Match_Key': False, 'Regione': False, 'Budget Target': ':,.2f €'}
-        )
+        fig_targ = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+                                 color='Budget Target', color_continuous_scale="Reds", title="🎯 Mercato Target",
+                                 labels={'Regione': 'Nome Regione'}, hover_name='Regione',
+                                 hover_data={'Match_Key': False, 'Regione': False, 'Budget Target': ':,.2f €'})
         fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
-    # --- 5. LE TRE TABELLE GERARCHICHE ---
+    # --- 5. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
         tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         tot.columns = [groupby_col, 'Aiuti Totali', 'Budget Totale']
@@ -117,25 +112,28 @@ def geo_analysis(df):
 
     st.markdown("---")
     
+    # --- 6. TABELLA NAZIONALE ---
     st.markdown("### 🇮🇹 1. Analisi Nazionale")
-    df_naz = get_table_data('Regione_Auto').rename(columns={'Regione_Auto': 'Regione'})
+    df_naz = get_table_data('Regione')
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
+                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
 
+    # --- 7. TABELLA REGIONALE ---
     st.write("")
     st.markdown("### 🏛️ 2. Analisi Regionale")
-    df_prov = get_table_data('Provincia_Auto').rename(columns={'Provincia_Auto': 'Provincia'})
-    # Inseriamo la Regione per contesto
-    reg_map = df_c[['Provincia_Auto', 'Regione_Auto']].drop_duplicates().rename(columns={'Provincia_Auto': 'Provincia', 'Regione_Auto': 'Regione'})
+    df_prov = get_table_data('Provincia')
+    reg_map = df_c[['Provincia', 'Regione']].drop_duplicates()
     df_prov = pd.merge(df_prov, reg_map, on='Provincia', how='left')
     df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
+                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
 
-    st.write("")
     # --- 8. TABELLA LOCALE (CAP COME TERZA COLONNA) ---
+    st.write("")
     st.markdown("### 📍 3. Analisi Locale")
     df_loc = get_table_data('CAP')
     loc_map = df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates()
