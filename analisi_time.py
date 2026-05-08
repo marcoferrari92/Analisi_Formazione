@@ -48,77 +48,66 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     
 
 
-    # --- 2. GRAFICO VALORI ASSOLUTI (SCALA RADICE QUADRATA) ---
-    # Calcoliamo i valori in milioni per la visualizzazione
+    # --- 2. GRAFICO VALORI ASSOLUTI (RADICE QUADRATA) ---
+    
+    # Preparazione valori in Milioni
     df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
     df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
-    
-    fig_line = px.line(
-        df_time_plot, 
-        x='Periodo', 
-        y=['Mercato_Mln', 'Target_Mln'],
-        color_discrete_map={"Mercato_Mln": "#3498db", "Target_Mln": "#e74c3c"},
-        title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
-        template="plotly_white", 
-        line_shape="spline"
-    )
-    
+
+    # Creazione tracce manuali per massimo controllo su colori e nomi
+    import plotly.graph_objects as go
+    fig_line = go.Figure()
+
+    # Traccia Mercato Totale (Blu)
+    fig_line.add_trace(go.Scatter(
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Mercato_Mln']),
+        name="Mercato Totale",
+        line=dict(color='#3498db', width=2.5, shape='spline'),
+        mode='lines'
+    ))
+
+    # Traccia Settore Target (Rosso)
+    fig_line.add_trace(go.Scatter(
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Target_Mln']),
+        name="Settore Target",
+        line=dict(color='#e74c3c', width=2.5, shape='spline'),
+        mode='lines'
+    ))
+
+    # Definizione dei Tick "Umani" (mostriamo valori reali su scala radice)
+    max_mln = df_time_plot['Mercato_Mln'].max()
+    # Generiamo tick realistici (es: 0, 1, 10, 50, 100...) adattandoli al range
+    potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
+    tick_vals = potential_ticks[potential_ticks <= max_mln]
+    if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
+
     fig_line.update_layout(
+        title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
+        template="plotly_white",
+        # Legenda in alto per non disallineare l'asse X
         legend=dict(
-            orientation="h", 
-            yanchor="bottom", 
-            y=1.02, 
-            xanchor="right", 
-            x=1,
-            title=""
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
         ),
-        margin=dict(l=60, r=20, t=50, b=50), 
+        # Margine sinistro fissato a 80 per sincronia perfetta con il grafico sopra
+        margin=dict(l=80, r=20, t=50, b=50),
         height=400,
         xaxis_title="Periodo",
-        # Applicazione scala 'type=date' o 'linear' con trasformazione asse
-        yaxis_type="linear", 
-        yaxis_title="Budget (Mln €)"
+        yaxis=dict(
+            title="Budget (Mln €)",
+            tickmode='array',
+            tickvals=np.sqrt(tick_vals),
+            ticktext=[f"{v:.1f}" for v in tick_vals]
+        )
     )
-    
-    # Applichiamo la trasformazione "sqrt" all'asse Y tramite update_yaxes
-    fig_line.update_yaxes(
-        # 'type="log"' è quello che non volevi, usiamo una scala lineare 
-        # ma chiediamo a Plotly di gestire i tick in modo che il target sia visibile
-        range=[0, (df_time_plot['Mercato_Mln'].max() ** 0.5) * 1.1] # Gestione manuale range se necessario
-    )
-    
-    # Nota: Plotly non ha 'type="sqrt"'. Per simulare visivamente lo scalamento 
-    # senza cambiare i dati reali, la tecnica migliore è mappare i dati sulla radice:
-    fig_line_sqrt = px.line(
-        df_time_plot, 
-        x='Periodo', 
-        y=[np.sqrt(df_time_plot['Mercato_Mln']), np.sqrt(df_time_plot['Target_Mln'])],
-        color_discrete_map={"index": "#3498db", "value": "#e74c3c"},
-        title="Evoluzione Temporale (Mln €) - Scalamento Radice Quadrata",
-        template="plotly_white",
-        line_shape="spline"
-    )
-    
-    # Sovrascriviamo le etichette dell'asse Y per mostrare i valori reali (mln) e non la radice
-    max_val = df_time_plot['Mercato_Mln'].max()
-    ticks = np.linspace(0, np.sqrt(max_val), 6) # 6 punti distribuiti
-    fig_line_sqrt.update_layout(
-        yaxis = dict(
-            tickmode = 'array',
-            tickvals = ticks,
-            ticktext = [f"{x**2:.1f}" for x in ticks], # Mostra il valore reale (quadrato del tick)
-            title = "Budget (Mln €)"
-        ),
-        legend=dict(orientation="h", y=1.05, x=1),
-        height=400
-    )
-  
 
-    
-    
     st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
-    st.plotly_chart(fig_line_sqrt, use_container_width=True)
-    #st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto_log")
+    st.plotly_chart(fig_line, use_container_width=True, key="grafico_assoluto_sqrt")
 
     st.divider()
 
