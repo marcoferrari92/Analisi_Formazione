@@ -111,14 +111,21 @@ def geo_analysis(df):
         return final.sort_values('Budget Target', ascending=False)
 
     st.markdown("---")
+    # Configurazione colonne per tutte le tabelle (Aiuti come interi, Budget come valuta)
+    common_config = {
+        "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
+        "Aiuti Target": st.column_config.NumberColumn(format="%d"),
+        "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
+        "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")
+    }
+
+    st.markdown("---")
     
     # --- 6. TABELLA NAZIONALE ---
     st.markdown("### 🇮🇹 1. Analisi Nazionale")
     df_naz = get_table_data('Regione')
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']),
-                 use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
-                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 use_container_width=True, hide_index=True, column_config=common_config)
 
     # --- 7. TABELLA REGIONALE ---
     st.write("")
@@ -128,21 +135,15 @@ def geo_analysis(df):
     df_prov = pd.merge(df_prov, reg_map, on='Provincia', how='left')
     df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']),
-                 use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
-                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 use_container_width=True, hide_index=True, column_config=common_config)
 
-    # --- 8. TABELLA LOCALE (CAP COME TERZA COLONNA) ---
+    # --- 8. TABELLA LOCALE ---
     st.write("")
     st.markdown("### 📍 3. Analisi Locale")
     df_loc = get_table_data('CAP')
     loc_map = df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates()
     df_loc = pd.merge(df_loc, loc_map, on='CAP', how='left')
-    
-    # Ordine richiesto: Regione, Provincia, CAP, Aiuti Totali...
     df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
     
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']),
-                 use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
-                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 use_container_width=True, hide_index=True, column_config=common_config)
