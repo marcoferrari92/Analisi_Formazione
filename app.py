@@ -12,6 +12,7 @@ import numpy as np
 from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import load_rna_data, is_target_row, format_it, format_pct, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf, crea_radar_azienda
 from plots import create_centered_pie
+from geo_analisi import geo_analysis
 from analysis_benchmark import grafici_posizionamento
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -227,143 +228,8 @@ if uploaded_file is not None:
         st.write("")
         st.write("")
         with st.expander("🗺️ Distribuzione Geografica Settore Target"):
-            
             st.write("")
-            # 1. Preparazione Dati
-            df_geo_all = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
-            df_geo_target = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({'RNA_TITOLO_MISURA': 'count', 'RNA_ELEMENTO_DI_AIUTO': 'sum'}).reset_index()
-            
-            df_mappe = pd.merge(df_geo_all, df_geo_target, on='RNA_REGIONE_BENEFICIARIO', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
-            df_mappe['Regione_Match'] = df_mappe['RNA_REGIONE_BENEFICIARIO'].str.strip().str.lower()
-            
-            # Mapping per matchare il GeoJSON di Cudini
-            mapping_geo = {
-                "friuli-venezia giulia": "friuli venezia giulia",
-                "trentino-alto adige": "trentino-alto adige/südtirol",
-                "valle d'aosta": "valle d'aosta/vallée d'aoste"
-            }
-            df_mappe['Regione_Match'] = df_mappe['Regione_Match'].replace(mapping_geo)
-            
-            # Scarico GeoJSON
-            geojson_url = "https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json"
-            geojson_data = requests.get(geojson_url).json()
-            
-            # Funzione per lo stile "Tutta Italia"
-            def apply_italy_full_style(fig):
-                fig.update_geos(
-                    visible=True,           # Mostra lo sfondo
-                    showland=True,          # Mostra la terraferma
-                    landcolor="#f8f9fa",    # Colore neutro per regioni senza dati
-                    showcoastlines=True, 
-                    projection_type='mercator',
-                    lataxis_range=[35, 47.5], 
-                    lonaxis_range=[6, 19]
-                )
-                fig.update_layout(
-                    margin={"r":0,"t":40,"l":0,"b":0}, 
-                    height=450,
-                    coloraxis_showscale=True,
-                    coloraxis_colorbar_title_text=""
-                )
-                return fig
-            
-            # --- LAYOUT COLONNE ---
-            col_map1, col_map2 = st.columns(2)
-            
-            with col_map1:
-                fig_tot = px.choropleth(
-                    df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
-                    color='RNA_ELEMENTO_DI_AIUTO_Tot', 
-                    color_continuous_scale="Blues", # Scala Blu per il generale
-                    title="💰 Mercato Totale"
-                )
-                fig_tot.update_layout(title_x=0.25) 
-                st.plotly_chart(apply_italy_full_style(fig_tot), use_container_width=True)
-            
-            with col_map2:
-                fig_targ = px.choropleth(
-                    df_mappe, geojson=geojson_data, locations='Regione_Match', featureidkey="properties.name",
-                    color='RNA_ELEMENTO_DI_AIUTO_Targ', 
-                    color_continuous_scale="Reds", # Scala Rossa per il target
-                    title="🎯 Mercato Target"
-                )
-                fig_targ.update_layout(title_x=0.25)
-                st.plotly_chart(apply_italy_full_style(fig_targ), use_container_width=True)
-                st.write("")
-            
-            # --- TREEMAP ORIZZONTALE SOTTO ---         
-            # Mostriamo solo le regioni che hanno effettivamente dati target
-            df_tree = df_mappe[df_mappe['RNA_ELEMENTO_DI_AIUTO_Targ'] > 0]
-            fig_tree = px.treemap(
-                df_tree, 
-                path=[px.Constant("Italia"), 'RNA_REGIONE_BENEFICIARIO'],
-                values='RNA_ELEMENTO_DI_AIUTO_Targ', 
-                color='RNA_ELEMENTO_DI_AIUTO_Targ',
-                color_continuous_scale='Reds',
-                title="Distribuzione Gerarchica del Budget Target",
-                hover_data={'RNA_ELEMENTO_DI_AIUTO_Targ': ':,.0f'}
-                )
-
-            # 2. Centra il titolo e regola i margini
-            fig_tree.update_layout(
-                title_x=0.5, 
-                margin=dict(t=50, l=10, r=10, b=10), # Aumentato il margine superiore (t) per far spazio al titolo
-                height=400,
-                coloraxis_colorbar_title_text=""
-            )
-            st.plotly_chart(fig_tree, use_container_width=True)
-                
-            # --- TABELLA ---
-            # 1. Calcolo i totali per Regione (Mercato Generale)
-            df_reg_tot = df.groupby('RNA_REGIONE_BENEFICIARIO').agg({
-                'RNA_TITOLO_MISURA': 'count',
-                'RNA_ELEMENTO_DI_AIUTO': 'sum'
-            }).reset_index()
-            
-            # 2. Calcolo i totali per Regione (Solo Target)
-            df_reg_targ = df[df['IS_TARGET'] == 1].groupby('RNA_REGIONE_BENEFICIARIO').agg({
-                'RNA_TITOLO_MISURA': 'count',
-                'RNA_ELEMENTO_DI_AIUTO': 'sum'
-            }).reset_index()
-            
-            # 3. Unione e pulizia
-            df_reg_tabella = pd.merge(
-                df_reg_tot, 
-                df_reg_targ, 
-                on='RNA_REGIONE_BENEFICIARIO', 
-                how='left'
-            ).fillna(0)
-            
-            # 4. Rinomina e Ordine Colonne richiesto
-            df_reg_tabella.columns = ['Regione', 'Aiuti', 'Budget', 'Aiuti Target', 'Budget Target']
-            ordine_richiesto = ['Regione', 'Aiuti', 'Aiuti Target', 'Budget', 'Budget Target']
-            df_reg_tabella = df_reg_tabella[ordine_richiesto]
-            
-            # 5. Ordinamento per importanza economica
-            df_reg_tabella = df_reg_tabella.sort_values(by='Budget Target', ascending=False)
-            
-            # --- VISUALIZZAZIONE STREAMLIT ---
-            st.write("")
-            st.dataframe(
-                df_reg_tabella,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Regione": st.column_config.TextColumn("Regione"),
-                    "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
-                    "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-                    "Budget": st.column_config.NumberColumn(
-                        "Budget (€)", 
-                        format="€ %,.0f"
-                    ),
-                    "Budget Target": st.column_config.NumberColumn(
-                        "Budget Target (€)", 
-                        format="€ %,.0f"
-                    ),
-                }
-            )
-        st.write("")
-        st.write("")
+            geo_analysis(df)
 
 
 
