@@ -119,61 +119,82 @@ def geo_analysis(df):
     fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
     st.plotly_chart(fig_tree, use_container_width=True)
 
-    # --- 4. FUNZIONE AGGREGAZIONE TABELLE CON LEADER ---
+    # --- 4. FUNZIONE AGGREGAZIONE TABELLE AVANZATA ---
     def get_table_data(groupby_col):
-        # Base numerica (Totali e Target)
+        # A. Base numerica: Totali dell'area
         tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         tot.columns = [groupby_col, 'Aiuti Totali', 'Budget Totale']
         
+        # B. Dati Target dell'area
         df_t = df_c[df_c['IS_TARGET'] == 1].copy()
         targ = df_t.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         targ.columns = [groupby_col, 'Aiuti Target', 'Budget Target']
         
+        # Unione base
         final = pd.merge(tot, targ, on=groupby_col, how='left').fillna(0)
         
-        # Logica Leader basata su P.IVA
+        # C. Logica Leader e Performance
         if col_piva and col_rs:
-            # 1. Troviamo la P.IVA leader per ogni gruppo (quella che ha la somma budget più alta nel target)
-            piva_totals = df_t.groupby([groupby_col, col_piva, col_rs])[col_budget].sum().reset_index()
-            # 2. Per ogni gruppo geografico, prendiamo la riga con il budget massimo
-            idx_max = piva_totals.groupby(groupby_col)[col_budget].idxmax()
-            leaders = piva_totals.loc[idx_max, [groupby_col, col_rs]]
-            leaders.columns = [groupby_col, 'Azienda Leader']
+            # 1. Calcoliamo il totale per ogni azienda (P.IVA) dentro ogni raggruppamento geografico
+            company_geo_totals = df_t.groupby([groupby_col, col_piva, col_rs])[col_budget].sum().reset_index()
             
-            final = pd.merge(final, leaders, on=groupby_col, how='left').fillna("-")
+            # 2. Identifichiamo l'indice del massimo budget per ogni area
+            idx_max = company_geo_totals.groupby(groupby_col)[col_budget].idxmax()
+            leaders_data = company_geo_totals.loc[idx_max].copy()
+            
+            # Rinominiano per chiarezza prima del merge
+            leaders_data = leaders_data.rename(columns={
+                col_rs: 'Ragione Sociale Leader',
+                col_budget: 'Budget Leader'
+            })
+            
+            # 3. Uniamo al dataframe finale
+            final = pd.merge(final, leaders_data[[groupby_col, 'Ragione Sociale Leader', 'Budget Leader']], 
+                             on=groupby_col, how='left')
+            
+            # 4. Creazione della colonna formattata: "Nome (€ Leader) (XX%)"
+            def format_leader(row):
+                if pd.isna(row['Ragione Sociale Leader']) or row['Budget Target'] == 0:
+                    return "-"
+                quota = (row['Budget Leader'] / row['Budget Target']) * 100
+                return f"{row['Ragione Sociale Leader']} (€ {row['Budget Leader']:,.0f}) ({quota:.1f}%)"
+            
+            final['🏆 Azienda Leader (Quota %)'] = final.apply(format_leader, axis=1)
         else:
-            final['Azienda Leader'] = "Dati Azienda Mancanti"
+            final['🏆 Azienda Leader (Quota %)'] = "Dati mancanti"
             
         return final.sort_values('Budget Target', ascending=False)
 
-    # Configurazione colonne
+    # --- 5. CONFIGURAZIONE E VISUALIZZAZIONE ---
     common_config = {
         "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
         "Aiuti Target": st.column_config.NumberColumn(format="%d"),
         "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
         "Budget Target": st.column_config.NumberColumn(format="€ %,.2f"),
-        "Azienda Leader": st.column_config.TextColumn("🏆 Azienda Leader")
+        "🏆 Azienda Leader (Quota %)": st.column_config.TextColumn("🏆 Azienda Leader (Budget e Quota su Area)")
     }
 
-    # --- 5. VISUALIZZAZIONE TABELLE ---
     st.markdown("---")
     
-    st.markdown("### 🇮🇹 1. Analisi Nazionale")
-    df_naz = get_table_data('Regione')[['Regione', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
+    # 1. Tabella Nazionale
+    st.markdown("### 🇮🇹 1. Analisi Nazionale (Leader per Regione)")
+    df_naz = get_table_data('Regione')[['Regione', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', '🏆 Azienda Leader (Quota %)']]
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
+    # 2. Tabella Regionale
     st.write("")
-    st.markdown("### 🏛️ 2. Analisi Regionale")
+    st.markdown("### 🏛️ 2. Analisi Regionale (Leader per Provincia)")
     df_prov = get_table_data('Provincia')
     reg_map = df_c[['Provincia', 'Regione']].drop_duplicates()
     df_prov = pd.merge(df_prov, reg_map, on='Provincia', how='left')
-    df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
+    df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', '🏆 Azienda Leader (Quota %)']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
+    # 3. Tabella Locale
     st.write("")
-    st.markdown("### 📍 3. Analisi Locale")
+    st.markdown("### 📍 3. Analisi Locale (Leader per CAP)")
     df_loc = get_table_data('CAP')
     loc_map = df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates()
     df_loc = pd.merge(df_loc, loc_map, on='CAP', how='left')
-    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader']]
+    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', '🏆 Azienda Leader (Quota %)']]
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
