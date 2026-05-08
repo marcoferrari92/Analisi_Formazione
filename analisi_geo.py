@@ -48,26 +48,58 @@ def geo_analysis(df):
         "97": ("Ragusa", "Sicilia"), "98": ("Messina", "Sicilia")
     }
 
-    # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA ---
+    # --- 2. VERIFICA E PULIZIA ---
     df_c = df.copy()
     col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else ('CAP' if 'CAP' in df_c.columns else None)
     
     if col_cap is None:
-        st.warning("⚠️ Non è possibile eseguire l'analisi geografica: colonna CAP non trovata nel file.")
-        return # Esci dalla funzione per evitare errori successivi
-        
-    col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else 'CAP'
+        st.warning("⚠️ Colonna CAP non trovata.")
+        return df_c
+
     col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
-    
     col_piva = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
     col_rs = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
     
+    # Derivazione geo standard
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
     df_c['Prefix'] = df_c['CAP_Str'].str[:2]
-    
     df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
     df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
     df_c['CAP'] = df_c['CAP_Str']
+
+    # Solo dati Target per definire la leadership
+    df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
+
+    if not df_targ_raw.empty and col_piva:
+        # --- 3. CALCOLO LEADERSHIP ---
+        
+        # A. Leader Nazionale (L'azienda con la somma budget più alta in assoluto)
+        naz_totals = df_targ_raw.groupby([col_piva])[col_budget].sum()
+        leader_naz_piva = naz_totals.idxmax()
+
+        # B. Leader Regionali
+        reg_totals = df_targ_raw.groupby(['Regione', col_piva])[col_budget].sum().reset_index()
+        idx_reg = reg_totals.groupby('Regione')[col_budget].idxmax()
+        leaders_reg_piva = reg_totals.loc[idx_reg, col_piva].tolist()
+
+        # C. Leader Locali (CAP)
+        cap_totals = df_targ_raw.groupby(['CAP', col_piva])[col_budget].sum().reset_index()
+        idx_cap = cap_totals.groupby('CAP')[col_budget].idxmax()
+        leaders_cap_piva = cap_totals.loc[idx_cap, col_piva].tolist()
+
+        # --- 4. ASSEGNAZIONE ETICHETTE ---
+        def check_leadership(row):
+            if row[col_piva] == leader_naz_piva:
+                return "Leader Nazionale"
+            if row[col_piva] in leaders_reg_piva:
+                return "Leader Regionale"
+            if row[col_piva] in leaders_cap_piva:
+                return "Leader Locale"
+            return "Competitor"
+
+        df_c['Leadership_Level'] = df_c.apply(check_leadership, axis=1)
+    else:
+        df_c['Leadership_Level'] = "N/D"
 
     # --- 3. PREPARAZIONE DATI MAPPE ---
     df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
@@ -208,3 +240,9 @@ def geo_analysis(df):
     df_loc = pd.merge(df_loc, df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates(), on='CAP', how='left')
     df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+
+
+    st.success("Analisi completata con Leadership Level")
+    
+    # Restituiamo il dataframe arricchito
+    return df_c
