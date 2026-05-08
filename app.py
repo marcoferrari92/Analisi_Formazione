@@ -448,7 +448,6 @@ if uploaded_file is not None:
         with st.popover("📖 Metodologia"):
             st.markdown(GUIDA_BENCHMARK)
             
-            
         # Creiamo un contenitore con bordo (stile card)
         with st.container(border=True):
             col1, col2, col3, col4 = st.columns(4)
@@ -457,41 +456,41 @@ if uploaded_file is not None:
                 st.write("**Numero Aiuti per Azienda**")
                 st.metric("Mediana Totale", f"{med_aiuti:.1f}")
                 st.metric("Mediana Target", f"{med_aiuti_target:.1f}",
-                            delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color = "normal")
-                sotto_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] < med_aiuti_target])
-                st.caption(f"📉 {sotto_med_aiuti_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
-    
+                          delta=f"{(med_aiuti_target/med_aiuti)*100:.1f}% del totale", delta_color="normal")
+                
+                # LOGICA INVERTITA: Aziende SOPRA la mediana
+                sopra_med_aiuti_target = len(df_benchmark_1[df_benchmark_1['Aiuti Target'] > med_aiuti_target])
+                st.caption(f"🚀 {sopra_med_aiuti_target} aziende sopra mediana delle {n_aziende_target} attive nel settore target")
+        
             with col2:
                 st.write("**Budget per Azienda**")
-                # Mediana Totale
-                st.metric(
-                    label="Mediana Totale", 
-                    value=f"€ {med_budget:,.0f}"
-                )
-                
-                # Mediana Target
+                st.metric(label="Mediana Totale", value=f"€ {med_budget:,.0f}")
                 st.metric(
                     label="Mediana Target", 
                     value=f"€ {med_budget_target:,.0f}",
                     delta=f"{(med_budget_target/med_budget)*100:.1f}% del totale", 
                     delta_color="normal"
                 )
-                # Calcolo aziende sotto la mediana
-                sotto_med_budget_target = len(df_benchmark_1[df_benchmark_1['Budget Target'] < med_budget_target])
-                st.caption(f"📉 {sotto_med_budget_target} aziende sotto mediana delle {n_aziende_target} attive nel settore target")
-    
+                
+                # LOGICA INVERTITA: Aziende SOPRA la mediana
+                sopra_med_budget_target = len(df_benchmark_1[df_benchmark_1['Budget Target'] > med_budget_target])
+                st.caption(f"🚀 {sopra_med_budget_target} aziende sopra mediana delle {n_aziende_target} attive nel settore target")
+        
             with col3:
                 st.write("**Fattore Fo**")
                 st.metric("Mediana", f"{med_Fo:.1f}%")
-                sotto_med_Fo = len(df_benchmark_1[df_benchmark_1['Fo'] < med_Fo])
-                st.caption(f"📉 {sotto_med_Fo} aziende sotto mediana")
+                
+                # LOGICA INVERTITA: Aziende SOPRA la mediana
+                sopra_med_Fo = len(df_benchmark_1[df_benchmark_1['Fo'] > med_Fo])
+                st.caption(f"🚀 {sopra_med_Fo} aziende sopra mediana")
                 
             with col4:
                 st.write("**Fattore Fe**")
                 st.metric("Mediana", f"{med_Fe:.1f}%")
-                # Calcolo aziende sotto la mediana
-                sotto_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] < med_Fe])
-                st.caption(f"📉 {sotto_med_Fe} aziende sotto mediana")
+                
+                # LOGICA INVERTITA: Aziende SOPRA la mediana
+                sopra_med_Fe = len(df_benchmark_1[df_benchmark_1['Fe'] > med_Fe])
+                st.caption(f"🚀 {sopra_med_Fe} aziende sopra mediana")
                     
 
         # --- GRAFICI POSIZIONAMENTI ---
