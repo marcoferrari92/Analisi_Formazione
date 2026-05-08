@@ -92,6 +92,7 @@ def geo_analysis(df):
         return fig
 
     # --- 4. MAPPE A BOLLE (PUNTINI) ---
+    st.write("")
     # Creiamo un dataset aggregato per Provincia per avere più "puntini" sparsi
     df_bubbles = df_c.groupby(['Regione', 'Provincia'])[col_budget].agg(['count', 'sum']).reset_index()
     df_bubbles.columns = ['Regione', 'Provincia', 'Aiuti', 'Budget']
@@ -132,6 +133,7 @@ def geo_analysis(df):
     
 
     # --- 5. TREEMAP CON LEADER (Senza Quota) ---
+    st.write("")
     if not df_targ_raw.empty:
         st.write("")
         st.markdown("### 🔍 Drill-down Geografico")
