@@ -219,8 +219,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
-    # Calcoli
-    # --- 1. Calcolo e Preparazione Dati (Invariato) ---
+    # --- 1. Calcolo Dati (Logica Invariata) ---
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
@@ -232,31 +231,38 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     vol_start = df_annual['Vol_Tot'].iloc[0]
     prat_start = df_annual['Aiuti_Tot'].iloc[0]
 
-    # Calcoli CAGR e Incidenze
+    # Calcolo Incidenze e CAGR (decimali)
     df_annual['Incidenza Aiuti (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'])
     df_annual['Incidenza Vol (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'])
     
+    # Moltiplichiamo x100 qui per la visualizzazione tabellare
     df_annual['CAGR Pratiche'] = df_annual.apply(
-        lambda x: calc_cagr(x['Aiuti_Tot'], prat_start, x['Anno'], anno_start), axis=1
+        lambda x: calc_cagr(x['Aiuti_Tot'], prat_start, x['Anno'], anno_start) * 100, axis=1
     )
     df_annual['CAGR Volume'] = df_annual.apply(
-        lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start), axis=1
+        lambda x: calc_cagr(x['Vol_Tot'], vol_start, x['Anno'], anno_start) * 100, axis=1
     )
 
-    # --- 2. Formattazione Stringhe Complesse ---
+    # --- 2. Formattazione Stringhe (Sintesi Mln €) ---
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
     
+    # Aiuti Target con parentesi
     df_view['Aiuti Target (%)'] = df_view.apply(
         lambda x: f"{int(x['Aiuti_Target'])} ({x['Incidenza Aiuti (%)']:.1%})", axis=1
     )
-    df_view['Volume Target (%)'] = df_view.apply(
+    
+    # Volume Totale SINTETICO
+    df_view['Vol_Tot_Sint'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.1f}M")
+    
+    # Volume Target SINTETICO con parentesi
+    df_view['Vol_Target_Sint'] = df_view.apply(
         lambda x: f"€ {x['Vol_Target']/1e6:.1f}M ({x['Incidenza Vol (%)']:.1%})", axis=1
     )
 
-    # --- 3. RINOMINA COLONNE FISICA (Per evitare errori di mapping) ---
+    # --- 3. Selezione e Rinomina ---
     df_final = df_view[[
         'Anno', 'Aiuti_Tot', 'Aiuti Target (%)', 'CAGR Pratiche',
-        'Vol_Tot', 'Volume Target (%)', 'CAGR Volume'
+        'Vol_Tot_Sint', 'Vol_Target_Sint', 'CAGR Volume'
     ]].copy()
 
     df_final.columns = [
@@ -264,7 +270,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         'Volume Totale', 'Volume Target (%)', 'CAGR Volume'
     ]
 
-    # --- 4. RENDERING CON FORMATTAZIONE BLOCCATA ---
+    # --- 4. Rendering Finale ---
     st.dataframe(
         df_final,
         hide_index=True,
@@ -272,8 +278,9 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         column_config={
             "Anno": st.column_config.NumberColumn("Anno", format="%d"),
             "Aiuti Totali": st.column_config.NumberColumn("Aiuti Totali", format="%d"),
-            "Volume Totale": st.column_config.NumberColumn("Volume Totale", format="€ %,.0f"),
-            "CAGR Pratiche": st.column_config.NumberColumn("CAGR Pratiche", format="%.2f"),
-            "CAGR Volume": st.column_config.NumberColumn("CAGR Volume", format="%.2f")
+            "Volume Totale": st.column_config.TextColumn("Volume Totale"), # Text perché già formattato
+            "Volume Target (%)": st.column_config.TextColumn("Volume Target (%)"),
+            "CAGR Pratiche": st.column_config.NumberColumn("CAGR Pratiche", format="%.2f %%"),
+            "CAGR Volume": st.column_config.NumberColumn("CAGR Volume", format="%.2f %%")
         }
     )
