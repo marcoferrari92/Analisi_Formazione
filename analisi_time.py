@@ -22,6 +22,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     if guida_timeline:
         with st.popover("💡 Strategia"):
             st.info(guida_timeline)
+    st.write("")
     
     # Aggregazione
     df_time_tot = df_temp.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -34,7 +35,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     # --- 1. GRAFICO INCIDENZA % ---
     fig_norm = px.area(
         df_time_plot, x='Periodo', y='Quota Target (%)',
-        title="Quota di Mercato del Settore Target",
+        title="Evoluzione Temporale della Quota di Mercato del Settore Target",
         template="plotly_white", line_shape="spline", markers=True
     )
     fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy')
