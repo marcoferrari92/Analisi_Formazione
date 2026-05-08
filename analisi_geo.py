@@ -60,48 +60,42 @@ def geo_analysis(df):
     col_piva = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
     col_rs = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
 
-    # --- 3. CALCOLO LEADERSHIP ---
-    
-    # Derivazione geo standard
+    # --- 3. CALCOLO LEADERSHIP E MAPPING BASE ---
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
     df_c['Prefix'] = df_c['CAP_Str'].str[:2]
     df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
     df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
     df_c['CAP'] = df_c['CAP_Str']
 
-    # Solo dati Target per definire la leadership
+    # Prepariamo Match_Key subito per ereditare la chiave in tutti i merge successivi
+    df_c['Match_Key'] = df_c['Regione'].str.lower()
+    mapping_geo = {"friuli-venezia giulia": "friuli venezia giulia", "trentino-alto adige": "trentino-alto adige/südtirol", "valle d'aosta": "valle d'aosta/vallée d'aoste"}
+    df_c['Match_Key'] = df_c['Match_Key'].replace(mapping_geo)
+
+    # Definizione Leadership
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
 
     if not df_targ_raw.empty and col_piva:
-        
-        # A. Leader Nazionale (L'azienda con la somma budget più alta in assoluto)
-        naz_totals = df_targ_raw.groupby([col_piva])[col_budget].sum()
-        leader_naz_piva = naz_totals.idxmax()
-
-        # B. Leader Regionali
+        # Leader Nazionale
+        leader_naz_piva = df_targ_raw.groupby(col_piva)[col_budget].sum().idxmax()
+        # Leader Regionali
         reg_totals = df_targ_raw.groupby(['Regione', col_piva])[col_budget].sum().reset_index()
-        idx_reg = reg_totals.groupby('Regione')[col_budget].idxmax()
-        leaders_reg_piva = reg_totals.loc[idx_reg, col_piva].tolist()
-
-        # C. Leader Locali (CAP)
+        leaders_reg_piva = reg_totals.loc[reg_totals.groupby('Regione')[col_budget].idxmax(), col_piva].tolist()
+        # Leader Locali
         cap_totals = df_targ_raw.groupby(['CAP', col_piva])[col_budget].sum().reset_index()
-        idx_cap = cap_totals.groupby('CAP')[col_budget].idxmax()
-        leaders_cap_piva = cap_totals.loc[idx_cap, col_piva].tolist()
+        leaders_cap_piva = cap_totals.loc[cap_totals.groupby('CAP')[col_budget].idxmax(), col_piva].tolist()
 
-        # --- 4. ASSEGNAZIONE ETICHETTE ---
         def check_leadership(row):
-            if row[col_piva] == leader_naz_piva:
-                return "Leader Nazionale"
-            if row[col_piva] in leaders_reg_piva:
-                return "Leader Regionale"
-            if row[col_piva] in leaders_cap_piva:
-                return "Leader Locale"
+            if row[col_piva] == leader_naz_piva: return "Leader Nazionale"
+            if row[col_piva] in leaders_reg_piva: return "Leader Regionale"
+            if row[col_piva] in leaders_cap_piva: return "Leader Locale"
             return "Competitor"
 
         df_c['Leadership_Level'] = df_c.apply(check_leadership, axis=1)
     else:
-        df_c['Leadership_Level'] = "N/D"
+        df_c['Leadership_Level'] = "Competitor"
 
+    
     # --- 3. PREPARAZIONE DATI MAPPE ---
     df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz_agg.columns = ['Regione', 'Aiuti Totali', 'Budget Totale']
@@ -124,15 +118,13 @@ def geo_analysis(df):
         fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
         return fig
 
-    # --- 4. MAPPE A BOLLE (PUNTINI) ---
-    st.write("")
-    # Creiamo un dataset aggregato per Provincia per avere più "puntini" sparsi
-    df_bubbles = df_c.groupby(['Regione', 'Provincia'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles.columns = ['Regione', 'Provincia', 'Aiuti', 'Budget']
+    # --- 4. PREPARAZIONE DATI AGGREGATI ---
+    # Includiamo Match_Key nella groupby
+    df_bubbles = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
     
-    # Dati Target per i puntini rossi
-    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles_t.columns = ['Regione', 'Provincia', 'Aiuti Target', 'Budget Target']
+    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles_t.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti Target', 'Budget Target']
 
     c1, c2 = st.columns(2)
     
@@ -245,82 +237,60 @@ def geo_analysis(df):
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
 
-    # --- SEZIONE: ANALISI SATURAZIONE E POTENZIALE ---
+    # --- 5. SEZIONE: ANALISI SATURAZIONE E POTENZIALE ---
     st.markdown("---")
     st.markdown("### 🌡️ Analisi Saturazione e Aree Opportunità")
 
-    # 1. Calcolo Saturazione per Provincia
-    df_sat = pd.merge(df_bubbles, df_bubbles_t, on=['Regione', 'Provincia'], how='left').fillna(0)
+    # Merge con Match_Key incluso
+    df_sat = pd.merge(df_bubbles, df_bubbles_t, on=['Regione', 'Provincia', 'Match_Key'], how='left').fillna(0)
     df_sat['Saturazione (%)'] = (df_sat['Budget Target'] / df_sat['Budget']) * 100
     media_naz_sat = df_sat['Saturazione (%)'].mean()
 
-    # 2. Selettore di Aggressività (Quartili)
-    st.sidebar.markdown("### ⚙️ Parametri Intelligence")
+    # Selettore Quartili in Sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("⚙️ Target Intelligence")
     quartile_choice = st.sidebar.select_slider(
-        "Seleziona soglia di ingresso Mercato (Quartili):",
-        options=[25, 50, 75],
-        value=50,
-        help="25: Tutti i mercati | 50: Solo mercati sopra la mediana | 75: Solo i mercati Top (Aggressivo)"
+        "Soglia ingresso Mercato (Percentile):",
+        options=[25, 50, 75], value=50,
+        help="Soglia per definire se un mercato provinciale è Grande o Piccolo."
     )
 
-    # Calcolo della soglia dinamica
     import numpy as np
     soglia_dinamica = np.percentile(df_sat['Budget'], quartile_choice)
 
-    # 3. Classificazione Aree
     def classify_area(row):
         if row['Budget'] >= soglia_dinamica:
-            if row['Saturazione (%)'] >= media_naz_sat:
-                return "✅ Mercato Consolidato"
-            else:
-                return "🔥 ALTO POTENZIALE (Area Fredda)"
-        else:
-            return "🧊 Mercato Marginale"
+            return "🔥 ALTO POTENZIALE" if row['Saturazione (%)'] < media_naz_sat else "✅ Mercato Consolidato"
+        return "🧊 Mercato Marginale"
 
     df_sat['Status'] = df_sat.apply(classify_area, axis=1)
 
-    # 4. Visualizzazione Risultati
+    # Visualizzazione Mappa e Metriche
     col_a, col_b = st.columns([2, 1])
-
     with col_a:
-        # Mappa della Saturazione
         fig_sat = px.choropleth(
-            df_sat, geojson=geojson_data, locations='Match_Key', 
-            featureidkey="properties.name",
-            color='Saturazione (%)',
-            color_continuous_scale='RdYlGn',
-            title=f"Mappa Saturazione (Soglia Mercato: > € {soglia_dinamica:,.0f})",
-            hover_name='Provincia',
-            hover_data=['Budget', 'Budget Target', 'Status']
+            df_sat, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+            color='Saturazione (%)', color_continuous_scale='RdYlGn',
+            title=f"Mappa Saturazione (Soglia: > € {soglia_dinamica:,.0f})",
+            hover_name='Provincia', hover_data=['Budget', 'Budget Target', 'Status']
         )
         fig_sat.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450)
         st.plotly_chart(fig_sat, use_container_width=True)
 
     with col_b:
-        # Metriche riassuntive
-        st.metric("Soglia Mercato Selezionata", f"€ {soglia_dinamica:,.0f}")
-        st.metric("Media Saturazione Naz.", f"{media_naz_sat:.1f}%")
-        
-        aree_fredde_count = len(df_sat[df_sat['Status'] == "🔥 ALTO POTENZIALE (Area Fredda)"])
-        st.warning(f"Trovate {aree_fredde_count} Aree ad Alto Potenziale")
+        st.metric("Soglia Mercato", f"€ {soglia_dinamica:,.0f}")
+        st.metric("Media Quota Target", f"{media_naz_sat:.1f}%")
+        aree_fredde = len(df_sat[df_sat['Status'] == "🔥 ALTO POTENZIALE"])
+        st.warning(f"🎯 Trovate {aree_fredde} Aree Opportunità")
 
-    # 5. Tabella delle "Miniere d'Oro"
-    st.markdown("#### 🎯 Focus: Province con Alto Budget ma Bassa Quota Target")
-    df_oro = df_sat[df_sat['Status'] == "🔥 ALTO POTENZIALE (Area Fredda)"].sort_values('Budget', ascending=False)
+    # Tabella Focus
+    st.markdown("#### 🎯 Focus: Aree ad Alto Budget e Bassa Quota Target")
+    df_oro = df_sat[df_sat['Status'] == "🔥 ALTO POTENZIALE"].sort_values('Budget', ascending=False)
+    st.dataframe(df_oro[['Regione', 'Provincia', 'Budget', 'Budget Target', 'Saturazione (%)']], 
+                 use_container_width=True, hide_index=True, 
+                 column_config={"Budget": st.column_config.NumberColumn(format="€ %,.0f"),
+                                "Budget Target": st.column_config.NumberColumn(format="€ %,.0f"),
+                                "Saturazione (%)": st.column_config.NumberColumn(format="%.1f%%")})
 
-    st.dataframe(
-        df_oro[['Regione', 'Provincia', 'Budget', 'Budget Target', 'Saturazione (%)']],
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Budget": st.column_config.NumberColumn("Budget Totale Area", format="€ %,.0f"),
-            "Budget Target": st.column_config.NumberColumn("Tuo Target", format="€ %,.0f"),
-            "Saturazione (%)": st.column_config.NumberColumn("Quota %", format="%.1f%%")
-        }
-    )
-
-    
-    st.success("Analisi completata con Leadership Level")
-    
-    # Restituiamo il dataframe arricchito
+    st.success("Analisi completata: leadership e saturazione integrate.")
     return df_c
