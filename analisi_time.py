@@ -34,27 +34,51 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         with st.popover("💡 Strategia"):
             st.info(guida_timeline)
     
+
+
     # --- 1. GRAFICO QUOTA TARGET (%) ---
     fig_norm = px.area(
-        df_time_plot, x='Periodo', y='Quota Target (%)',
+        df_time_plot, 
+        x='Periodo', 
+        y='Quota Target (%)',
         title="Evoluzione Temporale della Quota di Mercato del Settore Target",
-        template="plotly_white", line_shape="spline", markers=True
+        template="plotly_white", 
+        line_shape="spline", 
+        markers=True
     )
-    fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy')
+    
+    fig_norm.update_traces(
+        line_color='#e74c3c', 
+        fill='tozeroy',
+        marker=dict(size=6)
+    )
+    
     fig_norm.update_layout(
         yaxis_ticksuffix="%", 
-        # Margini bloccati per sincronia
+        # Margini bloccati: l=100 per far spazio ai numeri dell'asse Y sotto
         margin=dict(l=100, r=40, t=50, b=0),
         height=350,
-        yaxis=dict(automargin=False) 
+        yaxis=dict(
+            automargin=False,
+            gridcolor="#f0f0f0"
+        ),
+        # Forza l'attacco della linea all'asse Y (rimuove il padding laterale)
+        xaxis=dict(
+            autorange=True,
+            expand="fixed", 
+            showgrid=True,
+            gridcolor="#f0f0f0"
+        )
     )
-
+    
     # --- 2. GRAFICO VALORI ASSOLUTI (RADICE QUADRATA) ---
+    
     fig_line = go.Figure()
     
     # Traccia Totale
     fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Mercato_Mln']),
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Mercato_Mln']),
         name="Mercato Totale",
         line=dict(color='#3498db', width=2, shape='spline'),
         mode='lines+markers',
@@ -63,38 +87,54 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     
     # Traccia Target
     fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Target_Mln']),
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Target_Mln']),
         name="Settore Target",
         line=dict(color='#e74c3c', width=2, shape='spline'),
         mode='lines+markers',
         marker=dict(size=6)
     ))
-
-    # Definizione Tick Intelligenti
+    
+    # Definizione Tick Intelligenti (Valori reali su scala radice)
     max_mln = df_time_plot['Mercato_Mln'].max()
     potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
     tick_vals = potential_ticks[potential_ticks <= max_mln]
-    if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
-
+    if max_mln not in tick_vals: 
+        tick_vals = np.append(tick_vals, max_mln)
+    
     fig_line.update_layout(
         title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
         template="plotly_white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        legend=dict(
+            orientation="h", 
+            yanchor="bottom", 
+            y=1.02, 
+            xanchor="right", 
+            x=1
+        ),
+        # Margini identici al primo grafico (l=100)
         margin=dict(l=100, r=40, t=50, b=50),
         height=400,
-        xaxis_title="Periodo",
+        xaxis=dict(
+            title="Periodo",
+            autorange=True,
+            expand="fixed", # Rimuove lo spazio iniziale e finale
+            showgrid=True,
+            gridcolor="#f0f0f0"
+        ),
         yaxis=dict(
             title="Budget (Mln €)",
             tickmode='array',
             tickvals=np.sqrt(tick_vals),
             ticktext=[f"{v:.1f}" for v in tick_vals],
-            automargin=False
+            automargin=False,
+            gridcolor="#f0f0f0"
         )
     )
-
-    # Visualizzazione Grafici Sincronizzati
-    st.plotly_chart(fig_norm, use_container_width=True, key="norm_sync")
-    st.plotly_chart(fig_line, use_container_width=True, key="line_sync")
+    
+    # --- VISUALIZZAZIONE ---
+    st.plotly_chart(fig_norm, use_container_width=True, key="norm_sync_final")
+    st.plotly_chart(fig_line, use_container_width=True, key="line_sync_final")
 
     st.divider()
 
