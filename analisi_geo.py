@@ -99,15 +99,34 @@ def geo_analysis(df):
         fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=450, coloraxis_colorbar_title_text="")
         return fig
 
+    # --- 5. VISUALIZZAZIONE MAPPE AFFIANCATE ---
     c1, c2 = st.columns(2)
+    
     with c1:
-        st.plotly_chart(style_map(px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-                                              color='Budget_Tot', color_continuous_scale="Blues", title="💰 Mercato Totale (€)",
-                                              labels={'Budget_Tot':'Budget'})), use_container_width=True)
+        fig_tot = px.choropleth(
+            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+            color='Budget_Tot', color_continuous_scale="Blues", title="💰 Mercato Totale (€)",
+            labels={'Budget_Tot':'Budget'}
+        )
+        # PULIZIA NUMERI LEGENDA (Colorbar)
+        fig_tot.update_coloraxes(
+            colorbar_tickformat=".2s", # Formato compatto (es: 1.2M, 500k)
+            colorbar_exponentformat="none"
+        )
+        st.plotly_chart(style_map(fig_tot), use_container_width=True)
+        
     with c2:
-        st.plotly_chart(style_map(px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-                                              color='Budget_Targ', color_continuous_scale="Reds", title="🎯 Mercato Target (€)",
-                                              labels={'Budget_Targ':'Budget Target'})), use_container_width=True)
+        fig_targ = px.choropleth(
+            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+            color='Budget_Targ', color_continuous_scale="Reds", title="🎯 Mercato Target (€)",
+            labels={'Budget_Targ':'Budget Target'}
+        )
+        # PULIZIA NUMERI LEGENDA (Colorbar)
+        fig_targ.update_coloraxes(
+            colorbar_tickformat=".2s", # Formato compatto (es: 1.2M, 500k)
+            colorbar_exponentformat="none"
+        )
+        st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
     # Treemap
     df_tree = df_targ_raw.groupby(['Regione_Pulita', 'Provincia_Pulita', 'CAP_Str'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
