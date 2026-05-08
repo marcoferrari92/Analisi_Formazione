@@ -1,45 +1,31 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 def time_analysis(df, guida_timeline="", guida_timemap=""):
-    """
-    Renderizza l'analisi temporale con grafici sincronizzati (Quota % e Valori Assoluti)
-    e Heatmap di stagionalità.
-    """
-    # 1. Preparazione Dati Locale
+    # 1. Preparazione Dati
     df_temp = df.copy()
     df_temp['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_temp['RNA_DATA_CONCESSIONE'])
     df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
-    df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
-    df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
-
-    # Aggregazione per i grafici a linea
+    
+    # Aggregazione
     df_time_tot = df_temp.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     df_time_targ = df_temp[df_temp['IS_TARGET'] == 1].groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     
     df_time_plot = pd.merge(df_time_tot, df_time_targ, on='AnnoMonth', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
     df_time_plot.columns = ['Periodo', 'Mercato Totale', 'Settore Target']
-    df_time_plot['Quota Target (%)'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale'] * 100).fillna(0)
     
-    # Valori in Milioni per il grafico assoluto
+    # Calcoli per i grafici
+    df_time_plot['Quota Target (%)'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale'] * 100).fillna(0)
     df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
     df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
 
-    # --- INIZIO UI ---
-    st.subheader("📈 Evoluzione del Budget nel Tempo")
-    if guida_timeline:
-        with st.popover("💡 Strategia"):
-            st.info(guida_timeline)
-    
-
-
-    # --- PREPARAZIONE RANGE E TICK ASSE X ---
+    # Range per sincronizzare perfettamente l'asse X
     x_min = df_time_plot['Periodo'].min()
     x_max = df_time_plot['Periodo'].max()
-    
+
     # --- 1. GRAFICO QUOTA TARGET (%) ---
     fig_norm = px.area(
         df_time_plot, x='Periodo', y='Quota Target (%)',
@@ -49,28 +35,53 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy', marker=dict(size=6))
     
     fig_norm.update_layout(
-        yaxis_ticksuffix="%", 
         margin=dict(l=100, r=40, t=50, b=0),
         height=350,
-        yaxis=dict(automargin=False, gridcolor="#f0f0f0"),
+        yaxis=dict(ticksuffix="%", automargin=False, gridcolor="#f0f0f0"),
         xaxis=dict(
             range=[x_min, x_max],
             showgrid=True,
-            gridcolor="#e1e1e1", # Griglia verticale più visibile
-            griddash="dot",      # Rende la griglia tratteggiata
-            constrain='domain',
-            # SPIKELINES: Linee tratteggiate al passaggio del mouse
+            gridcolor="#e1e1e1",
+            griddash="dot",
             showspikes=True,
             spikemode='across',
-            spikethickness=1,
             spikedash='dash',
-            spikecolor='#999999'
-        )
+            spikecolor='#999999',
+            constrain='domain'
+        ),
+        hovermode="x unified"
     )
-    
+
     # --- 2. GRAFICO VALORI ASSOLUTI (RADICE QUADRATA) ---
-    # ... (Codice Scatter e tick_vals rimane lo stesso) ...
+    # Creazione esplicita della variabile fig_line
+    fig_line = go.Figure()
     
+    # Traccia Totale
+    fig_line.add_trace(go.Scatter(
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Mercato_Mln']),
+        name="Mercato Totale",
+        line=dict(color='#3498db', width=2, shape='spline'),
+        mode='lines+markers',
+        marker=dict(size=6)
+    ))
+    
+    # Traccia Target
+    fig_line.add_trace(go.Scatter(
+        x=df_time_plot['Periodo'], 
+        y=np.sqrt(df_time_plot['Target_Mln']),
+        name="Settore Target",
+        line=dict(color='#e74c3c', width=2, shape='spline'),
+        mode='lines+markers',
+        marker=dict(size=6)
+    ))
+
+    # Calcolo Tick asse Y
+    max_mln = df_time_plot['Mercato_Mln'].max()
+    potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
+    tick_vals = potential_ticks[potential_ticks <= max_mln]
+    if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
+
     fig_line.update_layout(
         title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
         template="plotly_white",
@@ -81,15 +92,13 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             title="Periodo",
             range=[x_min, x_max],
             showgrid=True,
-            gridcolor="#e1e1e1", # Stessa griglia tratteggiata
+            gridcolor="#e1e1e1",
             griddash="dot",
-            constrain='domain',
-            # SPIKELINES: Stessa configurazione per il grafico sotto
             showspikes=True,
             spikemode='across',
-            spikethickness=1,
             spikedash='dash',
-            spikecolor='#999999'
+            spikecolor='#999999',
+            constrain='domain'
         ),
         yaxis=dict(
             title="Budget (Mln €)",
@@ -99,13 +108,12 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             automargin=False,
             gridcolor="#f0f0f0"
         ),
-        # Sincronizza il puntatore tra i grafici (Hovermode condiviso)
-        hovermode="x unified" 
+        hovermode="x unified"
     )
-    
-    st.plotly_chart(fig_norm, use_container_width=True, key="norm_final_spike")
-    st.plotly_chart(fig_line, use_container_width=True, key="line_final_spike")
 
+    # Rendering
+    st.plotly_chart(fig_norm, use_container_width=True, key="norm_final")
+    st.plotly_chart(fig_line, use_container_width=True, key="line_final")
     st.divider()
 
   
