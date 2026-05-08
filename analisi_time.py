@@ -45,37 +45,34 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         height=350
     )
     
-    # --- 2. GRAFICO VALORI ASSOLUTI (CON SCALA LOGARITMICA) ---
+    # --- 2. GRAFICO VALORI ASSOLUTI (LOGARITMICO CON UNITÀ ESTESE) ---
     fig_line = px.line(
         df_time_plot, x='Periodo', y=['Mercato Totale', 'Settore Target'],
         color_discrete_map={"Mercato Totale": "#3498db", "Settore Target": "#e74c3c"},
-        title="Evoluzione Temporale del Mercato (Scala Logaritmica)",
+        title="Evoluzione Temporale (Scala Logaritmica)",
         template="plotly_white", 
         line_shape="spline",
-        log_y=True  # <--- Attiva la scala logaritmica direttamente qui
+        log_y=True 
     )
     
     fig_line.update_layout(
-        legend=dict(
-            orientation="h", 
-            yanchor="bottom", 
-            y=1.02, 
-            xanchor="right", 
-            x=1
-        ),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=60, r=20, t=50, b=50), 
         height=350,
         xaxis_title="Periodo",
-        yaxis_title="Budget (€) - Scala Log",
-        # Opzionale: per mostrare i valori reali invece delle potenze di 10 (es. 10k invece di 10^4)
+        yaxis_title="Budget (€)",
+        # Configurazione asse per evitare "M" o potenze di 10
         yaxis=dict(
-            dtick="D1", # Mostra tick lineari su scala logaritmica
-            exponentformat="none"
+            tickformat=",.0f",      # Forza separatore migliaia e 0 decimali (es: 10,000)
+            dtick="D1",             # Forza i tick logaritmici (1, 2, 5, 10...)
+            exponentformat="none",  # Disabilita 10^n
+            minexponent=0           # Assicura che non usi la notazione scientifica
         )
     )
     
+    
     st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
-    st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto")
+    st.plotly_chart(fig_line, use_container_width=True, key="grafico_budget_assoluto_log")
 
     st.divider()
 
