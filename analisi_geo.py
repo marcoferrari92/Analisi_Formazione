@@ -105,17 +105,55 @@ def geo_analysis(df):
         fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
-    # --- 5. TREEMAP ---
+    # --- 5. TREEMAP CON LEADER E QUOTE ---
     st.write("")
     st.markdown("### 🔍 Drill-down Geografico")
-    df_tree = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
-    df_tree.columns = ['Regione', 'Provincia', 'CAP', 'Budget Target']
+
+    # 1. Prepariamo i dati a livello CAP includendo il Leader per quel CAP
+    # Sommiamo il budget target per azienda dentro ogni CAP
+    cap_leader_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
+    
+    # Identifichiamo il leader per ogni CAP
+    idx_max = cap_leader_data.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].idxmax()
+    cap_leaders = cap_leader_data.loc[idx_max].rename(columns={
+        col_rs: 'Leader_Nome', 
+        col_budget: 'Leader_Budget'
+    })
+
+    # 2. Prepariamo il dataframe per la treemap (totale budget target per CAP)
+    df_tree_agg = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
+    df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'Budget_Target']
+
+    # Uniamo le info del leader
+    df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
+    
+    # 3. Calcoliamo i totali regionali per le quote (opzionale, ma utile per il calcolo dinamico)
+    # Nota: Plotly calcola le somme dei rami automaticamente, quindi usiamo custom_data per passare i valori fissi del leader
     
     fig_tree = px.treemap(
-        df_tree, path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
-        values='Budget Target', color='Budget Target', color_continuous_scale='Reds'
+        df_tree_final, 
+        path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
+        values='Budget_Target', 
+        color='Budget_Target', 
+        color_continuous_scale='Reds',
+        custom_data=['Leader_Nome', 'Leader_Budget', 'Budget_Target']
     )
-    fig_tree.update_traces(hovertemplate="<b>%{label}</b><br>Budget Target: € %{value:,.2f}<extra></extra>")
+
+    # 4. Hovertemplate personalizzato
+    # %{value} è il budget del nodo corrente
+    # %{parent} o calcoli manuali per le quote
+    fig_tree.update_traces(
+        hovertemplate="""
+        <b>%{label}</b><br>
+        Budget Target Nodo: € %{value:,.2f}<br>
+        -------------------------<br>
+        🏆 Leader Area (CAP): %{customdata[0]}<br>
+        Budget Leader: € %{customdata[1]:,.2f}<br>
+        Quota Leader su CAP: %{customdata[1]/customdata[2]:.1%}<br>
+        <extra></extra>
+        """
+    )
+
     fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
     st.plotly_chart(fig_tree, use_container_width=True)
 
