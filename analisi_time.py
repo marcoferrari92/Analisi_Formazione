@@ -196,25 +196,34 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
 
-    # --- 1. Calcolo Concentrazione Annuale ---
+    # --- Calcolo Concentrazione Annuale con Variazione YoY ---
     st.subheader("📊 Concentrazione Annuale del Budget")
     
     # Raggruppamento per anno
     df_annual = df_temp.groupby('Anno').agg({
         'RNA_ELEMENTO_DI_AIUTO': 'sum',
         'IS_TARGET': 'sum' 
-    }).reset_index()
+    }).reset_index().sort_values('Anno') # Ordine cronologico per il calcolo pct_change
+
+    # Calcolo delle variazioni percentuali (%) rispetto all'anno precedente
+    df_annual['Var. Volume (%)'] = df_annual['RNA_ELEMENTO_DI_AIUTO'].pct_change()
+    df_annual['Var. Pratiche (%)'] = df_annual['IS_TARGET'].pct_change()
     
-    # Ordiniamo per anno decrescente per la tabella
+    # Prepariamo la tabella per la visualizzazione (Anno decrescente)
     df_annual_table = df_annual.sort_values('Anno', ascending=False).copy()
-    df_annual_table.columns = ['Anno', 'Budget Totale (€)', 'Pratiche Target']
+    
+    # Rinominia per chiarezza nella tabella
+    df_annual_table.columns = [
+        'Anno', 'Budget Totale (€)', 'Pratiche Target', 
+        'Var. Budget YoY', 'Var. Pratiche YoY'
+    ]
 
     # Calcolo dell'anno record
     idx_max = df_annual['RNA_ELEMENTO_DI_AIUTO'].idxmax()
     anno_record = df_annual.loc[idx_max]
     
     # Layout con Metriche e Tabella
-    col_metrics, col_table = st.columns([1, 1])
+    col_metrics, col_table = st.columns([1, 2]) # Tabella un po' più larga per le nuove colonne
 
     with col_metrics:
         st.metric(
@@ -224,6 +233,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
         )
         
         if len(df_annual) > 1:
+            # Calcolo CAGR
             v_final = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[-1]
             v_start = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[0]
             n_anni = len(df_annual) - 1
@@ -238,6 +248,9 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
             column_config={
                 "Anno": st.column_config.NumberColumn(format="%d"),
                 "Budget Totale (€)": st.column_config.NumberColumn(format="€ %,.0f"),
-                "Pratiche Target": st.column_config.NumberColumn(format="%d")
+                "Pratiche Target": st.column_config.NumberColumn(format="%d"),
+                # Formattazione come percentuale con freccette/colori automatici
+                "Var. Budget YoY": st.column_config.NumberColumn(format="%.1f%%"),
+                "Var. Pratiche YoY": st.column_config.NumberColumn(format="%.1f%%")
             }
         )
