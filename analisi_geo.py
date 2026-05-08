@@ -6,9 +6,9 @@ import requests
 def geo_analysis(df):
     """
     Analisi geografica definitiva:
-    1. Nazionale (Regioni)
-    2. Regionale (Province)
-    3. Locale (CAP come terza colonna)
+    - Mappe e Treemap con tooltip formattati in €
+    - Tre tabelle gerarchiche: Nazionale, Regionale e Locale
+    - Intelligence CAP per coerenza dati
     """
 
     # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA ---
@@ -58,7 +58,7 @@ def geo_analysis(df):
     
     df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
     df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-    df_c['CAP'] = df_c['CAP_Str'] # Colonna dedicata per la tabella locale
+    df_c['CAP'] = df_c['CAP_Str']
 
     # --- 3. PREPARAZIONE DATI MAPPE ---
     df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
@@ -88,20 +88,34 @@ def geo_analysis(df):
     with c1:
         fig_tot = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
                                 color='Budget Totale', color_continuous_scale="Blues", title="💰 Mercato Totale",
-                                labels={'Regione': 'Nome Regione'}, hover_name='Regione',
-                                hover_data={'Match_Key': False, 'Regione': False, 'Budget Totale': ':,.2f €'})
+                                hover_name='Regione', hover_data={'Match_Key': False, 'Budget Totale': False})
+        fig_tot.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Totale: € %{z:,.2f}<extra></extra>")
         fig_tot.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_tot), use_container_width=True)
 
     with c2:
         fig_targ = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
                                  color='Budget Target', color_continuous_scale="Reds", title="🎯 Mercato Target",
-                                 labels={'Regione': 'Nome Regione'}, hover_name='Regione',
-                                 hover_data={'Match_Key': False, 'Regione': False, 'Budget Target': ':,.2f €'})
+                                 hover_name='Regione', hover_data={'Match_Key': False, 'Budget Target': False})
+        fig_targ.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Target: € %{z:,.2f}<extra></extra>")
         fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
-    # --- 5. FUNZIONE AGGREGAZIONE TABELLE ---
+    # --- 5. TREEMAP ---
+    st.write("")
+    st.markdown("### 🔍 Drill-down Geografico")
+    df_tree = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
+    df_tree.columns = ['Regione', 'Provincia', 'CAP', 'Budget Target']
+    
+    fig_tree = px.treemap(
+        df_tree, path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
+        values='Budget Target', color='Budget Target', color_continuous_scale='Reds'
+    )
+    fig_tree.update_traces(hovertemplate="<b>%{label}</b><br>Budget Target: € %{value:,.2f}<extra></extra>")
+    fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
+    st.plotly_chart(fig_tree, use_container_width=True)
+
+    # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
         tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         tot.columns = [groupby_col, 'Aiuti Totali', 'Budget Totale']
@@ -111,7 +125,6 @@ def geo_analysis(df):
         return final.sort_values('Budget Target', ascending=False)
 
     st.markdown("---")
-    # Configurazione colonne per tutte le tabelle (Aiuti come interi, Budget come valuta)
     common_config = {
         "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
         "Aiuti Target": st.column_config.NumberColumn(format="%d"),
@@ -119,15 +132,13 @@ def geo_analysis(df):
         "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")
     }
 
-    st.markdown("---")
-    
-    # --- 6. TABELLA NAZIONALE ---
+    # --- 7. TABELLA NAZIONALE ---
     st.markdown("### 🇮🇹 1. Analisi Nazionale")
     df_naz = get_table_data('Regione')
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True, column_config=common_config)
 
-    # --- 7. TABELLA REGIONALE ---
+    # --- 8. TABELLA REGIONALE ---
     st.write("")
     st.markdown("### 🏛️ 2. Analisi Regionale")
     df_prov = get_table_data('Provincia')
@@ -137,7 +148,7 @@ def geo_analysis(df):
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True, column_config=common_config)
 
-    # --- 8. TABELLA LOCALE ---
+    # --- 9. TABELLA LOCALE ---
     st.write("")
     st.markdown("### 📍 3. Analisi Locale")
     df_loc = get_table_data('CAP')
