@@ -5,10 +5,8 @@ import requests
 
 def geo_analysis(df):
     """
-    Analisi geografica completa con:
-    - Mappe Italia con tooltip formattati in €
-    - Treemap drill-down
-    - Tre tabelle gerarchiche: Nazionale, Regionale e Locale
+    Analisi geografica basata esclusivamente sul CAP.
+    Rimuove la dipendenza dai nomi comuni del file RNA per evitare errori.
     """
 
     # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA (CAP -> PROVINCIA, REGIONE) ---
@@ -48,43 +46,37 @@ def geo_analysis(df):
         "97": ("Ragusa", "Sicilia"), "98": ("Messina", "Sicilia")
     }
 
-    # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA ---
+    # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA DA CAP ---
     df_c = df.copy()
-    col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df.columns else 'CAP'
-    col_comune = 'RNA_COMUNE_BENEFICIARIO' if 'RNA_COMUNE_BENEFICIARIO' in df.columns else 'Comune'
+    col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else 'CAP'
+    col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
     
+    # Standardizzazione CAP
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
     df_c['Prefix'] = df_c['CAP_Str'].str[:2]
     
-    df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
-    df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-    df_c['Comune'] = df_c[col_comune].fillna("Non Specificato")
+    # Intelligence CAP: Creiamo le nuove etichette geografiche "pulite"
+    df_c['Regione_Auto'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
+    df_c['Provincia_Auto'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
+    df_c['Area_CAP'] = "CAP " + df_c['CAP_Str']
 
-    # --- 3. PREPARAZIONE DATI PER MAPPE ---
-    df_naz_agg = df_c.groupby('Regione')['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
+    # --- 3. MAPPE ---
+    df_naz_agg = df_c.groupby('Regione_Auto')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz_agg.columns = ['Regione', 'Aiuti_Tot', 'Budget_Tot']
 
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
-    df_targ_agg = df_targ_raw.groupby('Regione')['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
+    df_targ_agg = df_targ_raw.groupby('Regione_Auto')[col_budget].agg(['count', 'sum']).reset_index()
     df_targ_agg.columns = ['Regione', 'Aiuti_Targ', 'Budget_Targ']
 
     df_mappe = pd.merge(df_naz_agg, df_targ_agg, on='Regione', how='left').fillna(0)
     
     # Mapping Match Key per GeoJSON
     df_mappe['Match_Key'] = df_mappe['Regione'].str.lower()
-    mapping_geo = {
-        "Friuli-Venezia Giulia": "friuli venezia giulia",
-        "Trentino-Alto Adige": "trentino-alto adige/südtirol",
-        "Valle d'Aosta": "valle d'aosta/vallée d'aoste"
-    }
-    for k, v in mapping_geo.items():
-        df_mappe.loc[df_mappe['Regione'] == k, 'Match_Key'] = v
+    mapping_geo = {"Friuli-Venezia Giulia": "friuli venezia giulia", "Trentino-Alto Adige": "trentino-alto adige/südtirol", "Valle d'Aosta": "valle d'aosta/vallée d'aoste"}
+    for k, v in mapping_geo.items(): df_mappe.loc[df_mappe['Regione'] == k, 'Match_Key'] = v
 
-    # --- 4. MAPPE ---
     @st.cache_data
-    def get_geojson():
-        return requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json").json()
-    
+    def get_geojson(): return requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json").json()
     geojson_data = get_geojson()
 
     def style_map(fig):
@@ -94,78 +86,53 @@ def geo_analysis(df):
 
     c1, c2 = st.columns(2)
     with c1:
-        fig_tot = px.choropleth(
-            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-            color='Budget_Tot', color_continuous_scale="Blues", title="💰 Mercato Totale",
-            labels={'Budget_Tot': 'Budget', 'Regione': 'Regione'},
-            hover_name='Regione',
-            hover_data={'Match_Key': False, 'Budget_Tot': ':.2f€'} # Formato € con separatore
-        )
+        fig_tot = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+                                color='Budget_Tot', color_continuous_scale="Blues", title="💰 Mercato Totale",
+                                hover_name='Regione', hover_data={'Match_Key': False, 'Budget_Tot': ':.2f€'})
         fig_tot.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_tot), use_container_width=True)
-        
     with c2:
-        fig_targ = px.choropleth(
-            df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
-            color='Budget_Targ', color_continuous_scale="Reds", title="🎯 Mercato Target",
-            labels={'Budget_Targ': 'Budget', 'Regione': 'Regione'},
-            hover_name='Regione',
-            hover_data={'Match_Key': False, 'Budget_Targ': ':.2f€'}
-        )
+        fig_targ = px.choropleth(df_mappe, geojson=geojson_data, locations='Match_Key', featureidkey="properties.name",
+                                 color='Budget_Targ', color_continuous_scale="Reds", title="🎯 Mercato Target",
+                                 hover_name='Regione', hover_data={'Match_Key': False, 'Budget_Targ': ':.2f€'})
         fig_targ.update_coloraxes(colorbar_title_text="", colorbar_tickformat=".2s")
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
-    # --- 5. TREEMAP ---
-    df_tree = df_targ_raw.groupby(['Regione', 'Provincia', 'Comune'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    fig_tree = px.treemap(
-        df_tree, path=[px.Constant("Italia"), 'Regione', 'Provincia', 'Comune'],
-        values='RNA_ELEMENTO_DI_AIUTO', color='RNA_ELEMENTO_DI_AIUTO', color_continuous_scale='Reds',
-        labels={'RNA_ELEMENTO_DI_AIUTO': 'Budget'},
-        hover_data={'RNA_ELEMENTO_DI_AIUTO': ':,.2f€'}
-    )
+    # --- 4. TREEMAP ---
+    df_tree = df_targ_raw.groupby(['Regione_Auto', 'Provincia_Auto', 'Area_CAP'])[col_budget].sum().reset_index()
+    fig_tree = px.treemap(df_tree, path=[px.Constant("Italia"), 'Regione_Auto', 'Provincia_Auto', 'Area_CAP'],
+                         values=col_budget, color=col_budget, color_continuous_scale='Reds',
+                         hover_data={col_budget: ':,.2f€'})
     fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600, coloraxis_colorbar_title_text="")
     st.plotly_chart(fig_tree, use_container_width=True)
 
-    # --- 6. LE TRE TABELLE GERARCHICHE ---
+    # --- 5. LE TRE TABELLE GERARCHICHE ---
     def get_table_data(groupby_col):
-        # Totale
-        tot = df_c.groupby(groupby_col)['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
+        tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         tot.columns = [groupby_col, 'Aiuti Tot', 'Budget Totale']
-        # Target
-        targ = df_c[df_c['IS_TARGET'] == 1].groupby(groupby_col)['RNA_ELEMENTO_DI_AIUTO'].agg(['count', 'sum']).reset_index()
+        targ = df_c[df_c['IS_TARGET'] == 1].groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index()
         targ.columns = [groupby_col, 'Aiuti Target', 'Budget Target']
-        # Merge
         final = pd.merge(tot, targ, on=groupby_col, how='left').fillna(0)
-        # CAP usati
-        caps = df_c[df_c['IS_TARGET'] == 1].groupby(groupby_col)['CAP_Str'].apply(lambda x: ', '.join(sorted(x.unique()))).reset_index()
-        caps.columns = [groupby_col, 'CAP Target']
-        final = pd.merge(final, caps, on=groupby_col, how='left').fillna("-")
         return final.sort_values('Budget Target', ascending=False)
 
     st.markdown("---")
-    st.markdown("## 🇮🇹 1. Analisi Nazionale (Regioni)")
-    st.dataframe(
-        get_table_data('Regione').style.background_gradient(cmap='Reds', subset=['Budget Target']),
-        use_container_width=True, hide_index=True,
-        column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")}
-    )
+    st.markdown("### 🇮🇹 1. Analisi Nazionale (Regioni)")
+    st.dataframe(get_table_data('Regione_Auto').style.background_gradient(cmap='Reds', subset=['Budget Target']),
+                 use_container_width=True, hide_index=True,
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")})
 
-    st.markdown("## 🏛️ 2. Analisi Regionale (Province)")
-    st.dataframe(
-        get_table_data('Provincia').style.background_gradient(cmap='Reds', subset=['Budget Target']),
-        use_container_width=True, hide_index=True,
-        column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")}
-    )
+    st.markdown("### 🏛️ 2. Analisi Regionale (Province)")
+    st.dataframe(get_table_data('Provincia_Auto').style.background_gradient(cmap='Reds', subset=['Budget Target']),
+                 use_container_width=True, hide_index=True,
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")})
 
-    st.markdown("## 📍 3. Analisi Locale (Comuni)")
-    df_loc = get_table_data('Comune')
-    # Aggiunge provincia di appartenenza per i comuni
-    loc_info = df_c[['Comune', 'Provincia']].drop_duplicates(subset=['Comune'])
-    df_loc = pd.merge(df_loc, loc_info, on='Comune', how='left')
-    df_loc = df_loc[['Comune', 'Provincia', 'Aiuti Tot', 'Aiuti Target', 'Budget Totale', 'Budget Target', 'CAP Target']]
+    st.markdown("### 📍 3. Analisi Locale (CAP)")
+    df_loc = get_table_data('Area_CAP')
+    # Aggiungiamo info di provincia per contesto
+    loc_info = df_c[['Area_CAP', 'Provincia_Auto']].drop_duplicates()
+    df_loc = pd.merge(df_loc, loc_info, on='Area_CAP', how='left')
+    df_loc = df_loc[['Area_CAP', 'Provincia_Auto', 'Aiuti Tot', 'Aiuti Target', 'Budget Totale', 'Budget Target']]
     
-    st.dataframe(
-        df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']),
-        use_container_width=True, hide_index=True,
-        column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")}
-    )
+    st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']),
+                 use_container_width=True, hide_index=True,
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.0f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.0f")})
