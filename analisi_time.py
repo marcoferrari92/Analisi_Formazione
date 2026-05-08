@@ -18,22 +18,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
 
   
-    # --- GRAFICO A AREA (ANDAMENTO MENSILE) ---
-    st.write("")
-    if guida_timeline:
-        with st.popover("💡 Strategia"):
-            st.info(guida_timeline)
-    st.write("")
-    
-    # Aggregazione
-    df_time_tot = df_temp.groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    df_time_targ = df_temp[df_temp['IS_TARGET'] == 1].groupby('AnnoMonth')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    
-    df_time_plot = pd.merge(df_time_tot, df_time_targ, on='AnnoMonth', how='left', suffixes=('_Tot', '_Targ')).fillna(0)
-    df_time_plot.columns = ['Periodo', 'Mercato Totale', 'Settore Target']
-    df_time_plot['Quota Target (%)'] = (df_time_plot['Settore Target'] / df_time_plot['Mercato Totale'] * 100).fillna(0)
-    
-    # --- 1. GRAFICO INCIDENZA % ---
+    # --- 1. GRAFICO QUOTA TARGET (%) ---
     fig_norm = px.area(
         df_time_plot, x='Periodo', y='Quota Target (%)',
         title="Evoluzione Temporale della Quota di Mercato del Settore Target",
@@ -42,71 +27,56 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     fig_norm.update_traces(line_color='#e74c3c', fill='tozeroy')
     fig_norm.update_layout(
         yaxis_ticksuffix="%", 
-        margin=dict(l=60, r=20, t=50, b=0),
-        height=350
+        # MARGINI FISSI: l=100 forza l'allineamento indipendentemente dai numeri
+        margin=dict(l=100, r=40, t=50, b=0),
+        height=350,
+        yaxis=dict(automargin=False) # Impedisce a Plotly di ricalcolare lo spazio
     )
     
-
-
     # --- 2. GRAFICO VALORI ASSOLUTI (RADICE QUADRATA) ---
-    
-    # Preparazione valori in Milioni
-    df_time_plot['Mercato_Mln'] = df_time_plot['Mercato Totale'] / 1e6
-    df_time_plot['Target_Mln'] = df_time_plot['Settore Target'] / 1e6
-
     import plotly.graph_objects as go
     fig_line = go.Figure()
-
-    # Traccia Mercato Totale (Blu) con pallini
+    
     fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], 
-        y=np.sqrt(df_time_plot['Mercato_Mln']),
+        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Mercato_Mln']),
         name="Mercato Totale",
         line=dict(color='#3498db', width=2, shape='spline'),
-        mode='lines+markers', # Aggiunti pallini
+        mode='lines+markers',
         marker=dict(size=6)
     ))
-
-    # Traccia Settore Target (Rosso) con pallini
+    
     fig_line.add_trace(go.Scatter(
-        x=df_time_plot['Periodo'], 
-        y=np.sqrt(df_time_plot['Target_Mln']),
+        x=df_time_plot['Periodo'], y=np.sqrt(df_time_plot['Target_Mln']),
         name="Settore Target",
         line=dict(color='#e74c3c', width=2, shape='spline'),
-        mode='lines+markers', # Aggiunti pallini
+        mode='lines+markers',
         marker=dict(size=6)
     ))
-
-    # Definizione dei Tick per asse Y
+    
+    # Definizione Tick
     max_mln = df_time_plot['Mercato_Mln'].max()
-    potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
+    potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400])
     tick_vals = potential_ticks[potential_ticks <= max_mln]
-    if max_mln not in tick_vals: tick_vals = np.append(tick_vals, max_mln)
-
+    
     fig_line.update_layout(
         title="Evoluzione Temporale (Mln €) - Scala Radice Quadrata",
         template="plotly_white",
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        ),
-        # Margine sinistro a 80 per allineamento con grafico quota %
-        margin=dict(l=80, r=20, t=50, b=50),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        # MARGINI FISSI: l=100 identico a quello sopra
+        margin=dict(l=100, r=40, t=50, b=50),
         height=400,
         xaxis_title="Periodo",
         yaxis=dict(
             title="Budget (Mln €)",
             tickmode='array',
             tickvals=np.sqrt(tick_vals),
-            ticktext=[f"{v:.1f}" for v in tick_vals]
+            ticktext=[f"{v:.1f}" for v in tick_vals],
+            automargin=False # Fondamentale per mantenere l=100 fisso
         )
     )
-
-    st.plotly_chart(fig_norm, use_container_width=True, key="grafico_incidenza_percentuale")
-    st.plotly_chart(fig_line, use_container_width=True, key="grafico_assoluto_sqrt")
+    
+    st.plotly_chart(fig_norm, use_container_width=True, key="norm_sync")
+    st.plotly_chart(fig_line, use_container_width=True, key="line_sync")
 
     st.divider()
 
