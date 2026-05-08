@@ -236,7 +236,7 @@ if uploaded_file is not None:
         # --- SEZIONE TEMPORALE ---
         with st.expander("📅 Distribuzione Temporale Settore Target"):
             st.write("")
-            render_temporal_analysis(
+            time_analysis(
                 df, 
                 guida_timeline=GUIDA_TIMELINE, 
                 guida_timemap=GUIDA_TIMEMAP
