@@ -67,51 +67,32 @@ def geo_analysis(df):
     df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
     df_c['CAP'] = df_c['CAP_Str']
 
-    # Prepariamo Match_Key subito per ereditare la chiave in tutti i merge successivi
+    # Prepariamo Match_Key subito
     df_c['Match_Key'] = df_c['Regione'].str.lower()
     mapping_geo = {"friuli-venezia giulia": "friuli venezia giulia", "trentino-alto adige": "trentino-alto adige/südtirol", "valle d'aosta": "valle d'aosta/vallée d'aoste"}
     df_c['Match_Key'] = df_c['Match_Key'].replace(mapping_geo)
 
-    # Definizione Leadership
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
 
-    if not df_targ_raw.empty and col_piva:
-        # Leader Nazionale
-        leader_naz_piva = df_targ_raw.groupby(col_piva)[col_budget].sum().idxmax()
-        # Leader Regionali
-        reg_totals = df_targ_raw.groupby(['Regione', col_piva])[col_budget].sum().reset_index()
-        leaders_reg_piva = reg_totals.loc[reg_totals.groupby('Regione')[col_budget].idxmax(), col_piva].tolist()
-        # Leader Locali
-        cap_totals = df_targ_raw.groupby(['CAP', col_piva])[col_budget].sum().reset_index()
-        leaders_cap_piva = cap_totals.loc[cap_totals.groupby('CAP')[col_budget].idxmax(), col_piva].tolist()
-
-        def check_leadership(row):
-            if row[col_piva] == leader_naz_piva: return "Leader Nazionale"
-            if row[col_piva] in leaders_reg_piva: return "Leader Regionale"
-            if row[col_piva] in leaders_cap_piva: return "Leader Locale"
-            return "Competitor"
-
-        df_c['Leadership_Level'] = df_c.apply(check_leadership, axis=1)
-    else:
-        df_c['Leadership_Level'] = "Competitor"
-
+    # --- 4. AGGREGAZIONE DATI (FONDAMENTALE DEFINIRLI QUI PER EVITARE ERRORI) ---
+    # Definiamo df_bubbles e df_bubbles_t qui così sono accessibili a tutto il resto del codice
+    df_bubbles = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
     
-    # --- 3. PREPARAZIONE DATI MAPPE ---
-    # Aggregazione Mercato Totale
+    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles_t.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti Target', 'Budget Target']
+
+    # --- 5. PREPARAZIONE DATI MAPPE INIZIALI ---
     df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz_agg.columns = ['Regione', 'Aiuti Totali', 'Budget Totale']
-
-    # Recuperiamo il Match_Key già pulito dal dataframe principale
-    # Creiamo una tabella di conversione Regione -> Match_Key senza duplicati
+    
     lookup_geo = df_c[['Regione', 'Match_Key']].drop_duplicates()
     df_mappe = pd.merge(df_naz_agg, lookup_geo, on='Regione', how='left')
 
-    # Aggregazione Mercato Target
     df_targ_agg = df_targ_raw.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
     df_targ_agg.columns = ['Regione', 'Aiuti Target', 'Budget Target']
-
-    # Uniamo i dati target a df_mappe
     df_mappe = pd.merge(df_mappe, df_targ_agg, on='Regione', how='left').fillna(0)
+
 
     @st.cache_data
     def get_geojson(): return requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json").json()
