@@ -135,11 +135,16 @@ def geo_analysis(df):
                  column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
 
     st.write("")
+    # --- 8. TABELLA LOCALE (CAP COME TERZA COLONNA) ---
     st.markdown("### 📍 3. Analisi Locale")
-    df_loc = get_table_data('Area_CAP').rename(columns={'Area_CAP': 'CAP'})
-    loc_map = df_c[['Area_CAP', 'Provincia_Auto', 'Regione_Auto']].drop_duplicates().rename(columns={'Area_CAP': 'CAP', 'Provincia_Auto': 'Provincia', 'Regione_Auto': 'Regione'})
+    df_loc = get_table_data('CAP')
+    loc_map = df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates()
     df_loc = pd.merge(df_loc, loc_map, on='CAP', how='left')
-    df_loc = df_loc[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
+    
+    # Ordine richiesto: Regione, Provincia, CAP, Aiuti Totali...
+    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target']]
+    
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']),
                  use_container_width=True, hide_index=True,
-                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
+                 column_config={"Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"), 
+                                "Budget Target": st.column_config.NumberColumn(format="€ %,.2f")})
