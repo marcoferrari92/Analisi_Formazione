@@ -194,3 +194,33 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     )
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
+
+
+    # --- 1. Calcolo Concentrazione Annuale (da aggiungere prima della Heatmap) ---
+    st.subheader("📊 Concentrazione Annuale del Budget")
+    
+    # Raggruppamento per anno
+    df_annual = df_temp.groupby('Anno').agg({
+        'RNA_ELEMENTO_DI_AIUTO': 'sum',
+        'IS_TARGET': 'sum' # Conteggio pratiche target
+    }).reset_index()
+    
+    # Creazione di due colonne per metriche rapide
+    m1, m2, m3 = st.columns(3)
+    
+    # Calcolo dell'anno record
+    anno_record = df_annual.loc[df_annual['RNA_ELEMENTO_DI_AIUTO'].idxmax()]
+    
+    m1.metric("Anno Record (Volume)", f"{int(anno_record['Anno'])}", f"€ {anno_record['RNA_ELEMENTO_DI_AIUTO']/1e6:.1f} Mln")
+    
+    # Calcolo CAGR semplice (Compound Annual Growth Rate) se ci sono più anni
+    if len(df_annual) > 1:
+        v_final = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[-1]
+        v_start = df_annual['RNA_ELEMENTO_DI_AIUTO'].iloc[0]
+        n_anni = len(df_annual) - 1
+        cagr = ((v_final / v_start)**(1/n_anni) - 1) * 100
+        m2.metric("CAGR Mercato", f"{cagr:.1f}%")
+
+    # --- 2. Grafico di Pareto Temporale (Opzionale) ---
+    # Potresti aggiungere un grafico che mostra la somma cumulativa nel tempo
+    # per vedere quando è stato raggiunto il 50% del budget totale dell'anno.
