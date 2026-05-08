@@ -110,7 +110,7 @@ def geo_analysis(df):
                                 locationmode='country names', # o usare lat/lon se le avessi
                                 size='Budget', 
                                 hover_name='Provincia',
-                                title="💰 Puntini Mercato Totale",
+                                title="💰 Mercato Totale",
                                 template='plotly_white')
         
         # Se non hai lat/lon, scatter_geo su mappa Italia è limitato. 
@@ -125,7 +125,7 @@ def geo_analysis(df):
                                  size='Budget Target', 
                                  color_discrete_sequence=['red'],
                                  hover_name='Provincia',
-                                 title="🎯 Puntini Mercato Target")
+                                 title="🎯 Mercato Target")
         
         st.plotly_chart(style_map(fig_targ), use_container_width=True)
 
