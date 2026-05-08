@@ -5,10 +5,10 @@ import requests
 
 def geo_analysis(df):
     """
-    Analisi geografica definitiva:
-    - Mappe e Treemap con tooltip formattati in €
-    - Tre tabelle gerarchiche: Nazionale, Regionale e Locale
-    - Intelligence CAP per coerenza dati
+    Analisi geografica definitiva con:
+    - Leader identificato tramite P.IVA (CF_TROVATO)
+    - Visualizzazione Ragione Sociale nelle tabelle
+    - Tre livelli: Nazionale, Regionale, Locale (CAP)
     """
 
     # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA ---
@@ -48,10 +48,14 @@ def geo_analysis(df):
         "97": ("Ragusa", "Sicilia"), "98": ("Messina", "Sicilia")
     }
 
-    # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA DA CAP ---
+    # --- 2. PULIZIA E DERIVAZIONE GEOGRAFICA ---
     df_c = df.copy()
     col_cap = 'RNA_CAP_BENEFICIARIO' if 'RNA_CAP_BENEFICIARIO' in df_c.columns else 'CAP'
     col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
+    
+    # Identificazione colonne azienda
+    col_piva = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
+    col_rs = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
     
     df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
     df_c['Prefix'] = df_c['CAP_Str'].str[:2]
