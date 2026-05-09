@@ -338,154 +338,180 @@ def time_analysis(df):
     st.write("")
     st.write("")
     st.dataframe(st_df, hide_index=True, use_container_width=True)
-    st.write("")
+
     
-   # --- INTERPRETAZIONE FINALE ---
-    if len(df_annual) > 1:
+
+
+    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
+    if len(df_annual) >= 2:
         df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
-        if len(df_valid) >= 2:
-            ultimo = df_valid.iloc[-1]
-            penultimo = df_valid.iloc[-2]
-            
-            # Calcolo differenziali
-            cagr_att = ultimo['CAGR Vol. Target']
-            cagr_prec = penultimo['CAGR Vol. Target']
-            diff_cagr = cagr_att - cagr_prec
-            
-            aiuto_med_att = ultimo['Aiuto_Medio_Target']
-            aiuto_med_prec = penultimo['Aiuto_Medio_Target']
-            diff_aiuto = aiuto_med_att - aiuto_med_prec
-            perc_aiuto = (diff_aiuto / aiuto_med_prec * 100) if aiuto_med_prec > 0 else 0
+        ultimo = df_valid.iloc[-1]
+        penultimo = df_valid.iloc[-2]
+        
+        # Variabili Decisionali
+        cagr_att = ultimo['CAGR Vol. Target']
+        c_pre = penultimo['CAGR Vol. Target']
+        diff_cagr = cagr_att - c_pre
+        diff_aiuto = ultimo['Aiuto_Medio_Target'] - penultimo['Aiuto_Medio_Target']
+        diff_n = int(ultimo['Aiuti_Target'] - penultimo['Aiuti_Target'])
+        
+        # Dati pronti per le f-string
+        anno_u = int(ultimo['Anno'])
+        anno_p = int(penultimo['Anno'])
+        a_med = ultimo['Aiuto_Medio_Target']
+        p_aiuto = (diff_aiuto / penultimo['Aiuto_Medio_Target'] * 100) if penultimo['Aiuto_Medio_Target'] > 0 else 0
+        p_n = (diff_n / penultimo['Aiuti_Target'] * 100) if penultimo['Aiuti_Target'] > 0 else 0
 
-            # Calcolo variazione Numero Aiuti (La chiave del tuo dubbio)
-            n_aiuti_att = ultimo['Aiuti_Target']
-            n_aiuti_prec = penultimo['Aiuti_Target']
-            diff_n = n_aiuti_att - n_aiuti_prec
-            
-            # Testo dinamico per il numero di aiuti
-            txt_n = f"nonostante un calo di {abs(diff_n)} aiuti" if diff_n < 0 else f"grazie anche a {diff_n} aiuti in più"
+        st.write("")
 
-             # --- CASISTICA ---
-            st.write("")
+        # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE (CAGR ATT > 0, DIFF_CAGR > 0) ---
 
-            # --- INTERPRETAZIONE FINALE (4 CASI CORE) ---
-    if len(df_annual) > 1:
-        df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
-        if len(df_valid) >= 2:
-            ultimo = df_valid.iloc[-1]
-            penultimo = df_valid.iloc[-2]
-            
-            # Variabili Decisionali
-            cagr_att = ultimo['CAGR Vol. Target']
-            cagr_prec = penultimo['CAGR Vol. Target']
-            diff_cagr = cagr_att - cagr_prec
-            
-            aiuto_med_att = ultimo['Aiuto_Medio_Target']
-            aiuto_med_prec = penultimo['Aiuto_Medio_Target']
-            diff_aiuto = aiuto_med_att - aiuto_med_prec
-            perc_aiuto = (diff_aiuto / aiuto_med_prec * 100) if aiuto_med_prec > 0 else 0
-            
-            # Variabili di Quantità (Senza separatore migliaia)
-            d_n = int(ultimo['Aiuti_Target'] - penultimo['Aiuti_Target'])
-            
-            # Costruzione prefisso Numero Aiuti
-            if d_n > 0:
-                txt_n = f"Grazie a un aumento di {d_n} aiuti"
-            elif d_n < 0:
-                txt_n = f"Nonostante un calo di {abs(d_n)} aiuti"
-            else:
-                txt_n = "Con un numero di aiuti stabile"
+        if cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
+            st.success("🚀 **BOOM TOTALE**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target è in piena espansione: aumentano contemporaneamente il numero di progetti e il loro valore economico.
+            """)
 
-            st.write("")
+        elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
+            st.success("🚀 **ACCELERAZIONE E VALORE**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target è in accelerazione e sta puntando su meno aiuti prioritari dal peso maggiore.
+            """)
 
-            # --- INTERPRETAZIONE FINALE (4 CASI CORE CON PERCENTUALE AIUTI) ---
-    if len(df_annual) > 1:
-        df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
-        if len(df_valid) >= 2:
-            ultimo = df_valid.iloc[-1]
-            penultimo = df_valid.iloc[-2]
-            
-            # Variabili Decisionali
-            cagr_att = ultimo['CAGR Vol. Target']
-            cagr_prec = penultimo['CAGR Vol. Target']
-            diff_cagr = cagr_att - cagr_prec
-            
-            aiuto_med_att = ultimo['Aiuto_Medio_Target']
-            aiuto_med_prec = penultimo['Aiuto_Medio_Target']
-            diff_aiuto = aiuto_med_att - aiuto_med_prec
-            perc_aiuto = (diff_aiuto / aiuto_med_prec * 100) if aiuto_med_prec > 0 else 0
-            
-            # Variabili di Quantità
-            n_att = ultimo['Aiuti_Target']
-            n_prec = penultimo['Aiuti_Target']
-            diff_n = int(n_att - n_prec)
-            perc_n = (diff_n / n_prec * 100) if n_prec > 0 else 0
-            
-            # Costruzione prefisso Numero Aiuti con Percentuale (senza separatore migliaia)
-            if diff_n > 0:
-                txt_n = f"Grazie a un aumento di {diff_n} aiuti ({perc_n:+.1f}%)"
-            elif diff_n < 0:
-                txt_n = f"Nonostante un calo di {abs(diff_n)} aiuti ({perc_n:.1f}%)"
-            else:
-                txt_n = "Con un numero di aiuti stabile"
+        elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
+            st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target è in accelerazione e sta puntando sulla capillarità: fornendo più aiuti ma dal peso minore. 
+            """)
 
-            st.write("")
-            st.subheader("🎯 Sintesi Strategica del Mercato Target")
-            
-            incipit = f"**Nell'anno {int(ultimo['Anno'])}:**"
+        elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
+            st.warning("⚠️ **ANOMALIA STATISTICA**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            **Significato:** Il trend storico accelera per inerzia, ma l'anno corrente segna una contrazione reale su tutti i fronti. Verificare la saturazione del mercato.
+            """)
 
-            # --- CASO 1: RALLENTAMENTO + AIUTO SU (CONSOLIDAMENTO) ---
-            if cagr_att > 0 and diff_cagr < 0 and diff_aiuto > 0:
-                st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
-                # Logica dinamica sul significato
-                if diff_n < 0:
-                    significato = "Il mercato frena e perde massa critica. La crescita è sostenuta esclusivamente dall'aumento di valore dei pochi progetti rimasti (focus su grandi investimenti)."
-                else:
-                    significato = "Dopo un'annata d'oro, il mercato target sta rallentando, spostando il baricentro su progetti più complessi e corposi."
-                
-                st.markdown(f"""
-                {incipit}
-                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
-                * {txt_n}, l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** {significato}
-                """)
+        # --- AREA 2: CAGR POSITIVO + RALLENTAMENTO (CAGR ATT > 0, DIFF_CAGR <= 0) ---
 
-            # --- CASO 2: RALLENTAMENTO + AIUTO GIÙ (CONTRAZIONE REALE) ---
-            elif cagr_att > 0 and diff_cagr < 0 and diff_aiuto < 0:
-                st.warning("⚠️ **AVVISO DI CONTRAZIONE**")
-                # Se tutto scende, non c'è strategia di frazionamento, c'è solo un calo
-                if diff_n < 0:
-                    significato = "Nonostante il CAGR positivo (ereditato dal passato), il settore segna il passo su tutti i fronti: calano i progetti e cala il loro valore. Segnale di saturazione o fine incentivi."
-                else:
-                    significato = "Il mercato rallenta e si frammenta: aumentano le pratiche ma con tagli molto piccoli, riducendo la spinta economica totale."
-                
-                st.markdown(f"""
-                {incipit}
-                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
-                * {txt_n}, l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** {significato}
-                """)
+        elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
+            st.info("📉 **ESPANSIONE IN RALLENTAMENTO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target si sta riequilibrando, ridistribuendo le risorse su più aiuti ma meno corposi nonostante il rallentamento della crescita complessiva.
+            """)
 
-            # --- CASO 3: ACCELERAZIONE + AIUTO SU (VALORE) ---
-            elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0:
-                st.success("🚀 **ACCELERAZIONE E VALORE**")
-                significato = "Il mercato target è in pieno boom. La spinta è trainata da investimenti più pesanti, progetti ambiziosi e alta fiducia degli investitori."
-                
-                st.markdown(f"""
-                {incipit}
-                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
-                * {txt_n}, l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** {significato}
-                """)
+        elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
+            st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando, spostando il baricentro su meno progetti ma più corposi.
+            """)
 
-            # --- CASO 4: ACCELERAZIONE + AIUTO GIÙ (DIFFUSIONE) ---
-            elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto < 0:
-                st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
-                significato = "Mercato in accelerazione orizzontale. Il sistema sta riuscendo a democratizzare l'aiuto, raggiungendo una platea vastissima di beneficiari."
-                
-                st.markdown(f"""
-                {incipit}
-                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
-                * {txt_n}, l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** {significato}
-                """)
+        elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
+            st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a fornire più aiuti ma meno corposi.
+            """)
+
+        elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
+            st.info("📉 **AVVISO DI CONTRAZIONE**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Fase di contrazione: il rallentamento è accompagnato da un calo sia nel numero di aiuti che nel loro valore medio.
+            """)
+
+        # --- AREA 3: CAGR NEGATIVO + RECUPERO (CAGR ATT <= 0, DIFF_CAGR > 0) ---
+
+        elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
+            st.warning("⚠️ **RECUPERO SISTEMICO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Segnali di ripresa: il mercato ricomincia ad aggiungere aiuti e valore medio.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
+            st.warning("⚠️ **RECUPERO QUALITATIVO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il calo si attenua grazie a progetti più grandi che tengono in piedi il settore nonostante la perdita di beneficiari.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
+            st.warning("⚠️ **RECUPERO QUANTITATIVO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Reazione al calo aumentando il numero di concessioni a basso costo per stimolare il settore.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
+            st.warning("⚠️ **RIMBALZO TECNICO**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il calo è meno severo, ma non ci sono spinte reali né nel valore medio né nel numero di pratiche.
+            """)
+
+        # --- AREA 4: CAGR NEGATIVO + AGGRAVAMENTO (CAGR ATT <= 0, DIFF_CAGR <= 0) ---
+
+        elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
+            st.error("🚨 **DISPERSIONE E CRISI**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Caso critico: nonostante aumentino aiuti e valore medio il volume totale crolla drasticamente.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
+            st.error("🚨 **EROSIONE SELETTIVA**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Sopravvivono solo pochi progetti grandi, mentre la base del mercato scompare del tutto.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
+            st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
+            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato si polverizza in piccoli aiuti che non sostengono il volume economico del settore.
+            """)
+
+        elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
+            st.error("🚨 **RECESSIONE TOTALE**")
+            st.markdown(f"""
+            **Nell'anno {anno_u}:**
+            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore.
+            """)
