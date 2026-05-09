@@ -224,20 +224,19 @@ def time_analysis(df):
         st.info(GUIDA_CAGR)
     st.write("")
     
-    # Escludiamo l'anno corrente perché incompleto
+    
     import datetime
     anno_corrente = datetime.datetime.now().year
-    df_filtered = df_temp[df_temp['Anno'] < anno_corrente].copy()
 
-    # Raggruppamento base
-    df_annual = df_filtered.groupby('Anno').agg(
+    # Raggruppamento base (usiamo df_temp completo per includere l'anno in corso)
+    df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
         Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_filtered.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_filtered['IS_TARGET'] == 1].sum())
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
-    # Funzione CAGR (Invariata)
+    # Funzione CAGR
     def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
         if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
@@ -248,17 +247,22 @@ def time_analysis(df):
     prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
     vol_target_start = df_annual['Vol_Target'].iloc[0]
 
-    # Calcolo Quote e CAGR
+    # --- 2. Calcolo Quote e CAGR con protezione per anno in corso ---
     df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
     df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
+    
+    # Calcolo CAGR standard
     df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
     df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
-    # Preparazione dei volumi formattati
+    # MASCHERAMENTO ANNO CORRENTE: Se l'anno è quello attuale, forziamo il CAGR a NaN (visualizzato come vuoto)
+    df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
+
+    # Preparazione dei volumi
     df_annual['Vol. Tot. (€)'] = df_annual['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
     df_annual['Vol. Target (€)'] = df_annual['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
 
-    # Selezione e Rinomina (Ordine richiesto)
+    # Selezione e Rinomina
     df_final = df_annual[[
         'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
@@ -269,9 +273,10 @@ def time_analysis(df):
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
     ]
 
-    # --- LOGICA DI COLORAZIONE (Compatibile con Pandas 2.x) ---
+    # --- 3. Logica di Colorazione (Ignora i valori None) ---
     def color_cagr(val):
         try:
+            if val is None or pd.isna(val): return ''
             v = float(val)
             if v > 0.001: return 'color: #27ae60; font-weight: bold;'
             if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
@@ -279,13 +284,15 @@ def time_analysis(df):
             pass
         return ''
 
-    # USIAMO .map() AL POSTO DI .applymap()
+    # Rendering con Styler
     st_df = df_final.sort_values('Anno', ascending=False).style.map(
         color_cagr, 
         subset=['CAGR Target', 'CAGR Vol. Target']
-    )
+    ).format({
+        'CAGR Target': "{:.2f} %",
+        'CAGR Vol. Target': "{:.2f} %"
+    }, na_rep="In corso...") # Sostituisce i NaN con "In corso..."
 
-    # Rendering
     st.dataframe(
         st_df,
         hide_index=True,
@@ -295,8 +302,6 @@ def time_analysis(df):
             "Aiuti Tot.": st.column_config.NumberColumn(format="%d"),
             "Aiuti Target": st.column_config.NumberColumn(format="%d"),
             "Quota Target (%)": st.column_config.NumberColumn(format="%.2f %%"),
-            "CAGR Target": st.column_config.NumberColumn(format="%.2f %%"),
-            "Quota Vol. Target (%)": st.column_config.NumberColumn(format="%.2f %%"),
-            "CAGR Vol. Target": st.column_config.NumberColumn(format="%.2f %%")
+            "Quota Vol. Target (%)": st.column_config.NumberColumn(format="%.2f %%")
         }
     )
