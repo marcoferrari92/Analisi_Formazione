@@ -58,7 +58,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.write("")
     if guida_timeline:
         with st.popover("💡 Strategia"):
-            st.info(guida_timeline)
+            st.info(GUIDA_TIMELINE)
     
     # 2. Creazione della Figura con Subplots (2 righe, 1 colonna)
     # shared_xaxes=True è la chiave per la sincronizzazione del puntatore
@@ -192,7 +192,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.write("")
     if guida_timemap:
         with st.popover("💡 Strategia"):
-            st.info(guida_timemap)
+            st.info(GUIDA_TIMEMAP)
     st.write("")
               
     df_heat_data = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -227,7 +227,7 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     st.write("")
     if guida_timeline:
         with st.popover("💡 Strategia"):
-            st.info(guida_CAGR)
+            st.info(GUIDA_CAGR)
 
     # Raggruppamento base
     df_annual = df_temp.groupby('Anno').agg(
