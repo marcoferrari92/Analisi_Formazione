@@ -220,24 +220,24 @@ def time_analysis(df):
     st.divider()
     st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
     
-    st.write("")
-    with st.popover("💡 Strategia"):
-        st.info(GUIDA_CAGR)
-    st.write("")
+    # --- FILTRO ANNI COMPLETI ---
+    # Togliamo il 2026 (o l'anno corrente) perché non ha 12 mesi di dati
+    import datetime
+    anno_corrente = datetime.datetime.now().year
+    df_filtered = df_temp[df_temp['Anno'] < anno_corrente].copy()
 
-    # Raggruppamento base
-    df_annual = df_temp.groupby('Anno').agg(
+    # Raggruppamento base su dati filtrati
+    df_annual = df_filtered.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
         Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_filtered.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_filtered['IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
-    # Funzione CAGR sicura
+    # Funzione CAGR (Invariata)
     def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
-        if n_anni <= 0 or start_val <= 0 or current_val <= 0:
-            return 0.0
+        if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
     # Punti di partenza Target
@@ -245,57 +245,42 @@ def time_analysis(df):
     prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
     vol_target_start = df_annual['Vol_Target'].iloc[0]
 
-    # --- 2. Calcolo Quote e CAGR ---
+    # Calcolo Quote e CAGR
     df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
     df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
-    
-    df_annual['CAGR Target'] = df_annual.apply(
-        lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1
-    )
-    df_annual['CAGR Vol. Target'] = df_annual.apply(
-        lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1
-    )
+    df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
+    df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
-    # --- 3. Formattazione Volumi (Sintetica per leggibilità) ---
+    # Preparazione View
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
-    
-    # Prepariamo le colonne volume in formato "1.2M €"
-    df_view['Vol_Tot_Fmt'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-    df_view['Vol_Target_Fmt'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
+    df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
+    df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
 
-    # Selezione Colonne Finale (Ordine richiesto)
+    # Selezione Colonne
     df_final = df_view[[
-        'Anno', 
-        'Aiuti_Tot', 
-        'Aiuti_Target', 
-        'Quota Target (%)', 
-        'CAGR Target',
-        'Vol_Tot_Fmt', 
-        'Vol_Target_Fmt', 
-        'Quota Vol. Target (%)', 
-        'CAGR Vol. Target'
-    ]].copy()
-
-    # Rinomina Colonne
-    df_final.columns = [
         'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
-    ]
+    ]].copy()
 
-    # --- 4. Rendering Tabella ---
+    # --- LOGICA DI COLORAZIONE ---
+    def color_cagr(val):
+        if val > 0: return 'color: #27ae60; font-weight: bold;' # Verde
+        elif val < 0: return 'color: #e74c3c; font-weight: bold;' # Rosso
+        return ''
+
+    # Applichiamo lo stile alle colonne CAGR
+    st_df = df_final.style.applymap(color_cagr, subset=['CAGR Target', 'CAGR Vol. Target'])
+
+    # Rendering
     st.dataframe(
-        df_final,
+        st_df,
         hide_index=True,
         use_container_width=True,
         column_config={
             "Anno": st.column_config.NumberColumn("Anno", format="%d"),
-            "Aiuti Tot.": st.column_config.NumberColumn("Aiuti Tot.", format="%d"),
-            "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-            "Quota Target (%)": st.column_config.NumberColumn("Quota Target (%)", format="%.2f %%"),
-            "CAGR Target": st.column_config.NumberColumn("CAGR Target", format="%.2f %%"),
-            "Vol. Tot. (€)": st.column_config.TextColumn("Vol. Tot. (€)"),
-            "Vol. Target (€)": st.column_config.TextColumn("Vol. Target (€)"),
-            "Quota Vol. Target (%)": st.column_config.NumberColumn("Quota Vol. Target (%)", format="%.2f %%"),
-            "CAGR Vol. Target": st.column_config.NumberColumn("CAGR Vol. Target", format="%.2f %%")
+            "Quota Target (%)": st.column_config.NumberColumn(format="%.2f %%"),
+            "CAGR Target": st.column_config.NumberColumn(format="%.2f %%"),
+            "Quota Vol. Target (%)": st.column_config.NumberColumn(format="%.2f %%"),
+            "CAGR Vol. Target": st.column_config.NumberColumn(format="%.2f %%")
         }
     )
