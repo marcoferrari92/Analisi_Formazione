@@ -332,8 +332,10 @@ def time_analysis(df):
         'Quota Target (%)': "{:.2f} %", 'Quota Vol. Target (%)': "{:.2f} %"
     }, na_rep="In corso...")
 
+    st.write("")
+    st.write("")
     st.dataframe(st_df, hide_index=True, use_container_width=True)
-
+    st.write("")
     
     # --- INTERPRETAZIONE FINALE ---
     if len(df_annual) > 1:
@@ -342,7 +344,7 @@ def time_analysis(df):
         if not df_valid.empty:
             ultimo = df_valid.iloc[-1]
             penultimo = df_valid.iloc[-2] if len(df_valid) > 1 else ultimo
-            diff_ticket = ultimo['Ticket_Medio_Target'] - penultimo['Ticket_Medio_Target']
+            diff_ticket = ultimo['Aiuto_Medio_Target'] - penultimo['Aiuto_Medio_Target']
             
             st.caption("🔍 **Sintesi del Trend Storico:**")
             if diff_ticket < 0 and ultimo['CAGR Vol. Target'] > 0:
