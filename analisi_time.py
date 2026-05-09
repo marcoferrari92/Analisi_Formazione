@@ -9,11 +9,10 @@ from plotly.subplots import make_subplots
 GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
 GUIDA_TIMEMAP = """I mesi più intensi indicano quando le aziende ricevono più liquidità. Individua i momenti migliori per proporre nuovi investimenti"""
 GUIDA_CAGR = r"""
-### 📈 Guida al CAGR (Compound Annual Growth Rate)
+#### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
 Il **CAGR** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
 
-#### 🧮 La Formula
 $$CAGR = \left( \frac{\text{Valore Finale}}{\text{Valore Iniziale}} \right)^{\frac{1}{n}} - 1$$
 
 #### 💡 Come leggere i dati:
@@ -225,6 +224,7 @@ def time_analysis(df):
     st.write("")
     with st.popover("💡 Strategia"):
         st.info(GUIDA_CAGR)
+    st.write("")
 
     # Raggruppamento base
     df_annual = df_temp.groupby('Anno').agg(
