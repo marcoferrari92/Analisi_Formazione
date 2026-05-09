@@ -588,86 +588,70 @@ def time_analysis(df):
 
 
 
-    st.divider()
-    st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
-
-    # Filtriamo i dati solo per il settore target
-    df_aziende = df_temp[df_temp['IS_TARGET'] == 1].copy()
-
-    if not df_aziende.empty:
-        # 1. Raggruppamento per Beneficiario
-        # Calcoliamo: Totale Budget, Numero Aiuti, Data primo aiuto, Data ultimo aiuto
-        oggi = dt.datetime.now()
+    # --- ANALISI COMPORTAMENTALE AZIENDE (CF_TROVATO) ---
+        st.divider()
+        st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
         
-        analisi_beneficiari = df_aziende.groupby('SOGGETTO_BENEFICIARIO').agg({
-            'RNA_ELEMENTO_DI_AIUTO': 'sum',
-            'SOGGETTO_BENEFICIARIO': 'count',
-            'DATA_CONCESSIONE': ['min', 'max']
-        })
-
-        # Pulizia colonne MultiIndex
-        analisi_beneficiari.columns = ['Budget Totale (€)', 'N° Aiuti', 'Primo Aiuto', 'Ultimo Aiuto']
-        analisi_beneficiari = analisi_beneficiari.reset_index()
-
-        # 2. Calcolo Indicatori Strategici
-        # Giorni dall'ultimo aiuto (Recency)
-        analisi_beneficiari['Giorni dall\'ultimo aiuto'] = (oggi - analisi_beneficiari['Ultimo Aiuto']).dt.days
+        df_aziende = df_temp[df_temp['IS_TARGET'] == 1].copy()
         
-        # Frequenza media (Giorni tra un aiuto e l'altro)
-        # Formula: (Ultimo - Primo) / (N° Aiuti - 1)
-        analisi_beneficiari['Giorni medi tra aiuti'] = (analisi_beneficiari['Ultimo Aiuto'] - analisi_beneficiari['Primo Aiuto']).dt.days / (analisi_beneficiari['N° Aiuti'] - 1)
-        analisi_beneficiari['Giorni medi tra aiuti'] = analisi_beneficiari['Giorni medi tra aiuti'].replace([float('inf'), -float('inf')], 0).fillna(0)
-
-        # 3. Identificazione Segmenti
-        def segmenta_azienda(row):
-            if row['N° Aiuti'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Giorni medi tra aiuti'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
-                return "⚠️ In Abbandono"
-            if row['N° Aiuti'] >= 3:
-                return "💎 Top Frequente"
-            if row['N° Aiuti'] == 1:
-                return "🌱 Occasionale (One-shot)"
-            return "✅ Attivo"
-
-        analisi_beneficiari['Status'] = analisi_beneficiari.apply(segmenta_azienda, axis=1)
-
-        # --- VISUALIZZAZIONE ---
-        
-        tab1, tab2 = st.tabs(["🏆 Aziende più Attive", "🥀 Rischio Abbandono"])
-
-        with tab1:
-            st.write("Le aziende che ottengono aiuti con maggior regolarità e volume.")
-            top_active = analisi_beneficiari.sort_values(['N° Aiuti', 'Budget Totale (€)'], ascending=False).head(20)
-            st.dataframe(
-                top_active[['SOGGETTO_BENEFICIARIO', 'Budget Totale (€)', 'N° Aiuti', 'Giorni medi tra aiuti', 'Status']].style.format({
-                    'Budget Totale (€)': '{:,.0f} €',
-                    'Giorni medi tra aiuti': '{:.0f} gg'
-                }).background_gradient(cmap='Greens', subset=['N° Aiuti']),
-                use_container_width=True, hide_index=True
-            )
-
-        with tab2:
-            st.write("Aziende che hanno smesso di ricevere aiuti rispetto alla loro frequenza storica.")
-            abbandono = analisi_beneficiari[analisi_beneficiari['Status'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
+        if not df_aziende.empty:
+            # Raggruppiamo per CF_TROVATO (identificatore univoco)
+            # Prendiamo anche la RAGIONE SOCIALE (la prima trovata per quel CF)
+            analisi_ben = df_aziende.groupby('CF_TROVATO').agg({
+                'RAGIONE SOCIALE': 'first',
+                'RNA_ELEMENTO_DI_AIUTO': 'sum',
+                'CF_TROVATO': 'count',
+                'RNA_DATA_CONCESSIONE': ['min', 'max']
+            })
             
-            if not abbandono.empty:
+            # Pulizia nomi colonne
+            analisi_ben.columns = ['Ragione Sociale', 'Budget Totale (€)', 'N° Aiuti', 'Primo Aiuto', 'Ultimo Aiuto']
+            analisi_ben = analisi_ben.reset_index()
+            
+            oggi_dt = dt.datetime.now()
+            
+            # 1. Calcolo Recency (Giorni dall'ultima "vincita")
+            analisi_ben['Giorni dall\'ultimo aiuto'] = (oggi_dt - analisi_ben['Ultimo Aiuto']).dt.days
+            
+            # 2. Calcolo Frequency (Ritmo medio di ricezione in giorni)
+            # Se ha solo 1 aiuto, la frequenza è 0 (non calcolabile)
+            analisi_ben['Frequenza Media (gg)'] = (analisi_ben['Ultimo Aiuto'] - analisi_ben['Primo Aiuto']).dt.days / (analisi_ben['N° Aiuti'] - 1)
+            analisi_ben['Frequenza Media (gg)'] = analisi_ben['Frequenza Media (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
+            
+            # 3. Logica di Segmentazione (Abbandono vs Attivo)
+            def segmenta_status(row):
+                # Se l'azienda ha una storia (N>1) ma è ferma da più del 150% del suo ritmo solito (minimo 1 anno)
+                if row['N° Aiuti'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Frequenza Media (gg)'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
+                    return "⚠️ In Abbandono"
+                return "✅ Attivo" if row['N° Aiuti'] > 1 else "🌱 Occasionale"
+
+            analisi_ben['Status'] = analisi_ben.apply(segmenta_status, axis=1)
+
+            # --- VISUALIZZAZIONE ---
+            tab_top, tab_churn = st.tabs(["🏆 Aziende più Attive", "🥀 Analisi Abbandono"])
+
+            with tab_top:
+                st.write("Top beneficiari per volume e ricorrenza")
+                df_top = analisi_ben.sort_values(['N° Aiuti', 'Budget Totale (€)'], ascending=False).head(20)
                 st.dataframe(
-                    abbandono[['SOGGETTO_BENEFICIARIO', 'Ultimo Aiuto', 'Giorni dall\'ultimo aiuto', 'Budget Totale (€)', 'N° Aiuti']].style.format({
-                        'Budget Totale (€)': '{:,.0f} €'
-                    }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto']),
+                    df_top[['CF_TROVATO', 'Ragione Sociale', 'Budget Totale (€)', 'N° Aiuti', 'Frequenza Media (gg)', 'Status']].style.format({
+                        'Budget Totale (€)': '{:,.0f} €',
+                        'Frequenza Media (gg)': '{:.0f} gg'
+                    }).background_gradient(cmap='Greens', subset=['N° Aiuti']),
                     use_container_width=True, hide_index=True
                 )
-            else:
-                st.success("Nessuna azienda storica mostra segnali di abbandono critici.")
 
-        # --- INSIGHTS ---
-        col_inf1, col_inf2 = st.columns(2)
-        with col_inf1:
-            freq_media_settore = analisi_beneficiari[analisi_beneficiari['N° Aiuti'] > 1]['Giorni medi tra aiuti'].mean()
-            st.metric("Frequenza Media Settore", f"{freq_media_settore:.0f} giorni", help="Media dei giorni che intercorrono tra una concessione e l'altra per le aziende ricorrenti.")
-        
-        with col_inf2:
-            num_abbandono = len(abbandono)
-            st.metric("Aziende in Rischio", f"{num_abbandono}", delta=-num_abbandono, delta_color="inverse")
-
-    else:
-        st.warning("Dati insufficienti per l'analisi comportamentale delle aziende.")
+            with tab_churn:
+                st.write("Aziende storiche che non ricevono aiuti da un tempo superiore alla loro media")
+                df_churn = analisi_ben[analisi_ben['Status'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
+                if not df_churn.empty:
+                    st.dataframe(
+                        df_churn[['CF_TROVATO', 'Ragione Sociale', 'Ultimo Aiuto', 'Giorni dall\'ultimo aiuto', 'Budget Totale (€)']].style.format({
+                            'Budget Totale (€)': '{:,.0f} €'
+                        }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto']),
+                        use_container_width=True, hide_index=True
+                    )
+                else:
+                    st.success("Nessun segnale di abbandono rilevato sulle aziende ricorrenti.")
+        else:
+            st.warning("Nessun dato 'Target' trovato per l'analisi aziendale.")
