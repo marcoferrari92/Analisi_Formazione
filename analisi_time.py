@@ -307,3 +307,35 @@ def time_analysis(df):
             "Quota Vol. Target (%)": st.column_config.NumberColumn(format="%.2f %%")
         }
     )
+
+    # --- 4. ANALISI DEL TICKET MEDIO E CONCENTRAZIONE ---
+    st.divider()
+    col_a, col_b = st.columns(2)
+
+    with col_a:
+        st.subheader("💰 Ticket Medio Target")
+        # Calcoliamo il valore medio per pratica nel settore target
+        df_annual['Ticket_Medio'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
+        
+        fig_ticket = px.line(
+            df_annual, x='Anno', y='Ticket_Medio',
+            title="Evoluzione del Contributo Medio (€)",
+            markers=True, line_shape="spline",
+            color_discrete_sequence=['#2ecc71']
+        )
+        fig_ticket.update_layout(yaxis_title="Euro (€)", xaxis_title="")
+        st.plotly_chart(fig_ticket, use_container_width=True)
+
+    with col_b:
+        st.subheader("🎯 Top Beneficiari (Quota Budget)")
+        # Vediamo se il budget è concentrato su pochi
+        top_beneficiari = df_temp[df_temp['IS_TARGET'] == 1].groupby('DENOMINAZIONE')['RNA_ELEMENTO_DI_AIUTO'].sum().nlargest(10).reset_index()
+        
+        fig_top = px.bar(
+            top_beneficiari, x='RNA_ELEMENTO_DI_AIUTO', y='DENOMINAZIONE',
+            orientation='h', title="Top 10 Aziende nel Settore",
+            color_discrete_sequence=['#e67e22']
+        )
+        fig_top.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Budget Totale (€)")
+        st.plotly_chart(fig_top, use_container_width=True)
+
