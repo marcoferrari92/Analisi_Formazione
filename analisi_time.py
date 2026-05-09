@@ -587,24 +587,24 @@ def time_analysis(df):
             """)
 
 
-# --- ANALISI COMPORTAMENTALE AZIENDE (CF_TROVATO) ---
+        # --- ANALISI COMPORTAMENTALE AZIENDE (TARGET VS TOTALE) ---
         st.divider()
-        st.subheader("🏢 Analisi Comparativa Aziende: Target vs Totale")
+        st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
         st.caption("Confronto tra la frequenza di aiuti totali e quelli specifici del settore Target.")
         
-        # 1. Calcolo metriche TOTALI (su tutto il DF senza filtri IS_TARGET)
+        # 1. Calcolo metriche TOTALI (su tutto il DF)
         analisi_tot = df_temp.groupby('CF_TROVATO').agg({
             'CF_TROVATO': 'count',
-            'RNA_DATA_CONCESSIONE': ['min', 'max']
+            'RNA_DATA_CONCESSIONE': ['min', 'max'] # <--- Corretto nome colonna
         })
         analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto Tot', 'Ultimo Aiuto Tot']
         analisi_tot = analisi_tot.reset_index()
         
-        # Calcolo Frequenza Totale
+        # Frequenza Totale in giorni
         analisi_tot['Freq. Totale (gg)'] = (analisi_tot['Ultimo Aiuto Tot'] - analisi_tot['Primo Aiuto Tot']).dt.days / (analisi_tot['N° Aiuti Tot'] - 1)
         analisi_tot['Freq. Totale (gg)'] = analisi_tot['Freq. Totale (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
-        # 2. Calcolo metriche TARGET (solo IS_TARGET == 1)
+        # 2. Calcolo metriche TARGET
         df_target = df_temp[df_temp['IS_TARGET'] == 1].copy()
         
         if not df_target.empty:
@@ -612,51 +612,66 @@ def time_analysis(df):
                 'RAGIONE SOCIALE': 'first',
                 'RNA_ELEMENTO_DI_AIUTO': 'sum',
                 'CF_TROVATO': 'count',
-                'RNA_DATA_CONCESSIONE': ['min', 'max']
+                'RNA_DATA_CONCESSIONE': ['min', 'max'] # <--- Corretto nome colonna
             })
             analisi_target.columns = ['Ragione Sociale', 'Budget Target Totale (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
             analisi_target = analisi_target.reset_index()
             
-            # Calcolo Frequenza Target
+            oggi_dt = dt.datetime.now()
+            
+            # Recency e Frequenza Target basate su RNA_DATA_CONCESSIONE
+            analisi_target['Giorni dall\'ultimo aiuto'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
             analisi_target['Freq. Target (gg)'] = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days / (analisi_target['N° Aiuti Target'] - 1)
             analisi_target['Freq. Target (gg)'] = analisi_target['Freq. Target (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
-            # 3. Unione delle due analisi
+            # 3. Merge finale e segmentazione
             analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Totale (gg)']], on='CF_TROVATO', how='left')
-
-            # 4. Calcolo dell'indice di focalizzazione (Focus %)
-            # Quanto degli aiuti totali è dedicato al target?
-            analisi_finale['Focus Target %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
-
-            # --- VISUALIZZAZIONE ---
-            st.write("Le aziende con la maggior massa critica nel settore Target, messe a confronto con il loro storico totale.")
             
-            # Ordiniamo per chi ha più aiuti nel target
-            df_display = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target Totale (€)'], ascending=False).head(30)
-            
-            st.dataframe(
-                df_display[[
-                    'CF_TROVATO', 'Ragione Sociale', 'Budget Target Totale (€)', 
-                    'N° Aiuti Tot', 'Freq. Totale (gg)', 
-                    'N° Aiuti Target', 'Freq. Target (gg)', 
-                    'Focus Target %'
-                ]].style.format({
-                    'Budget Target Totale (€)': '{:,.0f} €',
-                    'Freq. Totale (gg)': '{:.0f} gg',
-                    'Freq. Target (gg)': '{:.0f} gg',
-                    'Focus Target %': '{:.1f} %'
-                }).background_gradient(cmap='Blues', subset=['Freq. Totale (gg)'])
-                  .background_gradient(cmap='Oranges', subset=['Freq. Target (gg)'])
-                  .background_gradient(cmap='Greens', subset=['Focus Target %']),
-                use_container_width=True, hide_index=True
-            )
+            def segmenta_status(row):
+                if row['N° Aiuti Target'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Freq. Target (gg)'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
+                    return "⚠️ In Abbandono"
+                return "✅ Attivo" if row['N° Aiuti Target'] > 1 else "🌱 Occasionale"
 
-            st.info("""
-            💡 **Come interpretare il confronto:**
-            * **Freq. Totale < Freq. Target**: L'azienda riceve aiuti spesso, ma solo raramente nel tuo settore. Sta ignorando il target o lo usa come ripiego.
-            * **Freq. Totale ≈ Freq. Target**: L'azienda è iperspecializzata. Quasi tutto quello che prende è nel tuo settore (vedi anche **Focus Target %** alto).
-            * **Focus Target % Basso**: È un grande gruppo che prende di tutto; il tuo settore è solo una piccola parte della loro strategia di finanza agevolata.
-            """)
+            analisi_finale['Status Target'] = analisi_finale.apply(segmenta_status, axis=1)
+
+            # --- VISUALIZZAZIONE IN TAB ---
+            tab_top, tab_churn = st.tabs(["🏆 Top Beneficiari Target", "🥀 Abbandono Target"])
+
+            with tab_top:
+                st.write("Aziende con maggior volume nel Target e confronto con la loro operatività totale.")
+                df_top = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target Totale (€)'], ascending=False).head(20)
+                st.dataframe(
+                    df_top[[
+                        'CF_TROVATO', 'Ragione Sociale', 'Budget Target Totale (€)', 
+                        'N° Aiuti Tot', 'Freq. Totale (gg)', 
+                        'N° Aiuti Target', 'Freq. Target (gg)', 'Status Target'
+                    ]].style.format({
+                        'Budget Target Totale (€)': '{:,.0f} €',
+                        'Freq. Totale (gg)': '{:.0f} gg',
+                        'Freq. Target (gg)': '{:.0f} gg'
+                    }).background_gradient(cmap='Greens', subset=['N° Aiuti Target'])
+                      .background_gradient(cmap='Blues', subset=['Freq. Totale (gg)']),
+                    use_container_width=True, hide_index=True
+                )
+
+            with tab_churn:
+                st.write("Aziende storicamente presenti nel Target che mostrano segnali di rallentamento.")
+                df_churn = analisi_finale[analisi_finale['Status Target'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
+                
+                if not df_churn.empty:
+                    st.dataframe(
+                        df_churn[[
+                            'CF_TROVATO', 'Ragione Sociale', 'Ultimo Target', 'Giorni dall\'ultimo aiuto', 
+                            'Freq. Totale (gg)', 'Freq. Target (gg)', 'Budget Target Totale (€)'
+                        ]].style.format({
+                            'Budget Target Totale (€)': '{:,.0f} €',
+                            'Freq. Totale (gg)': '{:.0f} gg',
+                            'Freq. Target (gg)': '{:.0f} gg'
+                        }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto']),
+                        use_container_width=True, hide_index=True
+                    )
+                else:
+                    st.success("Nessuna azienda ricorrente nel Target mostra segnali di abbandono.")
         else:
-            st.warning("Nessun dato Target rilevato per il confronto.")
+            st.warning("Dati Target non sufficienti per il confronto.")
         
