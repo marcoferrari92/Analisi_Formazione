@@ -220,7 +220,11 @@ def time_analysis(df):
 
     # --- ANALISI STRATEGICA: TREND (Grafico) E DETTAGLIO (Tabella) ---
     st.divider()
-    st.subheader("📈 Analisi Strategica: Valore Medio vs Crescita Composta")
+    st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
+    st.write("")
+    with st.popover("💡 Guida alla lettura e Strategia"):
+        st.info(GUIDA_CAGR)
+    st.write("")
     
     import datetime
     anno_corrente = datetime.datetime.now().year
@@ -243,7 +247,7 @@ def time_analysis(df):
     vol_target_start = df_annual['Vol_Target'].iloc[0]
 
     # Calcolo metriche strategiche
-    df_annual['Ticket_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
+    df_annual['Aiuto_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
     df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
     df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
     df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
@@ -259,7 +263,7 @@ def time_analysis(df):
     fig_strategy.add_trace(
         go.Bar(
             x=df_annual['Anno'],
-            y=df_annual['Ticket_Medio_Target'],
+            y=df_annual['Aiuto_Medio_Target'],
             name="Ticket Medio (€)",
             marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Ticket Medio: € %{y:,.0f}<extra></extra>"
@@ -288,15 +292,14 @@ def time_analysis(df):
         template="plotly_white",
         margin=dict(l=0, r=0, t=30, b=0)
     )
-    fig_strategy.update_yaxes(title_text="Ticket Medio (€)", secondary_y=False, tickformat="€,.0f")
+    fig_strategy.update_yaxes(title_text="Aiuto Medio (€)", secondary_y=False, tickformat="€,.0f")
     fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, ticksuffix="%")
     fig_strategy.update_xaxes(type='category')
 
     st.plotly_chart(fig_strategy, use_container_width=True)
 
     # --- PARTE INFERIORE: LA TABELLA DETTAGLIATA ---
-    with st.popover("💡 Guida alla lettura e Strategia"):
-        st.info(GUIDA_CAGR)
+    
 
     # Formattazione per la visualizzazione tabella
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
@@ -331,6 +334,7 @@ def time_analysis(df):
 
     st.dataframe(st_df, hide_index=True, use_container_width=True)
 
+    
     # --- INTERPRETAZIONE FINALE ---
     if len(df_annual) > 1:
         # Analisi basata sull'ultimo anno con dati CAGR disponibili (escluso il parziale)
