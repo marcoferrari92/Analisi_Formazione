@@ -221,7 +221,7 @@ def time_analysis(df):
 
     # --- ANALISI DINAMICA DELLE FINESTRE TEMPORALI ---
     # Layout
-    col1, col2, col3 = st.columns([1, 0.5, 2])
+    col0, col1, col2, col3, col4 = st.columns([0.3, 1, 0.5, 2, 0.3])
 
     anno_attuale = dt.datetime.now().year
     df_clean = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
