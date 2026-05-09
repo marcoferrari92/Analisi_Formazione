@@ -220,7 +220,7 @@ def time_analysis(df):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
     # --- ANALISI DINAMICA DELLE FINESTRE TEMPORALI ---
-    # Creazione del layout a due colonne
+    # Layout
     col_controlli, col_risultati = st.columns([1, 2.5])
 
     anno_attuale = dt.datetime.now().year
@@ -228,14 +228,13 @@ def time_analysis(df):
     
     if not df_clean.empty:
         with col_controlli:
-            st.write("**Configurazione Analisi**")
-            # Slider per definire l'ampiezza della finestra
-            window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_finestra")
+            window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
             st.write("")
-            st.caption("Regola lo slider per identificare periodi 'spot' brevi o macro-tendenze stagionali (es. semestri).")
+            st.info("💡 Questo filtro ti permette di eliminare il 'rumore' di fondo e vedere solo dove storicamente si sono concentrati i grandi volumi.")
 
-        budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
+        # Logica di calcolo (identica alla precedente)
         df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+        budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
 
         rolling_data = []
         for i in range(1, 13):
@@ -248,56 +247,48 @@ def time_analysis(df):
                 nomi_mesi_w.append(mesi_ita[m])
             
             nome_w = nomi_mesi_w[0] if window_size == 1 else f"{nomi_mesi_w[0]}-{nomi_mesi_w[-1]}"
-            
             for anno in df_m_y['Anno'].unique():
                 valore = df_m_y[(df_m_y['Anno'] == anno) & (df_m_y['Mese_Num'].isin(mesi_w))]['RNA_ELEMENTO_DI_AIUTO'].sum()
                 rolling_data.append({'Anno': int(anno), 'Finestra': nome_w, 'Budget': valore})
 
         df_rolling_all = pd.DataFrame(rolling_data)
 
-        # Calcolo Metriche
+        # Metriche e Vincitori
         stats_w = df_rolling_all.groupby('Finestra')['Budget'].agg(['mean', 'sum']).reset_index()
         stats_w.columns = ['Finestra', 'Budget Medio (€)', 'Somma Totale']
         stats_w['Quota sul Totale %'] = (stats_w['Somma Totale'] / budget_totale_storico) * 100
 
-        # Vittorie Annuali
         idx_max = df_rolling_all.groupby('Anno')['Budget'].idxmax()
         vincitori_annuali = df_rolling_all.loc[idx_max]
+        
         vittorie = vincitori_annuali['Finestra'].value_counts().reset_index()
         vittorie.columns = ['Finestra', 'Vittorie']
         
         anni_vittoria = vincitori_annuali.groupby('Finestra')['Anno'].apply(lambda x: ', '.join(map(str, sorted(x, reverse=True)))).reset_index()
         anni_vittoria.columns = ['Finestra', 'Anni Vittoria']
 
-        classifica_finale = stats_w.merge(vittorie, on='Finestra', how='left').fillna(0)
-        classifica_finale = classifica_finale.merge(anni_vittoria, on='Finestra', how='left').fillna("-")
-        classifica_finale['Vittorie'] = classifica_finale['Vittorie'].astype(int)
+        # Unione e FILTRO CRUCIALE
+        classifica_finale = stats_w.merge(vittorie, on='Finestra', how='inner') # 'inner' tiene solo chi ha vinto
+        classifica_finale = classifica_finale.merge(anni_vittoria, on='Finestra', how='left')
+        
         classifica_finale = classifica_finale.sort_values(['Vittorie', 'Budget Medio (€)'], ascending=False)
 
         with col_risultati:
-            st.write(f"**Ranking per Finestre di {window_size} mesi**")
-            st.dataframe(
-                classifica_finale[['Finestra', 'Vittorie', 'Anni Vittoria', 'Budget Medio (€)', 'Quota sul Totale %']].style.format({
-                    'Budget Medio (€)': '{:,.0f} €',
-                    'Quota sul Totale %': '{:.2f} %'
-                }).background_gradient(cmap='YlOrRd', subset=['Quota sul Totale %', 'Vittorie']),
-                use_container_width=True,
-                hide_index=True
-            )
-
-        # Insight Dinamico sotto lo slider
-        with col_controlli:
-            st.divider()
-            top_f = classifica_finale.iloc[0]['Finestra']
-            if window_size <= 3:
-                st.info(f"🎯 **Tattica:** La finestra leader è **{top_f}**. Ottima per campagne veloci.")
-            elif window_size <= 6:
-                st.info(f"🏗️ **Strategia:** Il miglior semestre è **{top_f}**.")
+            if not classifica_finale.empty:
+                st.write(f"**Ranking Vincitori (Finestre di {window_size} mesi)**")
+                st.dataframe(
+                    classifica_finale[['Finestra', 'Vittorie', 'Anni Vittoria', 'Budget Medio (€)', 'Quota sul Totale %']].style.format({
+                        'Budget Medio (€)': '{:,.0f} €',
+                        'Quota sul Totale %': '{:.2f} %'
+                    }).background_gradient(cmap='YlOrRd', subset=['Quota sul Totale %', 'Vittorie']),
+                    use_container_width=True,
+                    hide_index=True
+                )
             else:
-                st.info(f"🌍 **Macro:** Focus su **{top_f}**.")
+                st.error("Nessuna finestra ha vinto in modo chiaro. Prova a cambiare l'ampiezza dello slider.")
 
     else:
-        st.warning("Dati insufficienti per l'analisi dinamica.")
+        st.warning("Dati insufficienti negli anni conclusi.")
 
 
 
