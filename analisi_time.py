@@ -8,8 +8,7 @@ import datetime as dt
 
 
 GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
-GUIDA_TIMEMAP = """ I mesi più intensi indicano quando le aziende ricevono più liquidità. 
-                    Usa l'analisi per finestre per individuare i periodi migliori per proporre nuovi investimenti."""
+GUIDA_TIMEMAP = """ 💡 Periodi che si ripetono come i più intensi (vincitori) in più annate, e che hanno anche un budget medio annuo più alto, possono indicare trend da sfruttare per individuare i momenti migliori per le campagne marketing"""
 GUIDA_CAGR = r"""
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
@@ -192,9 +191,6 @@ def time_analysis(df):
     st.write("")
     st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
     st.write("")
-    with st.popover("💡 Strategia"):
-        st.info(GUIDA_TIMEMAP)
-    st.write("")
               
     df_heat_data = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     pivot_heat = df_heat_data.pivot(index='Anno', columns='Mese_Num', values='RNA_ELEMENTO_DI_AIUTO').fillna(0)
@@ -230,8 +226,9 @@ def time_analysis(df):
     if not df_clean.empty:
         with col1:
             window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
-            st.info("💡 Periodi che si ripetono come i più intensi (vincitori) in più annate, e che hanno anche un budget medio annuo più alto, possono indicare trend da sfruttare per individuare i momenti migliori per le campagne marketing")
-            
+            with st.popover("💡 Strategia"):
+              st.info(GUIDA_TIMEMAP)
+      
         # Logica di calcolo (identica alla precedente)
         df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
         budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
