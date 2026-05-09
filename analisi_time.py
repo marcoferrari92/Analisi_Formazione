@@ -273,7 +273,7 @@ def time_analysis(df):
 
         with col3:
             if not classifica_finale.empty:
-                st.write(f"**Ranking Vincitori (Finestre di {window_size} mesi)**")
+                st.write(f"**Periodi Hot (Finestre di {window_size} mesi)**")
                 st.dataframe(
                     classifica_finale[['Finestra', 'Vittorie', 'Anni Vittoria', 'Budget Medio (€)', 'Quota sul Totale %']].style.format({
                         'Budget Medio (€)': '{:,.0f} €',
@@ -373,7 +373,6 @@ def time_analysis(df):
     st.plotly_chart(fig_strategy, use_container_width=True)
 
     # --- PARTE INFERIORE: LA TABELLA DETTAGLIATA ---
-    
 
     # Formattazione per la visualizzazione tabella
     df_view = df_annual.sort_values('Anno', ascending=False).copy()
