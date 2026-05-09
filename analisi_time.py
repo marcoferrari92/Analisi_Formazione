@@ -586,4 +586,88 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-    
+
+
+st.divider()
+    st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
+
+    # Filtriamo i dati solo per il settore target
+    df_aziende = df_temp[df_temp['IS_TARGET'] == 1].copy()
+
+    if not df_aziende.empty:
+        # 1. Raggruppamento per Beneficiario
+        # Calcoliamo: Totale Budget, Numero Aiuti, Data primo aiuto, Data ultimo aiuto
+        oggi = dt.datetime.now()
+        
+        analisi_beneficiari = df_aziende.groupby('SOGGETTO_BENEFICIARIO').agg({
+            'RNA_ELEMENTO_DI_AIUTO': 'sum',
+            'SOGGETTO_BENEFICIARIO': 'count',
+            'DATA_CONCESSIONE': ['min', 'max']
+        })
+
+        # Pulizia colonne MultiIndex
+        analisi_beneficiari.columns = ['Budget Totale (€)', 'N° Aiuti', 'Primo Aiuto', 'Ultimo Aiuto']
+        analisi_beneficiari = analisi_beneficiari.reset_index()
+
+        # 2. Calcolo Indicatori Strategici
+        # Giorni dall'ultimo aiuto (Recency)
+        analisi_beneficiari['Giorni dall\'ultimo aiuto'] = (oggi - analisi_beneficiari['Ultimo Aiuto']).dt.days
+        
+        # Frequenza media (Giorni tra un aiuto e l'altro)
+        # Formula: (Ultimo - Primo) / (N° Aiuti - 1)
+        analisi_beneficiari['Giorni medi tra aiuti'] = (analisi_beneficiari['Ultimo Aiuto'] - analisi_beneficiari['Primo Aiuto']).dt.days / (analisi_beneficiari['N° Aiuti'] - 1)
+        analisi_beneficiari['Giorni medi tra aiuti'] = analisi_beneficiari['Giorni medi tra aiuti'].replace([float('inf'), -float('inf')], 0).fillna(0)
+
+        # 3. Identificazione Segmenti
+        def segmenta_azienda(row):
+            if row['N° Aiuti'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Giorni medi tra aiuti'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
+                return "⚠️ In Abbandono"
+            if row['N° Aiuti'] >= 3:
+                return "💎 Top Frequente"
+            if row['N° Aiuti'] == 1:
+                return "🌱 Occasionale (One-shot)"
+            return "✅ Attivo"
+
+        analisi_beneficiari['Status'] = analisi_beneficiari.apply(segmenta_azienda, axis=1)
+
+        # --- VISUALIZZAZIONE ---
+        
+        tab1, tab2 = st.tabs(["🏆 Aziende più Attive", "🥀 Rischio Abbandono"])
+
+        with tab1:
+            st.write("Le aziende che ottengono aiuti con maggior regolarità e volume.")
+            top_active = analisi_beneficiari.sort_values(['N° Aiuti', 'Budget Totale (€)'], ascending=False).head(20)
+            st.dataframe(
+                top_active[['SOGGETTO_BENEFICIARIO', 'Budget Totale (€)', 'N° Aiuti', 'Giorni medi tra aiuti', 'Status']].style.format({
+                    'Budget Totale (€)': '{:,.0f} €',
+                    'Giorni medi tra aiuti': '{:.0f} gg'
+                }).background_gradient(cmap='Greens', subset=['N° Aiuti']),
+                use_container_width=True, hide_index=True
+            )
+
+        with tab2:
+            st.write("Aziende che hanno smesso di ricevere aiuti rispetto alla loro frequenza storica.")
+            abbandono = analisi_beneficiari[analisi_beneficiari['Status'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
+            
+            if not abbandono.empty:
+                st.dataframe(
+                    abbandono[['SOGGETTO_BENEFICIARIO', 'Ultimo Aiuto', 'Giorni dall\'ultimo aiuto', 'Budget Totale (€)', 'N° Aiuti']].style.format({
+                        'Budget Totale (€)': '{:,.0f} €'
+                    }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto']),
+                    use_container_width=True, hide_index=True
+                )
+            else:
+                st.success("Nessuna azienda storica mostra segnali di abbandono critici.")
+
+        # --- INSIGHTS ---
+        col_inf1, col_inf2 = st.columns(2)
+        with col_inf1:
+            freq_media_settore = analisi_beneficiari[analisi_beneficiari['N° Aiuti'] > 1]['Giorni medi tra aiuti'].mean()
+            st.metric("Frequenza Media Settore", f"{freq_media_settore:.0f} giorni", help="Media dei giorni che intercorrono tra una concessione e l'altra per le aziende ricorrenti.")
+        
+        with col_inf2:
+            num_abbandono = len(abbandono)
+            st.metric("Aziende in Rischio", f"{num_abbandono}", delta=-num_abbandono, delta_color="inverse")
+
+    else:
+        st.warning("Dati insufficienti per l'analisi comportamentale delle aziende.")
