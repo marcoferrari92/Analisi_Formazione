@@ -219,67 +219,87 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
-    # --- ANALISI FINESTRA MOBILE CORRETTA ---
+    # --- ANALISI INTEGRALE DELLE TRIPLETTE (12 MESI SCORREVOLI) ---
+    import datetime as dt
+    
     st.write("")
-    st.subheader("🔄 Analisi delle Finestre Temporali (Filtro Anni Completi)")
+    st.subheader("📊 Ranking Integrale delle Finestre Temporali (3 mesi)")
 
-    # 1. Filtriamo l'anno attuale per non drogare la statistica con dati parziali
     anno_attuale = dt.datetime.now().year
-    mese_attuale = dt.datetime.now().month
+    # Filtriamo gli anni completi per avere una statistica pulita
+    df_clean = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
     
-    # Prendiamo solo anni finiti o l'anno attuale solo se siamo a Dicembre
-    df_clean_rolling = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
-    
-    if not df_clean_rolling.empty:
-        # Raggruppamento per Anno e Mese
-        df_rolling = df_clean_rolling.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-
-        # Creazione finestre (tripletta di mesi)
-        windows = []
-        for i in range(1, 11): # Ci fermiamo a 10 per non sforare l'anno (es. 10-11-12)
-            w_months = [i, i+1, i+2]
-            nome = f"{mesi_ita[i]}-{mesi_ita[i+1]}-{mesi_ita[i+2]}"
-            windows.append({'Mesi': w_months, 'Nome': nome})
-
-        # Calcolo budget per finestra
-        res_list = []
-        for anno in df_rolling['Anno'].unique():
-            df_a = df_rolling[df_rolling['Anno'] == anno]
-            for w in windows:
-                b_w = df_a[df_a['Mese_Num'].isin(w['Mesi'])]['RNA_ELEMENTO_DI_AIUTO'].sum()
-                res_list.append({'Anno': anno, 'Finestra': w['Nome'], 'Budget': b_w})
+    if not df_clean.empty:
+        # 1. Calcolo del budget totale storico (Target) per la quota %
+        budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
         
-        df_res_w = pd.DataFrame(res_list)
+        # 2. Creazione del dataset Anno/Mese
+        df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
 
-        # Identifica il vincitore reale per anno
-        idx_max = df_res_w.groupby('Anno')['Budget'].idxmax()
-        df_winners = df_res_w.loc[idx_max]
-
-        # Classifica ricorrenza
-        classifica = df_winners['Finestra'].value_counts().reset_index()
-        classifica.columns = ['Finestra', 'Vittorie']
-        
-        # Budget medio per pesare l'importanza economica
-        medie = df_res_w.groupby('Finestra')['Budget'].mean().reset_index()
-        classifica = classifica.merge(medie, on='Finestra').sort_values(['Vittorie', 'Budget'], ascending=False)
-
-        col_t1, col_t2 = st.columns([1.2, 1])
-        with col_t1:
-            st.dataframe(
-                classifica.style.format({'Budget': '{:,.0f} €'}).background_gradient(cmap='Reds', subset=['Vittorie']),
-                hide_index=True, use_container_width=True
-            )
-        
-        with col_t2:
-            real_top = classifica.iloc[0]['Finestra']
-            st.markdown(f"### 🎯 Verità Strategica: **{real_top}**")
-            st.write(f"Escludendo l'anno in corso per non falsare i dati, la finestra che domina storicamente è **{real_top}**.")
+        # 3. Generazione delle 12 triplette (Scorrevoli su 12 mesi)
+        rolling_data = []
+        for i in range(1, 13):
+            # Definiamo i 3 mesi della finestra (gestendo il reset dopo Dicembre)
+            m1 = i
+            m2 = i + 1 if i + 1 <= 12 else i + 1 - 12
+            m3 = i + 2 if i + 2 <= 12 else i + 2 - 12
             
-            # Controllo coerenza visiva
-            if "Set" in real_top or "Ott" in real_top:
-                st.success("L'analisi ora riflette le macchie scure che vedi sulla mappa (Autunno).")
+            nome_w = f"{mesi_ita[m1]}-{mesi_ita[m2]}-{mesi_ita[m3]}"
+            mesi_w = [m1, m2, m3]
+            
+            # Per ogni anno calcoliamo il valore di questa specifica finestra
+            for anno in df_m_y['Anno'].unique():
+                valore = df_m_y[(df_m_y['Anno'] == anno) & (df_m_y['Mese_Num'].isin(mesi_w))]['RNA_ELEMENTO_DI_AIUTO'].sum()
+                rolling_data.append({'Anno': int(anno), 'Finestra': nome_w, 'Budget': valore})
+
+        df_rolling_all = pd.DataFrame(rolling_data)
+
+        # 4. Calcolo delle metriche per la classifica
+        # A. Budget Medio per finestra
+        stats_w = df_rolling_all.groupby('Finestra')['Budget'].mean().reset_index()
+        stats_w.rename(columns={'Budget': 'Budget Medio (€)'}, inplace=True)
+        
+        # B. Quota sul Budget Totale Storico (%)
+        # Nota: sommiamo i budget medi e normalizziamo (o usiamo la somma totale dei budget della finestra / budget totale storico)
+        somma_storica_w = df_rolling_all.groupby('Finestra')['Budget'].sum().reset_index()
+        stats_w['Quota sul Totale %'] = (somma_storica_w['Budget'] / budget_totale_storico) * 100
+
+        # C. Conteggio Vittorie (quante volte è stata la Top Window dell'anno)
+        idx_max = df_rolling_all.groupby('Anno')['Budget'].idxmax()
+        vincitori_annuali = df_rolling_all.loc[idx_max]
+        vittorie = vincitori_annuali['Finestra'].value_counts().reset_index()
+        vittorie.columns = ['Finestra', 'Vittorie']
+        
+        # D. Elenco Anni Vittoria
+        anni_vittoria = vincitori_annuali.groupby('Finestra')['Anno'].apply(lambda x: ', '.join(map(str, sorted(x, reverse=True)))).reset_index()
+        anni_vittoria.columns = ['Finestra', 'Anni Vittoria']
+
+        # 5. Unione finale dei dati
+        classifica_finale = stats_w.merge(vittorie, on='Finestra', how='left').fillna(0)
+        classifica_finale = classifica_finale.merge(anni_vittoria, on='Finestra', how='left').fillna("-")
+        classifica_finale['Vittorie'] = classifica_finale['Vittorie'].astype(int)
+
+        # Ordinamento per importanza economica e vittorie
+        classifica_finale = classifica_finale.sort_values(['Vittorie', 'Budget Medio (€)'], ascending=False)
+
+        # --- VISUALIZZAZIONE ---
+        st.dataframe(
+            classifica_finale.style.format({
+                'Budget Medio (€)': '{:,.0f} €',
+                'Quota sul Totale %': '{:.2f} %'
+            }).background_gradient(cmap='YlOrRd', subset=['Quota sul Totale %', 'Vittorie']),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.info("""
+        💡 **Come leggere la tabella:**
+        * **Quota sul Totale %**: Indica quanto "pesa" quella tripletta rispetto a tutti i soldi erogati negli anni. Poiché le finestre sono scorrevoli e si sovrappongono, la somma delle quote supererà il 100%.
+        * **Vittorie**: È il dato più solido. Indica quante volte quella specifica finestra ha battuto tutte le altre 11 nello stesso anno.
+        """)
+
     else:
-        st.info("Attendi la fine dell'anno per l'analisi comparativa o carica più dati storici.")
+        st.warning("Dati insufficienti negli anni conclusi per generare il ranking delle triplette.")
 
 
 
