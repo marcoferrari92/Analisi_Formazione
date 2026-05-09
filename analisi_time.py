@@ -26,7 +26,7 @@ $$CAGR = \left( \frac{\text{Valore Finale}}{\text{Valore Iniziale}} \right)^{\fr
 
 
 
-def time_analysis(df, guida_timeline="", guida_timemap=""):
+def time_analysis(df):
     """
     Renderizza l'analisi temporale con grafici a linee perfettamente sincronizzati
     e collegati da una Spike Line verticale unica (hover unificato).
