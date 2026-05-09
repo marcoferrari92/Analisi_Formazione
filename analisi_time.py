@@ -220,7 +220,7 @@ def time_analysis(df):
 
     # --- TABELLA DI ANALISI STAGIONALE E MARKETING ---
     st.write("")
-    st.write(f"####Classifica Stagionale del Budget Target")
+    st.write("Classifica Stagionale del Budget Target")
     
     # 1. Calcolo la somma del budget per ogni mese su tutta la serie storica
     df_mesi_stat = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -244,7 +244,7 @@ def time_analysis(df):
         df_rank.columns = ['Mese', 'Budget Totale (€)', 'Incidenza %']
         
         # 4. Visualizzazione Tabellare con Formattazione
-        col1, col2 = st.columns([2, 2]) 
+        col1, col2 = st.columns([1.5, 2.5]) 
         with col1:
             st.dataframe(
                 df_rank.style.format({
@@ -254,16 +254,17 @@ def time_analysis(df):
                 use_container_width=True,
                 hide_index=True
             )
-        
-        # --- 5. INSIGHT AUTOMATICO SUI PERIODI SPOT ---
-        top_mese = df_rank.iloc[0]['Mese']
-        peso_top = df_rank.iloc[0]['Incidenza %']
-        
-        st.info(f"""
-        🎯 **Insight Operativo:** Il mese di **{top_mese}** è il periodo spot più rilevante, 
-        concentrando da solo il **{peso_top:.1f}%** delle risorse totali allocate storicamente. 
-        Si consiglia di pianificare le campagne di acquisizione clienti con un anticipo di 30-45 giorni rispetto ai primi 3 mesi in classifica.
-        """)
+            
+        with col2: 
+            # --- 5. INSIGHT AUTOMATICO SUI PERIODI SPOT ---
+            top_mese = df_rank.iloc[0]['Mese']
+            peso_top = df_rank.iloc[0]['Incidenza %']
+            
+            st.info(f"""
+            🎯 **Insight Operativo:** Il mese di **{top_mese}** è il periodo spot più rilevante, 
+            concentrando da solo il **{peso_top:.1f}%** delle risorse totali allocate storicamente. 
+            Si consiglia di pianificare le campagne di acquisizione clienti con un anticipo di 30-45 giorni rispetto ai primi 3 mesi in classifica.
+            """)
         
     else:
         st.warning("Nessun dato disponibile per generare la classifica stagionale.")
