@@ -587,15 +587,15 @@ def time_analysis(df):
             """)
 
 
-        # --- ANALISI COMPORTAMENTALE AZIENDE (TARGET VS TOTALE) ---
+        # --- ANALISI COMPORTAMENTALE AZIENDE (P.IVA E SCALE COLORE UNIFICATE) ---
         st.divider()
         st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
-        st.caption("Confronto tra la frequenza di aiuti totali e quelli specifici del settore Target.")
+        st.caption("Confronto diretto tra l'operatività totale dell'azienda e quella nel settore Target.")
         
-        # 1. Calcolo metriche TOTALI (su tutto il DF)
+        # 1. Calcolo metriche TOTALI
         analisi_tot = df_temp.groupby('CF_TROVATO').agg({
             'CF_TROVATO': 'count',
-            'RNA_DATA_CONCESSIONE': ['min', 'max'] # <--- Corretto nome colonna
+            'RNA_DATA_CONCESSIONE': ['min', 'max']
         })
         analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto Tot', 'Ultimo Aiuto Tot']
         analisi_tot = analisi_tot.reset_index()
@@ -612,20 +612,22 @@ def time_analysis(df):
                 'RAGIONE SOCIALE': 'first',
                 'RNA_ELEMENTO_DI_AIUTO': 'sum',
                 'CF_TROVATO': 'count',
-                'RNA_DATA_CONCESSIONE': ['min', 'max'] # <--- Corretto nome colonna
+                'RNA_DATA_CONCESSIONE': ['min', 'max']
             })
+            # Rinominato CF_TROVATO in P.IVA nel mapping delle colonne
             analisi_target.columns = ['Ragione Sociale', 'Budget Target Totale (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
             analisi_target = analisi_target.reset_index()
+            analisi_target.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
             
             oggi_dt = dt.datetime.now()
             
-            # Recency e Frequenza Target basate su RNA_DATA_CONCESSIONE
+            # Recency e Frequenza Target
             analisi_target['Giorni dall\'ultimo aiuto'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
             analisi_target['Freq. Target (gg)'] = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days / (analisi_target['N° Aiuti Target'] - 1)
             analisi_target['Freq. Target (gg)'] = analisi_target['Freq. Target (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
             # 3. Merge finale e segmentazione
-            analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Totale (gg)']], on='CF_TROVATO', how='left')
+            analisi_finale = analisi_target.merge(analisi_tot.rename(columns={'CF_TROVATO': 'P.IVA'})[['P.IVA', 'N° Aiuti Tot', 'Freq. Totale (gg)']], on='P.IVA', how='left')
             
             def segmenta_status(row):
                 if row['N° Aiuti Target'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Freq. Target (gg)'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
@@ -638,40 +640,43 @@ def time_analysis(df):
             tab_top, tab_churn = st.tabs(["🏆 Top Beneficiari Target", "🥀 Abbandono Target"])
 
             with tab_top:
-                st.write("Aziende con maggior volume nel Target e confronto con la loro operatività totale.")
+                # Riordino colonne per affiancare N° Aiuti e Frequenze
+                colonne_display = [
+                    'P.IVA', 'Ragione Sociale', 'Budget Target Totale (€)', 
+                    'N° Aiuti Tot', 'N° Aiuti Target', 
+                    'Freq. Totale (gg)', 'Freq. Target (gg)', 
+                    'Status Target'
+                ]
+                
                 df_top = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target Totale (€)'], ascending=False).head(20)
+                
                 st.dataframe(
-                    df_top[[
-                        'CF_TROVATO', 'Ragione Sociale', 'Budget Target Totale (€)', 
-                        'N° Aiuti Tot', 'Freq. Totale (gg)', 
-                        'N° Aiuti Target', 'Freq. Target (gg)', 'Status Target'
-                    ]].style.format({
+                    df_top[colonne_display].style.format({
                         'Budget Target Totale (€)': '{:,.0f} €',
                         'Freq. Totale (gg)': '{:.0f} gg',
                         'Freq. Target (gg)': '{:.0f} gg'
-                    }).background_gradient(cmap='Greens', subset=['N° Aiuti Target'])
-                      .background_gradient(cmap='Blues', subset=['Freq. Totale (gg)']),
+                    }).background_gradient(cmap='Blues', subset=['Freq. Totale (gg)', 'Freq. Target (gg)']), # Scala colore unificata
                     use_container_width=True, hide_index=True
                 )
 
             with tab_churn:
-                st.write("Aziende storicamente presenti nel Target che mostrano segnali di rallentamento.")
+                colonne_churn = [
+                    'P.IVA', 'Ragione Sociale', 'Ultimo Target', 'Giorni dall\'ultimo aiuto', 
+                    'Freq. Totale (gg)', 'Freq. Target (gg)', 'Budget Target Totale (€)'
+                ]
+                
                 df_churn = analisi_finale[analisi_finale['Status Target'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
                 
                 if not df_churn.empty:
                     st.dataframe(
-                        df_churn[[
-                            'CF_TROVATO', 'Ragione Sociale', 'Ultimo Target', 'Giorni dall\'ultimo aiuto', 
-                            'Freq. Totale (gg)', 'Freq. Target (gg)', 'Budget Target Totale (€)'
-                        ]].style.format({
+                        df_churn[colonne_churn].style.format({
                             'Budget Target Totale (€)': '{:,.0f} €',
                             'Freq. Totale (gg)': '{:.0f} gg',
                             'Freq. Target (gg)': '{:.0f} gg'
-                        }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto']),
+                        }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto'])
+                          .background_gradient(cmap='Blues', subset=['Freq. Totale (gg)', 'Freq. Target (gg)']), # Scala colore unificata anche qui
                         use_container_width=True, hide_index=True
                     )
                 else:
-                    st.success("Nessuna azienda ricorrente nel Target mostra segnali di abbandono.")
-        else:
-            st.warning("Dati Target non sufficienti per il confronto.")
+                    st.success("Nessun segnale di abbandono rilevato nel perimetro Target.")
         
