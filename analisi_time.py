@@ -218,79 +218,67 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
-    # --- ANALISI A FINESTRA MOBILE (TRIMESTRI SCORREVOLI) ---
+    # --- ANALISI FINESTRA MOBILE CORRETTA ---
     st.write("")
-    st.subheader("🔄 Analisi delle Finestre Temporali Scorrevoli (3 mesi)")
+    st.subheader("🔄 Analisi delle Finestre Temporali (Filtro Anni Completi)")
 
-    # 1. Sommiamo il budget per ogni Anno e Mese
-    df_rolling = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+    # 1. Filtriamo l'anno attuale per non drogare la statistica con dati parziali
+    anno_attuale = dt.datetime.now().year
+    mese_attuale = dt.datetime.now().month
+    
+    # Prendiamo solo anni finiti o l'anno attuale solo se siamo a Dicembre
+    df_clean_rolling = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
+    
+    if not df_clean_rolling.empty:
+        # Raggruppamento per Anno e Mese
+        df_rolling = df_clean_rolling.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
 
-    if not df_rolling.empty:
-        # Creiamo tutte le possibili finestre di 3 mesi
+        # Creazione finestre (tripletta di mesi)
         windows = []
-        for i in range(1, 13):
-            m1 = i
-            m2 = i + 1 if i + 1 <= 12 else i + 1 - 12
-            m3 = i + 2 if i + 2 <= 12 else i + 2 - 12
-            nome_finestra = f"{mesi_ita[m1]}-{mesi_ita[m2]}-{mesi_ita[m3]}"
-            windows.append({'Mesi': [m1, m2, m3], 'Nome': nome_finestra})
+        for i in range(1, 11): # Ci fermiamo a 10 per non sforare l'anno (es. 10-11-12)
+            w_months = [i, i+1, i+2]
+            nome = f"{mesi_ita[i]}-{mesi_ita[i+1]}-{mesi_ita[i+2]}"
+            windows.append({'Mesi': w_months, 'Nome': nome})
 
-        # 2. Calcoliamo il valore di ogni finestra per ogni anno
-        risultati_finestre = []
+        # Calcolo budget per finestra
+        res_list = []
         for anno in df_rolling['Anno'].unique():
-            df_anno = df_rolling[df_rolling['Anno'] == anno]
+            df_a = df_rolling[df_rolling['Anno'] == anno]
             for w in windows:
-                budget_finestra = df_anno[df_anno['Mese_Num'].isin(w['Mesi'])]['RNA_ELEMENTO_DI_AIUTO'].sum()
-                risultati_finestre.append({
-                    'Anno': anno,
-                    'Finestra': w['Nome'],
-                    'Budget': budget_finestra
-                })
+                b_w = df_a[df_a['Mese_Num'].isin(w['Mesi'])]['RNA_ELEMENTO_DI_AIUTO'].sum()
+                res_list.append({'Anno': anno, 'Finestra': w['Nome'], 'Budget': b_w})
         
-        df_res_w = pd.DataFrame(risultati_finestre)
+        df_res_w = pd.DataFrame(res_list)
 
-        # 3. Identifichiamo la finestra vincitrice per ogni anno
-        idx_max_w = df_res_w.groupby('Anno')['Budget'].idxmax()
-        df_vincitori_w = df_res_w.loc[idx_max_w].copy()
+        # Identifica il vincitore reale per anno
+        idx_max = df_res_w.groupby('Anno')['Budget'].idxmax()
+        df_winners = df_res_w.loc[idx_max]
 
-        # 4. Classifica della Ricorrenza
-        classifica_w = df_vincitori_w['Finestra'].value_counts().reset_index()
-        classifica_w.columns = ['Finestra Temporale', 'Anni da Leader']
+        # Classifica ricorrenza
+        classifica = df_winners['Finestra'].value_counts().reset_index()
+        classifica.columns = ['Finestra', 'Vittorie']
         
-        # Aggiungiamo il budget medio per finestra per dare peso economico
-        media_budget_w = df_res_w.groupby('Finestra')['Budget'].mean().reset_index()
-        classifica_w = classifica_w.merge(media_budget_w, left_on='Finestra Temporale', right_on='Finestra').drop('Finestra', axis=1)
-        classifica_w.rename(columns={'Budget': 'Budget Medio Finestra (€)'}, inplace=True)
+        # Budget medio per pesare l'importanza economica
+        medie = df_res_w.groupby('Finestra')['Budget'].mean().reset_index()
+        classifica = classifica.merge(medie, on='Finestra').sort_values(['Vittorie', 'Budget'], ascending=False)
 
-        col_w1, col_w2 = st.columns([1.2, 1])
-
-        with col_w1:
-            st.write("**Ranking delle Finestre di Marketing**")
+        col_t1, col_t2 = st.columns([1.2, 1])
+        with col_t1:
             st.dataframe(
-                classifica_w.style.background_gradient(subset=['Anni da Leader'], cmap='Oranges')
-                .format({'Budget Medio Finestra (€)': '{:,.0f} €'}),
-                use_container_width=True,
-                hide_index=True
+                classifica.style.format({'Budget': '{:,.0f} €'}).background_gradient(cmap='Reds', subset=['Vittorie']),
+                hide_index=True, use_container_width=True
             )
-
-        with col_w2:
-            top_spot = classifica_w.iloc[0]['Finestra Temporale']
-            volte_w = int(classifica_w.iloc[0]['Anni da Leader'])
-            tot_anni_w = df_vincitori_w['Anno'].nunique()
-
-            st.markdown(f"### 🎯 Finestra Strategica: **{top_spot}**")
-            st.write(f"""
-            L'analisi scorrevole conferma che la finestra **{top_spot}** è la più performante, 
-            essendo stata la "zona" con più budget per **{volte_w} anni su {tot_anni_w}**.
-            """)
+        
+        with col_t2:
+            real_top = classifica.iloc[0]['Finestra']
+            st.markdown(f"### 🎯 Verità Strategica: **{real_top}**")
+            st.write(f"Escludendo l'anno in corso per non falsare i dati, la finestra che domina storicamente è **{real_top}**.")
             
-            if "Set-Ott-Nov" in classifica_w['Finestra Temporale'].values[:2]:
-                st.success(f"✅ La tua intuizione è confermata: il periodo autunnale è tra i primi per ricorrenza storica.")
-            
-            st.info(f"💡 **Consiglio Marketing:** Inizia la pressione pubblicitaria 30 giorni prima di **{top_spot.split('-')[0]}**.")
-
+            # Controllo coerenza visiva
+            if "Set" in real_top or "Ott" in real_top:
+                st.success("L'analisi ora riflette le macchie scure che vedi sulla mappa (Autunno).")
     else:
-        st.warning("Dati insufficienti per l'analisi a finestra mobile.")
+        st.info("Attendi la fine dell'anno per l'analisi comparativa o carica più dati storici.")
 
 
 
