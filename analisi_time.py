@@ -230,7 +230,7 @@ def time_analysis(df):
     if not df_clean.empty:
         with col1:
             window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
-            st.info("💡 Periodi che si ripetono come i più intensi (vincitori) in più annate, e con un budget medio annuo più alto, possono indicare trend da sfruttare per individuare i momenti migliori per le campagne marketing")
+            st.info("💡 Periodi che si ripetono come i più intensi (vincitori) in più annate, e che hanno anche un budget medio annuo più alto, possono indicare trend da sfruttare per individuare i momenti migliori per le campagne marketing")
             
         # Logica di calcolo (identica alla precedente)
         df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
