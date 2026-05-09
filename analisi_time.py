@@ -187,6 +187,7 @@ def time_analysis(df):
   
     # --- HEATMAP (STAGIONALITÀ) ---
     st.divider()
+    st.write("")
     st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
     st.write("")
     with st.popover("💡 Strategia"):
@@ -220,6 +221,7 @@ def time_analysis(df):
 
     # --- ANALISI STRATEGICA: TREND (Grafico) E DETTAGLIO (Tabella) ---
     st.divider()
+    st.write("")
     st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
     st.write("")
     with st.popover("💡 Guida alla lettura e Strategia"):
