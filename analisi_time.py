@@ -221,13 +221,13 @@ def time_analysis(df):
 
     # --- ANALISI DINAMICA DELLE FINESTRE TEMPORALI ---
     # Layout
-    col_controlli, col_risultati = st.columns([1, 2.5])
+    col1, col2, col3 = st.columns([1, 0.5, 2])
 
     anno_attuale = dt.datetime.now().year
     df_clean = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
     
     if not df_clean.empty:
-        with col_controlli:
+        with col1:
             window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
             
         # Logica di calcolo (identica alla precedente)
@@ -271,7 +271,7 @@ def time_analysis(df):
         
         classifica_finale = classifica_finale.sort_values(['Vittorie', 'Budget Medio (€)'], ascending=False)
 
-        with col_risultati:
+        with col3:
             if not classifica_finale.empty:
                 st.write(f"**Ranking Vincitori (Finestre di {window_size} mesi)**")
                 st.dataframe(
