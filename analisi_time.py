@@ -220,9 +220,6 @@ def time_analysis(df):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
     # --- ANALISI DINAMICA DELLE FINESTRE TEMPORALI ---
-    st.write("")
-    st.subheader("🎚️ Analisi Dinamica delle Finestre di Mercato")
-
     # Creazione del layout a due colonne
     col_controlli, col_risultati = st.columns([1, 2.5])
 
