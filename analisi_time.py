@@ -56,9 +56,8 @@ def time_analysis(df):
 
     # --- INIZIO COSTRUZIONE FIGURA UNICA ---
     st.write("")
-    if guida_timeline:
-        with st.popover("💡 Strategia"):
-            st.info(GUIDA_TIMELINE)
+    with st.popover("💡 Strategia"):
+        st.info(GUIDA_TIMELINE)
     
     # 2. Creazione della Figura con Subplots (2 righe, 1 colonna)
     # shared_xaxes=True è la chiave per la sincronizzazione del puntatore
@@ -190,9 +189,8 @@ def time_analysis(df):
     st.divider()
     st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
     st.write("")
-    if guida_timemap:
-        with st.popover("💡 Strategia"):
-            st.info(GUIDA_TIMEMAP)
+    with st.popover("💡 Strategia"):
+        st.info(GUIDA_TIMEMAP)
     st.write("")
               
     df_heat_data = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
