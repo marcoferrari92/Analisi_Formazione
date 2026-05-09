@@ -368,38 +368,69 @@ def time_analysis(df):
              # --- CASISTICA ---
             st.write("")
 
-            # CASO 1: CRESCITA RALLENTATA + AIUTO SU (CONSOLIDAMENTO)
+            # --- INTERPRETAZIONE FINALE (4 CASI CORE) ---
+    if len(df_annual) > 1:
+        df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
+        if len(df_valid) >= 2:
+            ultimo = df_valid.iloc[-1]
+            penultimo = df_valid.iloc[-2]
+            
+            # Variabili Decisionali
+            cagr_att = ultimo['CAGR Vol. Target']
+            cagr_prec = penultimo['CAGR Vol. Target']
+            diff_cagr = cagr_att - cagr_prec
+            
+            aiuto_med_att = ultimo['Aiuto_Medio_Target']
+            aiuto_med_prec = penultimo['Aiuto_Medio_Target']
+            diff_aiuto = aiuto_med_att - aiuto_med_prec
+            perc_aiuto = (diff_aiuto / aiuto_med_prec * 100) if aiuto_med_prec > 0 else 0
+            
+            # Variabili di Quantità (Senza separatore migliaia)
+            d_n = int(ultimo['Aiuti_Target'] - penultimo['Aiuti_Target'])
+            
+            # Costruzione prefisso Numero Aiuti
+            if d_n > 0:
+                txt_n = f"Grazie a un aumento di {d_n} aiuti"
+            elif d_n < 0:
+                txt_n = f"Nonostante un calo di {abs(d_n)} aiuti"
+            else:
+                txt_n = "Con un numero di aiuti stabile"
+
+            st.write("")
+            st.subheader("🎯 Sintesi Strategica del Mercato Target")
+
+            # --- CASO 1: RALLENTAMENTO + AIUTO SU (CONSOLIDAMENTO) ---
             if cagr_att > 0 and diff_cagr < 0 and diff_aiuto > 0:
                 st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
                 st.markdown(f"""
-                * Il volume del **Settore Target** cresce al **{cagr_att:.1f}%**, ma è **in rallentamento** rispetto al {int(penultimo['Anno'])} ({cagr_prec:.1f}%).
-                * L'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Dopo un'annata d'oro, il mercato sta rallentando ({txt_n}). Il focus si è spostato su meno concessioni ma più corpose.
+                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
+                * {txt_n}, l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
+                * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a meno aiuti ma più corposi.
                 """)
 
-            # CASO 2: CRESCITA RALLENTATA + AIUTO GIÙ (DEMOCRATIZZAZIONE RALLENTATA)
+            # --- CASO 2: RALLENTAMENTO + AIUTO GIÙ (FRAZIONAMENTO) ---
             elif cagr_att > 0 and diff_cagr < 0 and diff_aiuto < 0:
                 st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
                 st.markdown(f"""
-                * Il volume del **Settore Target** cresce al **{cagr_att:.1f}%**, ma è **in rallentamento** rispetto al {int(penultimo['Anno'])} ({cagr_prec:.1f}%).
-                * L'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Il mercato rallenta e si frammenta. {txt_n}, ma con tagli più piccoli. 
+                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
+                * {txt_n}, l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
+                * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a fornire più aiuti ma meno corposi.
                 """)
 
-            # CASO 3: ACCELERAZIONE + AIUTO SU (BOOM QUALITATIVO)
+            # --- CASO 3: ACCELERAZIONE + AIUTO SU (VALORE) ---
             elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0:
                 st.success("🚀 **ACCELERAZIONE E VALORE**")
                 st.markdown(f"""
-                * Il volume del **Settore Target** sta accelerando al **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} ({cagr_prec:.1f}%).
-                * L'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Mercato in pieno boom. La crescita è spinta da investimenti più pesanti, {txt_n}.
+                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
+                * {txt_n}, l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
+                * **Significato:** Il mercato target è in accelerazione e sta puntando su meno aiuti ma dal peso maggiore.
                 """)
 
-            # CASO 4: ACCELERAZIONE + AIUTO GIÙ (BOOM QUANTITATIVO / DEMOCRATIZZAZIONE)
+            # --- CASO 4: ACCELERAZIONE + AIUTO GIÙ (DIFFUSIONE) ---
             elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto < 0:
                 st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
                 st.markdown(f"""
-                * Il volume del **Settore Target** sta accelerando al **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} ({cagr_prec:.1f}%).
-                * L'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Il mercato sta esplodendo grazie a un'adozione di massa. {txt_n}, rendendo l'aiuto accessibile a una platea molto più vasta.
+                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
+                * {txt_n}, l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
+                * **Significato:** Mercato target in accelerazione. Si punta a fornire molti più aiuti ma di entità minore.
                 """)
