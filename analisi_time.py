@@ -222,52 +222,66 @@ def time_analysis(df):
     st.write("")
     st.write("Classifica Stagionale del Budget Target")
     
-    # 1. Calcolo la somma del budget per ogni mese su tutta la serie storica
-    df_mesi_stat = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+    # 1. Calcolo del budget per Mese e Anno per identificare i picchi isolati
+    df_raw_spot = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     
-    # Calcolo il totale complessivo per la normalizzazione
-    tot_budget_target = df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'].sum()
-    
-    if tot_budget_target > 0:
-        # 2. Normalizzazione: Calcolo il peso percentuale
-        df_mesi_stat['Peso %'] = (df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / tot_budget_target * 100)
+    if not df_raw_spot.empty:
+        # Calcoliamo quanto ogni mese ha pesato sul TOTALE STORICO
+        totale_generale = df_raw_spot['RNA_ELEMENTO_DI_AIUTO'].sum()
         
-        # 3. Preparazione per la visualizzazione
-        # Aggiungiamo i nomi dei mesi
+        # Raggruppiamo per mese per la classifica
+        df_mesi_stat = df_raw_spot.groupby('Mese_Num').agg({
+            'RNA_ELEMENTO_DI_AIUTO': 'sum',      # Budget totale storico
+            'Anno': 'nunique'                    # In quanti anni quel mese è stato attivo
+        }).reset_index()
+        
+        df_mesi_stat['Incidenza %'] = (df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / totale_generale * 100)
         df_mesi_stat['Mese'] = df_mesi_stat['Mese_Num'].map(mesi_ita)
         
-        # Ordiniamo dal migliore al peggiore
-        df_rank = df_mesi_stat.sort_values('Peso %', ascending=False).reset_index(drop=True)
+        # --- LOGICA ANTI-GONFIAMENTO ---
+        # Calcoliamo la media per anno per vedere se un mese è "costante" o "casuale"
+        df_mesi_stat['Media per Anno'] = df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / df_mesi_stat['Anno']
         
-        # Rinominiamo le colonne per l'utente finale
-        df_rank = df_rank[['Mese', 'RNA_ELEMENTO_DI_AIUTO', 'Peso %']]
-        df_rank.columns = ['Mese', 'Budget Totale (€)', 'Incidenza %']
+        df_rank = df_mesi_stat.sort_values('Incidenza %', ascending=False).reset_index(drop=True)
         
-        # 4. Visualizzazione Tabellare con Formattazione
-        col1, col2 = st.columns([1.5, 2.5]) 
-        with col1:
+        # Prepariamo la tabella finale
+        df_view = df_rank[['Mese', 'RNA_ELEMENTO_DI_AIUTO', 'Anno', 'Incidenza %']]
+        df_view.columns = ['Mese', 'Budget Totale (€)', 'Anni Attivi', 'Incidenza %']
+
+        col_tab, col_info = st.columns([3.5, 1.5])
+
+        with col_tab:
             st.dataframe(
-                df_rank.style.format({
+                df_view.style.format({
                     'Budget Totale (€)': '{:,.0f} €',
                     'Incidenza %': '{:.2f} %'
-                }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=df_rank['Incidenza %'].max()),
+                }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=df_view['Incidenza %'].max()),
                 use_container_width=True,
                 hide_index=True
             )
+
+        with col_info:
+            # Identifichiamo se il primo mese è un "falso positivo"
+            top_row = df_rank.iloc[0]
+            num_anni_totali = df_raw_spot['Anno'].nunique()
             
-        with col2: 
-            # --- 5. INSIGHT AUTOMATICO SUI PERIODI SPOT ---
-            top_mese = df_rank.iloc[0]['Mese']
-            peso_top = df_rank.iloc[0]['Incidenza %']
-            
-            st.info(f"""
-            🎯 **Insight Operativo:** Il mese di **{top_mese}** è il periodo spot più rilevante, 
-            concentrando da solo il **{peso_top:.1f}%** delle risorse totali allocate storicamente. 
-            Si consiglia di pianificare le campagne di acquisizione clienti con un anticipo di 30-45 giorni rispetto ai primi 3 mesi in classifica.
-            """)
-        
+            if top_row['Anno'] < (num_anni_totali / 2):
+                st.warning(f"""
+                ⚠️ **Attenzione Outlier:**
+                Il mese di **{top_row['Mese']}** risulta primo per budget, ma è stato rilevante solo in **{int(top_row['Anno'])}** anni su {num_anni_totali}. 
+                Il dato potrebbe essere gonfiato da un singolo maxi-finanziamento isolato.
+                """)
+            else:
+                st.success(f"""
+                ✅ **Dato Ricorrente:**
+                Il mese di **{top_row['Mese']}** è costantemente alto (attivo in {int(top_row['Anno'])} anni su {num_anni_totali}). 
+                È un periodo strutturale su cui puntare.
+                """)
+                
+            st.caption("La colonna 'Anni Attivi' indica quante volte quel mese si è ripresentato con finanziamenti nel tempo.")
+
     else:
-        st.warning("Nessun dato disponibile per generare la classifica stagionale.")
+        st.warning("Dati insufficienti per l'analisi anti-gonfiamento.")
 
 
 
