@@ -268,7 +268,7 @@ def time_analysis(df):
             y=df_annual['Aiuto_Medio_Target'],
             name="Ticket Medio (€)",
             marker_color='rgba(52, 152, 219, 0.6)',
-            hovertemplate="Anno %{x}<br>Ticket Medio: € %{y:,.0f}<extra></extra>"
+            hovertemplate="Anno %{x}<br>Aiuto Medio: € %{y:,.0f}<extra></extra>"
         ), secondary_y=False
     )
 
@@ -339,18 +339,50 @@ def time_analysis(df):
     st.dataframe(st_df, hide_index=True, use_container_width=True)
     st.write("")
     
-    # --- INTERPRETAZIONE FINALE ---
+   # --- INTERPRETAZIONE FINALE ---
     if len(df_annual) > 1:
-        # Analisi basata sull'ultimo anno con dati CAGR disponibili (escluso il parziale)
         df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
-        if not df_valid.empty:
+        if len(df_valid) >= 2:
             ultimo = df_valid.iloc[-1]
-            penultimo = df_valid.iloc[-2] if len(df_valid) > 1 else ultimo
-            diff_ticket = ultimo['Aiuto_Medio_Target'] - penultimo['Aiuto_Medio_Target']
+            penultimo = df_valid.iloc[-2]
             
-            st.caption("🔍 **Sintesi del Trend Storico:**")
-            if diff_ticket < 0 and ultimo['CAGR Vol. Target'] > 0:
-                st.success("✅ **Democratizzazione**: La base beneficiari si allarga (Volume su), ma l'intensità media cala. Mercato in espansione verso le PMI.")
-            elif diff_ticket > 0 and ultimo['CAGR Vol. Target'] > 0:
-                st.success("🚀 **Consolidamento**: Cresce sia il volume totale che il valore dei singoli progetti. Settore in forte capitalizzazione.")
+            # Calcolo differenziali
+            diff_aiuto = ultimo['Aiuto_Medio_Target'] - penultimo['Aiuto_Medio_Target']
+            cagr_att = ultimo['CAGR Vol. Target']
+            cagr_prec = penultimo['CAGR Vol. Target']
+            diff_cagr = cagr_att - cagr_prec
+            
+            st.write("")
+            st.caption(f"🔍 **Analisi Evolutiva (Confronto {int(ultimo['Anno'])} vs {int(penultimo['Anno'])}):**")
+            
+            # Definizione trend CAGR
+            trend_cagr = "🚀 in accelerazione" if diff_cagr > 0 else "📉 in rallentamento"
+            if abs(diff_cagr) < 0.1: trend_cagr = "➡️ stabile"
 
+            # --- CASO 1: CRESCITA + FRAZIONAMENTO ---
+            if cagr_att > 0 and diff_aiuto < 0:
+                st.success(f"✅ **ESPANSIONE FRAZIONATA**")
+                st.markdown(f"""
+                **Dinamica:** Il volume cresce al **{cagr_att:.1f}%** (trend {trend_cagr} rispetto al {cagr_prec:.1f}% precedente).
+                L'**Aiuto Medio** è sceso a € {ultimo['Aiuto_Medio_Target']:,.0f} (era € {penultimo['Aiuto_Medio_Target']:,.0f}).
+                \n**Significato:** Il mercato si sta democratizzando. La crescita attira una base di progetti più piccoli e diffusi, aumentando la resilienza del settore.
+                """)
+
+            # --- CASO 2: CRESCITA + CONSOLIDAMENTO ---
+            elif cagr_att > 0 and diff_aiuto >= 0:
+                st.info(f"🚀 **CONSOLIDAMENTO DI VALORE**")
+                st.markdown(f"""
+                **Dinamica:** Il volume cresce al **{cagr_att:.1f}%** (trend {trend_cagr} rispetto al {cagr_prec:.1f}% precedente).
+                L'**Aiuto Medio** è salito di € {diff_aiuto:,.0f} arrivando a € {ultimo['Aiuto_Medio_Target']:,.0f}.
+                \n**Significato:** Il settore sta maturando. Non solo entrano più fondi, ma i progetti diventano mediamente più ambiziosi e capitalizzati.
+                """)
+
+            # --- CASO 3: CONTRAZIONE (CAGR NEGATIVO) ---
+            elif cagr_att <= 0:
+                st.warning(f"⚠️ **CONTRAZIONE DEL MERCATO**")
+                st.markdown(f"""
+                **Dinamica:** Il tasso di crescita è negativo (**{cagr_att:.1f}%**). 
+                Il trend è {trend_cagr} (il valore precedente era {cagr_prec:.1f}%).
+                \n**Interpretazione:** Il settore è in fase di stasi o declino. Se l'Aiuto Medio è comunque salito, 
+                significa che il mercato sta collassando verso pochi grandi progetti superstiti.
+                """)
