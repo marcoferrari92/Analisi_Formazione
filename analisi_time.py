@@ -410,7 +410,7 @@ def time_analysis(df):
     st.dataframe(st_df, hide_index=True, use_container_width=True)
 
     
-# --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
+    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
     if len(df_annual) >= 2:
         df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
         ultimo = df_valid.iloc[-1]
@@ -588,7 +588,7 @@ def time_analysis(df):
 
 
 
-st.divider()
+    st.divider()
     st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
 
     # Filtriamo i dati solo per il settore target
