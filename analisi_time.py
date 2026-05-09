@@ -15,9 +15,8 @@ Il **CAGR** misura la crescita media annua del **Settore Target**, ipotizzando u
 
 $$CAGR = \left( \frac{\text{Valore Finale}}{\text{Valore Iniziale}} \right)^{\frac{1}{n}} - 1$$
 
-#### 💡 Come leggere i dati:
-1.  **L'Anno Zero (Punto di Riferimento)**: Tutti i calcoli partono dal primo anno del dataset (es. 2020).
-2.  **Il "Salto" del Primo Anno**: Nel primo anno dopo l'inizio ($n=1$), il CAGR coincide con la **crescita semplice**. Se vedi un valore molto alto (es. +36%), indica l'esplosione immediata del mercato in quell'anno.
+1.  **Anno Zero**: Tutti i calcoli partono dal primo anno del dataset (es. 2020).
+2.  **Primo Anno**: Nel primo anno dopo l'inizio ($n=1$), il CAGR coincide con la *crescita semplice*. 
 3.  **Anni Successivi**: I valori si "ammorbidiscono" perché la crescita totale viene spalmata (composta) su più anni rispetto all'anno zero.
 
 **Esempio:** Un CAGR del 10% su 3 anni significa che, partendo dal valore iniziale, il settore è cresciuto mediamente del 10% ogni anno per tre anni di fila.
