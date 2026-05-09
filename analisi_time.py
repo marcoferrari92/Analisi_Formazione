@@ -224,7 +224,7 @@ def time_analysis(df):
         st.info(GUIDA_CAGR)
     st.write("")
     
-    # Filtro Anni Completi (Escludiamo l'anno corrente)
+    # Escludiamo l'anno corrente perché incompleto
     import datetime
     anno_corrente = datetime.datetime.now().year
     df_filtered = df_temp[df_temp['Anno'] < anno_corrente].copy()
@@ -258,7 +258,7 @@ def time_analysis(df):
     df_annual['Vol. Tot. (€)'] = df_annual['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
     df_annual['Vol. Target (€)'] = df_annual['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
 
-    # RINOMINA IMMEDIATA (Per evitare l'errore "not in index")
+    # Selezione e Rinomina (Ordine richiesto)
     df_final = df_annual[[
         'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
@@ -269,22 +269,23 @@ def time_analysis(df):
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
     ]
 
-    # --- LOGICA DI COLORAZIONE ---
+    # --- LOGICA DI COLORAZIONE (Compatibile con Pandas 2.x) ---
     def color_cagr(val):
         try:
-            if float(val) > 0.001: return 'color: #27ae60; font-weight: bold;'
-            if float(val) < -0.001: return 'color: #e74c3c; font-weight: bold;'
+            v = float(val)
+            if v > 0.001: return 'color: #27ae60; font-weight: bold;'
+            if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
         except:
             pass
         return ''
 
-    # Applichiamo lo stile alle colonne CAGR (che ora hanno i nomi definitivi)
-    st_df = df_final.sort_values('Anno', ascending=False).style.applymap(
+    # USIAMO .map() AL POSTO DI .applymap()
+    st_df = df_final.sort_values('Anno', ascending=False).style.map(
         color_cagr, 
         subset=['CAGR Target', 'CAGR Vol. Target']
     )
 
-    # Rendering Finale
+    # Rendering
     st.dataframe(
         st_df,
         hide_index=True,
