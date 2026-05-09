@@ -8,7 +8,8 @@ import datetime as dt
 
 
 GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
-GUIDA_TIMEMAP = """I mesi più intensi indicano quando le aziende ricevono più liquidità. Individua i momenti migliori per proporre nuovi investimenti"""
+GUIDA_TIMEMAP = """ I mesi più intensi indicano quando le aziende ricevono più liquidità. 
+                    Usa l'analisi per finestre per individuare i periodi migliori per proporre nuovi investimenti."""
 GUIDA_CAGR = r"""
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
