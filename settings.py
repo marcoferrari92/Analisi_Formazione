@@ -13,10 +13,6 @@ DEFAULT_KEYWORDS = "formazione, competenze, corso, training, innovazione"
 # Eventuali altre impostazioni (es. colori o parametri CSV)
 CSV_SEP = ';'
 CSV_ENCODING = 'utf-8-sig'
-
-
-GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
-GUIDA_TIMEMAP = """I mesi più intensi indicano quando le aziende ricevono più liquidità. Individua i momenti migliori per proporre nuovi investimenti"""
         
 
 GUIDA_PARETO = """
