@@ -244,14 +244,16 @@ def time_analysis(df):
         df_rank.columns = ['Mese', 'Budget Totale (€)', 'Incidenza %']
         
         # 4. Visualizzazione Tabellare con Formattazione
-        st.dataframe(
-            df_rank.style.format({
-                'Budget Totale (€)': '{:,.0f} €',
-                'Incidenza %': '{:.2f} %'
-            }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=max(df_rank['Incidenza %'])),
-            use_container_width=True,
-            hide_index=True
-        )
+        col1, col2, col3 = st.columns([1, 2, 2]) 
+        with col1:
+            st.dataframe(
+                df_rank.style.format({
+                    'Budget Totale (€)': '{:,.0f} €',
+                    'Incidenza %': '{:.2f} %'
+                }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=df_rank['Incidenza %'].max()),
+                use_container_width=True,
+                hide_index=True
+            )
         
         # --- 5. INSIGHT AUTOMATICO SUI PERIODI SPOT ---
         top_mese = df_rank.iloc[0]['Mese']
