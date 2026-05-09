@@ -223,9 +223,8 @@ def time_analysis(df):
     st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
     
     st.write("")
-    if guida_timeline:
-        with st.popover("💡 Strategia"):
-            st.info(GUIDA_CAGR)
+    with st.popover("💡 Strategia"):
+        st.info(GUIDA_CAGR)
 
     # Raggruppamento base
     df_annual = df_temp.groupby('Anno').agg(
