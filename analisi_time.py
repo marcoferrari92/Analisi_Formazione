@@ -397,6 +397,39 @@ def time_analysis(df):
                 txt_n = "Con un numero di aiuti stabile"
 
             st.write("")
+
+            # --- INTERPRETAZIONE FINALE (4 CASI CORE CON PERCENTUALE AIUTI) ---
+    if len(df_annual) > 1:
+        df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
+        if len(df_valid) >= 2:
+            ultimo = df_valid.iloc[-1]
+            penultimo = df_valid.iloc[-2]
+            
+            # Variabili Decisionali
+            cagr_att = ultimo['CAGR Vol. Target']
+            cagr_prec = penultimo['CAGR Vol. Target']
+            diff_cagr = cagr_att - cagr_prec
+            
+            aiuto_med_att = ultimo['Aiuto_Medio_Target']
+            aiuto_med_prec = penultimo['Aiuto_Medio_Target']
+            diff_aiuto = aiuto_med_att - aiuto_med_prec
+            perc_aiuto = (diff_aiuto / aiuto_med_prec * 100) if aiuto_med_prec > 0 else 0
+            
+            # Variabili di Quantità
+            n_att = ultimo['Aiuti_Target']
+            n_prec = penultimo['Aiuti_Target']
+            diff_n = int(n_att - n_prec)
+            perc_n = (diff_n / n_prec * 100) if n_prec > 0 else 0
+            
+            # Costruzione prefisso Numero Aiuti con Percentuale (senza separatore migliaia)
+            if diff_n > 0:
+                txt_n = f"Grazie a un aumento di {diff_n} aiuti ({perc_n:+.1f}%)"
+            elif diff_n < 0:
+                txt_n = f"Nonostante un calo di {abs(diff_n)} aiuti ({perc_n:.1f}%)"
+            else:
+                txt_n = "Con un numero di aiuti stabile"
+
+            st.write("")
             st.subheader("🎯 Sintesi Strategica del Mercato Target")
 
             # --- CASO 1: RALLENTAMENTO + AIUTO SU (CONSOLIDAMENTO) ---
