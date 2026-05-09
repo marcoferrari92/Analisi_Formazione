@@ -431,39 +431,61 @@ def time_analysis(df):
 
             st.write("")
             st.subheader("🎯 Sintesi Strategica del Mercato Target")
+            
+            incipit = f"**Nell'anno {int(ultimo['Anno'])}:**"
 
             # --- CASO 1: RALLENTAMENTO + AIUTO SU (CONSOLIDAMENTO) ---
             if cagr_att > 0 and diff_cagr < 0 and diff_aiuto > 0:
                 st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
+                # Logica dinamica sul significato
+                if diff_n < 0:
+                    significato = "Il mercato frena e perde massa critica. La crescita è sostenuta esclusivamente dall'aumento di valore dei pochi progetti rimasti (focus su grandi investimenti)."
+                else:
+                    significato = "Dopo un'annata d'oro, il mercato target sta rallentando, spostando il baricentro su progetti più complessi e corposi."
+                
                 st.markdown(f"""
+                {incipit}
                 * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
                 * {txt_n}, l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a meno aiuti ma più corposi.
+                * **Significato:** {significato}
                 """)
 
-            # --- CASO 2: RALLENTAMENTO + AIUTO GIÙ (FRAZIONAMENTO) ---
+            # --- CASO 2: RALLENTAMENTO + AIUTO GIÙ (CONTRAZIONE REALE) ---
             elif cagr_att > 0 and diff_cagr < 0 and diff_aiuto < 0:
-                st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
+                st.warning("⚠️ **AVVISO DI CONTRAZIONE**")
+                # Se tutto scende, non c'è strategia di frazionamento, c'è solo un calo
+                if diff_n < 0:
+                    significato = "Nonostante il CAGR positivo (ereditato dal passato), il settore segna il passo su tutti i fronti: calano i progetti e cala il loro valore. Segnale di saturazione o fine incentivi."
+                else:
+                    significato = "Il mercato rallenta e si frammenta: aumentano le pratiche ma con tagli molto piccoli, riducendo la spinta economica totale."
+                
                 st.markdown(f"""
+                {incipit}
                 * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
                 * {txt_n}, l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a fornire più aiuti ma meno corposi.
+                * **Significato:** {significato}
                 """)
 
             # --- CASO 3: ACCELERAZIONE + AIUTO SU (VALORE) ---
             elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0:
                 st.success("🚀 **ACCELERAZIONE E VALORE**")
+                significato = "Il mercato target è in pieno boom. La spinta è trainata da investimenti più pesanti, progetti ambiziosi e alta fiducia degli investitori."
+                
                 st.markdown(f"""
+                {incipit}
                 * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
                 * {txt_n}, l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Il mercato target è in accelerazione e sta puntando su meno aiuti ma dal peso maggiore.
+                * **Significato:** {significato}
                 """)
 
             # --- CASO 4: ACCELERAZIONE + AIUTO GIÙ (DIFFUSIONE) ---
             elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto < 0:
                 st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
+                significato = "Mercato in accelerazione orizzontale. Il sistema sta riuscendo a democratizzare l'aiuto, raggiungendo una platea vastissima di beneficiari."
+                
                 st.markdown(f"""
+                {incipit}
                 * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {int(penultimo['Anno'])} (CAGR del {cagr_prec:.1f}%).
                 * {txt_n}, l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({perc_aiuto:.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Mercato target in accelerazione. Si punta a fornire molti più aiuti ma di entità minore.
+                * **Significato:** {significato}
                 """)
