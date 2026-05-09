@@ -587,7 +587,7 @@ def time_analysis(df):
             """)
 
 
-        # --- ANALISI COMPORTAMENTALE AZIENDE CON INDICE DI SFASAMENTO ---
+        # --- ANALISI COMPORTAMENTALE CON ETICHETTE SPECIFICHE ---
         st.divider()
         st.subheader("🏢 Analisi Comportamentale delle Aziende Target")
         
@@ -599,8 +599,9 @@ def time_analysis(df):
         analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto Tot', 'Ultimo Aiuto Tot']
         analisi_tot = analisi_tot.reset_index()
         
-        analisi_tot['Freq. Totale (gg)'] = (analisi_tot['Ultimo Aiuto Tot'] - analisi_tot['Primo Aiuto Tot']).dt.days / (analisi_tot['N° Aiuti Tot'] - 1)
-        analisi_tot['Freq. Totale (gg)'] = analisi_tot['Freq. Totale (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
+        # Calcolo Frequenza Totale (Freq. Aiuti)
+        analisi_tot['Freq. Aiuti (gg)'] = (analisi_tot['Ultimo Aiuto Tot'] - analisi_tot['Primo Aiuto Tot']).dt.days / (analisi_tot['N° Aiuti Tot'] - 1)
+        analisi_tot['Freq. Aiuti (gg)'] = analisi_tot['Freq. Aiuti (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
         # 2. Calcolo metriche TARGET
         df_target = df_temp[df_temp['IS_TARGET'] == 1].copy()
@@ -612,25 +613,27 @@ def time_analysis(df):
                 'CF_TROVATO': 'count',
                 'RNA_DATA_CONCESSIONE': ['min', 'max']
             })
-            analisi_target.columns = ['Ragione Sociale', 'Budget Target Totale (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
+            # Mapping nomi colonne richiesti
+            analisi_target.columns = ['Ragione Sociale', 'Budget Target (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
             analisi_target = analisi_target.reset_index()
             analisi_target.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
             
             oggi_dt = dt.datetime.now()
             analisi_target['Giorni dall\'ultimo aiuto'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
-            analisi_target['Freq. Target (gg)'] = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days / (analisi_target['N° Aiuti Target'] - 1)
-            analisi_target['Freq. Target (gg)'] = analisi_target['Freq. Target (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
-
-            # 3. Merge e Calcolo Delta Normalizzato
-            analisi_finale = analisi_target.merge(analisi_tot.rename(columns={'CF_TROVATO': 'P.IVA'})[['P.IVA', 'N° Aiuti Tot', 'Freq. Totale (gg)']], on='P.IVA', how='left')
             
-            # Delta Normalizzato: quanto è più lenta nel target rispetto al totale?
-            # Più è alto, più l'azienda sta ignorando il target.
-            analisi_finale['Sfasamento Target %'] = ((analisi_finale['Freq. Target (gg)'] - analisi_finale['Freq. Totale (gg)']) / analisi_finale['Freq. Totale (gg)']) * 100
-            analisi_finale['Sfasamento Target %'] = analisi_finale['Sfasamento Target %'].replace([float('inf'), -float('inf')], 0).fillna(0)
+            # Frequenza Target (Freq. Aiuti Target)
+            analisi_target['Freq. Aiuti Target (gg)'] = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days / (analisi_target['N° Aiuti Target'] - 1)
+            analisi_target['Freq. Aiuti Target (gg)'] = analisi_target['Freq. Aiuti Target (gg)'].replace([float('inf'), -float('inf')], 0).fillna(0)
+
+            # 3. Merge e Calcolo Delta %
+            analisi_finale = analisi_target.merge(analisi_tot.rename(columns={'CF_TROVATO': 'P.IVA'})[['P.IVA', 'N° Aiuti Tot', 'Freq. Aiuti (gg)']], on='P.IVA', how='left')
+            
+            # Delta %: normalizzato sulla frequenza totale
+            analisi_finale['Delta %'] = ((analisi_finale['Freq. Aiuti Target (gg)'] - analisi_finale['Freq. Aiuti (gg)']) / analisi_finale['Freq. Aiuti (gg)']) * 100
+            analisi_finale['Delta %'] = analisi_finale['Delta %'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
             def segmenta_status(row):
-                if row['N° Aiuti Target'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Freq. Target (gg)'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
+                if row['N° Aiuti Target'] > 1 and row['Giorni dall\'ultimo aiuto'] > (row['Freq. Aiuti Target (gg)'] * 1.5) and row['Giorni dall\'ultimo aiuto'] > 365:
                     return "⚠️ In Abbandono"
                 return "✅ Attivo" if row['N° Aiuti Target'] > 1 else "🌱 Occasionale"
 
@@ -641,28 +644,28 @@ def time_analysis(df):
 
             with tab_top:
                 colonne_display = [
-                    'P.IVA', 'Ragione Sociale', 'Budget Target Totale (€)', 
+                    'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 
                     'N° Aiuti Tot', 'N° Aiuti Target', 
-                    'Freq. Totale (gg)', 'Freq. Target (gg)', 
-                    'Sfasamento Target %', 'Status Target'
+                    'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 
+                    'Delta %', 'Status Target'
                 ]
                 
-                df_top = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target Totale (€)'], ascending=False).head(20)
+                df_top = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target (€)'], ascending=False).head(20)
                 
                 st.dataframe(
                     df_top[colonne_display].style.format({
-                        'Budget Target Totale (€)': '{:,.0f} €',
-                        'Freq. Totale (gg)': '{:.0f} gg',
-                        'Freq. Target (gg)': '{:.0f} gg',
-                        'Sfasamento Target %': '{:+.1f} %'
-                    }).background_gradient(cmap='YlOrRd', subset=['Sfasamento Target %']), # Colore solo sulla differenza
+                        'Budget Target (€)': '{:,.0f} €',
+                        'Freq. Aiuti (gg)': '{:.0f} gg',
+                        'Freq. Aiuti Target (gg)': '{:.0f} gg',
+                        'Delta %': '{:+.1f} %'
+                    }).background_gradient(cmap='YlOrRd', subset=['Delta %']),
                     use_container_width=True, hide_index=True
                 )
 
             with tab_churn:
                 colonne_churn = [
                     'P.IVA', 'Ragione Sociale', 'Ultimo Target', 'Giorni dall\'ultimo aiuto', 
-                    'Freq. Totale (gg)', 'Freq. Target (gg)', 'Sfasamento Target %', 'Budget Target Totale (€)'
+                    'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Delta %', 'Budget Target (€)'
                 ]
                 
                 df_churn = analisi_finale[analisi_finale['Status Target'] == "⚠️ In Abbandono"].sort_values('Giorni dall\'ultimo aiuto', ascending=False)
@@ -670,12 +673,12 @@ def time_analysis(df):
                 if not df_churn.empty:
                     st.dataframe(
                         df_churn[colonne_churn].style.format({
-                            'Budget Target Totale (€)': '{:,.0f} €',
-                            'Freq. Totale (gg)': '{:.0f} gg',
-                            'Freq. Target (gg)': '{:.0f} gg',
-                            'Sfasamento Target %': '{:+.1f} %'
+                            'Budget Target (€)': '{:,.0f} €',
+                            'Freq. Aiuti (gg)': '{:.0f} gg',
+                            'Freq. Aiuti Target (gg)': '{:.0f} gg',
+                            'Delta %': '{:+.1f} %'
                         }).background_gradient(cmap='Reds', subset=['Giorni dall\'ultimo aiuto'])
-                          .background_gradient(cmap='YlOrRd', subset=['Sfasamento Target %']),
+                          .background_gradient(cmap='YlOrRd', subset=['Delta %']),
                         use_container_width=True, hide_index=True
                     )
                 else:
