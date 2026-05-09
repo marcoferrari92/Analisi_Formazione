@@ -359,12 +359,14 @@ def time_analysis(df):
         anno_u = int(ultimo['Anno'])
         anno_p = int(penultimo['Anno'])
         a_med = ultimo['Aiuto_Medio_Target']
+        
+        # Calcolo quote percentuali
         p_aiuto = (diff_aiuto / penultimo['Aiuto_Medio_Target'] * 100) if penultimo['Aiuto_Medio_Target'] > 0 else 0
         p_n = (diff_n / penultimo['Aiuti_Target'] * 100) if penultimo['Aiuti_Target'] > 0 else 0
 
         st.write("")
 
-        # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE (CAGR ATT > 0, DIFF_CAGR > 0) ---
+        # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE ---
 
         if cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
             st.success("🚀 **BOOM TOTALE**")
@@ -390,27 +392,27 @@ def time_analysis(df):
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
             * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Il mercato target è in accelerazione e sta puntando sulla capillarità: fornendo più aiuti ma dal peso minore. 
+            * **Significato:** Il mercato target è in accelerazione e sta puntando sulla capillarità: fornendo più aiuti ma dal peso minore.
             """)
 
         elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
-            st.warning("⚠️ **ANOMALIA STATISTICA**")
+            st.warning("⚠️ **ANOMALIA STATISTICA (INERZIA STORICA)**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
             * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-            **Significato:** Il trend storico accelera per inerzia, ma l'anno corrente segna una contrazione reale su tutti i fronti. Verificare la saturazione del mercato.
+            * **Significato:** Il trend storico accelera per inerzia, ma l'anno corrente segna una contrazione reale su tutti i fronti. Verificare la saturazione del mercato.
             """)
 
-        # --- AREA 2: CAGR POSITIVO + RALLENTAMENTO (CAGR ATT > 0, DIFF_CAGR <= 0) ---
+        # --- AREA 2: CAGR POSITIVO + RALLENTAMENTO ---
 
         elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
-            st.info("📉 **ESPANSIONE IN RALLENTAMENTO**")
+            st.warning("⚠️ **ANOMALIA DI TREND (INERZIA STORICA)**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
-            * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Il mercato target si sta riequilibrando, ridistribuendo le risorse su più aiuti ma meno corposi nonostante il rallentamento della crescita complessiva.
+            * Il volume del **Settore Target** mostra un CAGR in rallentamento al **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Caso di inerzia statistica: i dati correnti (sia numero di aiuti che valore medio in crescita) indicano un mercato in salute, ma il CAGR rallenta perché confrontato con picchi storici passati eccezionali.
             """)
 
         elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
@@ -418,7 +420,7 @@ def time_analysis(df):
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
-            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
             * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando, spostando il baricentro su meno progetti ma più corposi.
             """)
 
@@ -427,7 +429,7 @@ def time_analysis(df):
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
             * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a fornire più aiuti ma meno corposi.
             """)
 
@@ -440,15 +442,15 @@ def time_analysis(df):
             * **Significato:** Fase di contrazione: il rallentamento è accompagnato da un calo sia nel numero di aiuti che nel loro valore medio.
             """)
 
-        # --- AREA 3: CAGR NEGATIVO + RECUPERO (CAGR ATT <= 0, DIFF_CAGR > 0) ---
+        # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
 
         elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
             st.warning("⚠️ **RECUPERO SISTEMICO**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Segnali di ripresa: il mercato ricomincia ad aggiungere aiuti e valore medio.
+            * A fronte di un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Segnali di ripresa: il mercato ricomincia ad aggiungere più aiuti e a maggior capitale.
             """)
 
         elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
@@ -456,8 +458,8 @@ def time_analysis(df):
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
-            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Il calo si attenua grazie a progetti più grandi che tengono in piedi il settore nonostante la perdita di beneficiari.
+            * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il calo del mercato si attenua grazie a progetti più grandi che tengono in piedi il settore nonostante la perdita di molti aiuti.
             """)
 
         elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
@@ -465,8 +467,8 @@ def time_analysis(df):
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Reazione al calo aumentando il numero di concessioni a basso costo per stimolare il settore.
+            * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato sta cercando di risollevararsi aumentando il numero di concessioni a basso costo per stimolare il settore.
             """)
 
         elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
@@ -474,44 +476,44 @@ def time_analysis(df):
             st.markdown(f"""
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
-            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Il calo è meno severo, ma non ci sono spinte reali né nel valore medio né nel numero di pratiche.
+            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il calo è meno severo, ma non ci sono spinte reali né nel valore medio né nel numero di aiuti.
             """)
 
-        # --- AREA 4: CAGR NEGATIVO + AGGRAVAMENTO (CAGR ATT <= 0, DIFF_CAGR <= 0) ---
+        # --- AREA 4: CAGR NEGATIVO + AGGRAVAMENTO ---
 
         elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
             st.error("🚨 **DISPERSIONE E CRISI**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
-            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Caso critico: nonostante aumentino aiuti e valore medio il volume totale crolla drasticamente.
+            * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Caso critico: nonostante aumentino aiuti e loro capitale il mercato target sta crollando drasticamente.
             """)
 
         elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
             st.error("🚨 **EROSIONE SELETTIVA**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
-            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
-            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque salito arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Sopravvivono solo pochi progetti grandi, mentre la base del mercato scompare del tutto.
+            * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Al calo di {abs(diff_n)} aiuti ({p_n:.1f}%) è seguito l'aumento dell'**Aiuto Medio** di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target sta crollando e sopravvivono solo pochi progetti grandi, mentre la base del mercato sta scomparendo del tutto.
             """)
 
         elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
             st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
-            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
-            * Grazie a un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Il mercato si polverizza in piccoli aiuti che non sostengono il volume economico del settore.
+            * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Il mercato target si sta polverizzando in piccoli aiuti che non sostengono il volume economico del settore.
             """)
 
         elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
             st.error("🚨 **RECESSIONE TOTALE**")
             st.markdown(f"""
             **Nell'anno {anno_u}:**
-            * Il volume del **Settore Target** crolla (**{cagr_att:.1f}%**).
-            * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore.
+            * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
+            * Nonostante il calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
+            * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
