@@ -296,7 +296,7 @@ def time_analysis(df):
     st.write("")
     st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
     st.write("")
-    with st.popover("💡 Guida alla lettura e Strategia"):
+    with st.popover("💡 Strategia"):
         st.info(GUIDA_CAGR)
     st.write("")
     
