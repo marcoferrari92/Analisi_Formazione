@@ -218,9 +218,53 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
+    # --- 6. IDENTIFICAZIONE AUTOMATICA PERIODI SPOT ---
+    st.write("")
+    
+    # Calcoliamo la stagionalità media (somma budget per mese / somma totale)
+    stagionalita = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
+    totale_storico = stagionalita['RNA_ELEMENTO_DI_AIUTO'].sum()
+    
+    if totale_storico > 0:
+        stagionalita['Peso_%'] = (stagionalita['RNA_ELEMENTO_DI_AIUTO'] / totale_storico) * 100
+        
+        # Identifichiamo i mesi "Hot" (quelli sopra la media 1/12 = 8.33% o i top 3)
+        mesi_top = stagionalita.sort_values('Peso_%', ascending=False).head(3)
+        nomi_mesi_top = [mesi_ita[m] for m in mesi_top['Mese_Num'].tolist()]
+        
+        st.subheader("🎯 Intelligence: Finestre di Marketing")
+        
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            st.metric("Mese di Picco Storico", nomi_mesi_top[0], f"{mesi_top['Peso_%'].iloc[0]:.1f}% del Budget")
+        
+        with col2:
+            st.markdown(f"""
+            **Analisi Predittiva Stagionale:**
+            I dati storici indicano che i periodi migliori per le campagne marketing sono **{', '.join(nomi_mesi_top)}**. 
+            In questi mesi si concentra la maggiore spesa pubblica del settore target.
+            """)
+            
+            # Suggerimento operativo basato sulla data attuale
+            mese_attuale = datetime.datetime.now().month
+            if mese_attuale in mesi_top['Mese_Num'].tolist():
+                st.success(f"🔥 **Opportunità Alta:** Sei nel periodo di picco (**{mesi_ita[mese_attuale]}**). Massimizzare la pressione commerciale ora.")
+            else:
+                prossimo_mese_hot = mesi_top[mesi_top['Mese_Num'] > mese_attuale].sort_values('Mese_Num').head(1)
+                if not prossimo_mese_hot.empty:
+                    st.info(f"📅 **Preparazione:** Il prossimo picco atteso è a **{mesi_ita[prossimo_mese_hot['Mese_Num'].iloc[0]]}**. Inizia la lead generation 30 giorni prima.")
+                else:
+                    # Se siamo a fine anno e il prossimo picco è a inizio anno nuovo
+                    st.info(f"📅 **Preparazione:** Pianificare le attività per **{nomi_mesi_top[0]}**, primo grande hub di spesa dell'anno.")
+
+    else:
+        st.caption("Nessun dato target disponibile per l'analisi stagionale.")
+
+
 
     
-# --- ANALISI STRATEGICA: TREND (Grafico) E DETTAGLIO (Tabella) ---
+    # --- ANALISI STORICA ---
     st.divider()
     st.write("")
     st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
