@@ -202,6 +202,11 @@ def time_analysis(df, guida_timeline="", guida_timemap=""):
     # --- 1. Calcolo Concentrazione Annuale Evoluta ---
     st.divider()
     st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
+    
+    st.write("")
+    if guida_timeline:
+        with st.popover("💡 Strategia"):
+            st.info(guida_CAGR)
 
     # Raggruppamento base
     df_annual = df_temp.groupby('Anno').agg(
