@@ -9,7 +9,7 @@ import numpy as np
 
 
 # Caricamenti
-from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_TIMELINE, GUIDA_TIMEMAP, GUIDA_OUTLIER, STRATEGIA_OUTLIER
+from settings import DEFAULT_KEYWORDS, GUIDA_BENCHMARK, STRATEGIA_BENCHMARK, GUIDA_PARETO, GUIDA_RICERCA, GUIDA_OUTLIER, STRATEGIA_OUTLIER
 from utils import load_rna_data, is_target_row, format_it, format_pct, verifica_stato_clienti, colora_clienti, genera_output_confronto_csv, genera_output_confronto_pdf, crea_radar_azienda
 from plots import create_centered_pie
 from analisi_geo import geo_analysis
