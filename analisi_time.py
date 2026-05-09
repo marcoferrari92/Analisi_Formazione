@@ -285,6 +285,47 @@ def time_analysis(df):
             else:
                 st.error("Nessuna finestra ha vinto in modo chiaro. Prova a cambiare l'ampiezza dello slider.")
 
+        # --- ANALISI DELLA VARIABILITÀ E COERENZA ---
+        with col1:
+            if not classifica_finale.empty:
+                # Estraiamo i dati per il confronto
+                top_vittorie = classifica_finale.iloc[0]
+                # Troviamo chi ha il budget medio massimo (potrebbe essere diverso dal leader per vittorie)
+                top_budget = classifica_finale.sort_values('Budget Medio (€)', ascending=False).iloc[0]
+
+                st.write("")
+                
+                # Definizione dei parametri di variabilità
+                ha_vincitore_chiaro = classifica_finale['Vittorie'].iloc[0] > (classifica_finale['Vittorie'].iloc[1] if len(classifica_finale) > 1 else 0)
+                coerenza_vittoria_budget = top_vittorie['Finestra'] == top_budget['Finestra']
+
+                if ha_vincitore_chiaro and coerenza_vittoria_budget:
+                    testo_analisi = f"""
+                    ✅ **ANALISI DI COERENZA ALTA:** La finestra **{top_vittorie['Finestra']}** è il leader indiscusso. 
+                    Non solo ha vinto più anni degli altri (**{int(top_vittorie['Vittorie'])} vittorie**), 
+                    ma detiene anche il budget medio più alto (**{top_vittorie['Budget Medio (€)']:,.0f} €**). 
+                    È un trend strutturale e affidabile per il marketing.
+                    """
+                    st.success(testo_analisi)
+                
+                elif ha_vincitore_chiaro and not coerenza_vittoria_budget:
+                    testo_analisi = f"""
+                    ⚖️ **ANALISI DI VARIABILITÀ (CONSOLIDAMENTO VS POTENZA):** Esiste una sfasatura nel mercato. 
+                    La finestra **{top_vittorie['Finestra']}** è la più frequente (**{int(top_vittorie['Vittorie'])} vittorie**), 
+                    ma la finestra **{top_budget['Finestra']}**, pur avendo vinto meno, muove volumi economici medi superiori 
+                    (**{top_budget['Budget Medio (€)']:,.0f} €** contro {top_vittorie['Budget Medio (€)']:,.0f} €). 
+                    *Suggerimento:* La prima garantisce continuità, la seconda i grandi deal.
+                    """
+                    st.info(testo_analisi)
+                
+                else:
+                    testo_analisi = """
+                    🎲 **ANALISI DI VOLATILITÀ ALTA:** Non esiste un vincitore chiaro per numero di vittorie. 
+                    Il mercato si sposta drasticamente di anno in anno. Le finestre temporali sono influenzate 
+                    da bandi spot non ricorrenti piuttosto che da una stagionalità fissa.
+                    """
+                    st.warning(testo_analisi)
+
     else:
         st.warning("Dati insufficienti negli anni conclusi.")
 
