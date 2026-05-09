@@ -218,19 +218,14 @@ def time_analysis(df):
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
 
-    # --- 1. Calcolo Concentrazione Annuale Evoluta ---
+    # --- ANALISI STRATEGICA: TREND (Grafico) E DETTAGLIO (Tabella) ---
     st.divider()
-    st.subheader("📊 Analisi Storica e CAGR (Settore Target)")
-    st.write("")
-    with st.popover("💡 Strategia"):
-        st.info(GUIDA_CAGR)
-    st.write("")
-    
+    st.subheader("📈 Analisi Strategica: Valore Medio vs Crescita Composta")
     
     import datetime
     anno_corrente = datetime.datetime.now().year
 
-    # Raggruppamento base (usiamo df_temp completo per includere l'anno in corso)
+    # 1. Raggruppamento e Calcoli core
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
@@ -238,102 +233,41 @@ def time_analysis(df):
         Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
-    # Funzione CAGR
     def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
         if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
-    # Punti di partenza Target
     anno_start = df_annual['Anno'].min()
     prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
     vol_target_start = df_annual['Vol_Target'].iloc[0]
 
-    # --- 2. Calcolo Quote e CAGR con protezione per anno in corso ---
+    # Calcolo metriche strategiche
+    df_annual['Ticket_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
     df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
     df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
-    
-    # Calcolo CAGR standard
     df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
     df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
-    # MASCHERAMENTO ANNO CORRENTE: Se l'anno è quello attuale, forziamo il CAGR a NaN (visualizzato come vuoto)
+    # Mascheramento anno in corso per i CAGR
     df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
 
-    # Preparazione dei volumi
-    df_annual['Vol. Tot. (€)'] = df_annual['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-    df_annual['Vol. Target (€)'] = df_annual['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
-
-    # Selezione e Rinomina
-    df_final = df_annual[[
-        'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
-        'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
-    ]].copy()
-
-    df_final.columns = [
-        'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
-        'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
-    ]
-
-    # --- 3. Logica di Colorazione (Ignora i valori None) ---
-    def color_cagr(val):
-        try:
-            if val is None or pd.isna(val): return ''
-            v = float(val)
-            if v > 0.001: return 'color: #27ae60; font-weight: bold;'
-            if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
-        except:
-            pass
-        return ''
-
-    # Rendering con Styler
-    st_df = df_final.sort_values('Anno', ascending=False).style.map(
-        color_cagr, 
-        subset=['CAGR Target', 'CAGR Vol. Target']
-    ).format({
-        'CAGR Target': "{:.2f} %",
-        'CAGR Vol. Target': "{:.2f} %"
-    }, na_rep="In corso...") # Sostituisce i NaN con "In corso..."
-
-    st.dataframe(
-        st_df,
-        hide_index=True,
-        use_container_width=True,
-        column_config={
-            "Anno": st.column_config.NumberColumn("Anno", format="%d"),
-            "Aiuti Tot.": st.column_config.NumberColumn(format="%d"),
-            "Aiuti Target": st.column_config.NumberColumn(format="%d"),
-            "Quota Target (%)": st.column_config.NumberColumn(format="%.2f %%"),
-            "Quota Vol. Target (%)": st.column_config.NumberColumn(format="%.2f %%")
-        }
-    )
-
-    # --- 4. ANALISI INCROCIATA: TICKET MEDIO E CAGR ---
-    st.divider()
-    st.subheader("📈 Analisi Strategica: Valore Medio vs Crescita Composta")
-    
-    # Calcolo Ticket Medio (Volume Target / Numero Pratiche Target)
-    df_annual['Ticket_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
-    
-    # Prepariamo il grafico a doppio asse
+    # --- PARTE SUPERIORE: IL GRAFICO ---
     fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Traccia 1: Ticket Medio (Barre)
+    # Barre: Ticket Medio
     fig_strategy.add_trace(
         go.Bar(
             x=df_annual['Anno'],
             y=df_annual['Ticket_Medio_Target'],
             name="Ticket Medio (€)",
-            marker_color='rgba(52, 152, 219, 0.6)', # Blu trasparente
+            marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Ticket Medio: € %{y:,.0f}<extra></extra>"
-        ),
-        secondary_y=False,
+        ), secondary_y=False
     )
 
-    # Traccia 2: CAGR Volume Target (Linea)
-    # Nota: escludiamo l'anno start (dove è 0) e l'anno corrente (che è TBD) per pulizia
+    # Linea: CAGR Volume (solo anni completi)
     df_cagr_plot = df_annual.dropna(subset=['CAGR Vol. Target'])
-    
     fig_strategy.add_trace(
         go.Scatter(
             x=df_cagr_plot['Anno'],
@@ -344,38 +278,71 @@ def time_analysis(df):
             text=[f"{v:.1f}%" if v != 0 else "" for v in df_cagr_plot['CAGR Vol. Target']],
             textposition="top center",
             hovertemplate="Anno %{x}<br>CAGR: %{y:.2f}%<extra></extra>"
-        ),
-        secondary_y=True,
+        ), secondary_y=True
     )
 
-    # Configurazione Layout
     fig_strategy.update_layout(
-        title="Evoluzione del Valore per Pratica e Tasso di Crescita",
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        height=500,
-        template="plotly_white"
+        height=450,
+        template="plotly_white",
+        margin=dict(l=0, r=0, t=30, b=0)
     )
-
-    # Assi
-    fig_strategy.update_yaxes(title_text="Ticket Medio (€)", secondary_y=False, tickformat="€,.0f", gridcolor="#f0f0f0")
-    fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, showgrid=False, ticksuffix="%")
-    fig_strategy.update_xaxes(type='category') # Forza gli anni come etichette discrete
+    fig_strategy.update_yaxes(title_text="Ticket Medio (€)", secondary_y=False, tickformat="€,.0f")
+    fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, ticksuffix="%")
+    fig_strategy.update_xaxes(type='category')
 
     st.plotly_chart(fig_strategy, use_container_width=True)
 
-    # --- 5. INTERPRETAZIONE AUTOMATICA ---
+    # --- PARTE INFERIORE: LA TABELLA DETTAGLIATA ---
+    with st.popover("💡 Guida alla lettura e Strategia"):
+        st.info(GUIDA_CAGR)
+
+    # Formattazione per la visualizzazione tabella
+    df_view = df_annual.sort_values('Anno', ascending=False).copy()
+    df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
+    df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
+
+    df_final = df_view[[
+        'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
+        'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
+    ]]
+
+    df_final.columns = [
+        'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
+        'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
+    ]
+
+    def color_cagr(val):
+        try:
+            if val is None or pd.isna(val): return ''
+            v = float(val)
+            if v > 0.001: return 'color: #27ae60; font-weight: bold;'
+            if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
+        except: pass
+        return ''
+
+    st_df = df_final.style.map(
+        color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
+    ).format({
+        'CAGR Target': "{:.2f} %", 'CAGR Vol. Target': "{:.2f} %",
+        'Quota Target (%)': "{:.2f} %", 'Quota Vol. Target (%)': "{:.2f} %"
+    }, na_rep="In corso...")
+
+    st.dataframe(st_df, hide_index=True, use_container_width=True)
+
+    # --- INTERPRETAZIONE FINALE ---
     if len(df_annual) > 1:
-        ultimo_anno = df_annual.iloc[-1] # L'anno più recente è l'ultimo nel df_annual ordinato per Anno
-        penultimo_anno = df_annual.iloc[-2]
-        
-        diff_ticket = ultimo_anno['Ticket_Medio_Target'] - penultimo_anno['Ticket_Medio_Target']
-        
-        st.info("💡 **Analisi Rapida:**")
-        if diff_ticket < 0 and ultimo_anno['CAGR Vol. Target'] > 0:
-            st.write("✅ **Democratizzazione in corso**: Il volume totale cresce (CAGR+) ma il ticket medio scende. Il bando sta raggiungendo una base di aziende molto più ampia e diversificata.")
-        elif diff_ticket > 0 and ultimo_anno['CAGR Vol. Target'] > 0:
-            st.write("🚀 **Consolidamento e Valore**: Sia il volume che il valore medio per pratica stanno salendo. Il settore attira progetti sempre più ambiziosi e costosi.")
-        else:
-            st.write("🧐 **Stabilità**: Il mercato sta seguendo un trend lineare senza scostamenti strutturali tra valore e volume.")
+        # Analisi basata sull'ultimo anno con dati CAGR disponibili (escluso il parziale)
+        df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
+        if not df_valid.empty:
+            ultimo = df_valid.iloc[-1]
+            penultimo = df_valid.iloc[-2] if len(df_valid) > 1 else ultimo
+            diff_ticket = ultimo['Ticket_Medio_Target'] - penultimo['Ticket_Medio_Target']
+            
+            st.caption("🔍 **Sintesi del Trend Storico:**")
+            if diff_ticket < 0 and ultimo['CAGR Vol. Target'] > 0:
+                st.success("✅ **Democratizzazione**: La base beneficiari si allarga (Volume su), ma l'intensità media cala. Mercato in espansione verso le PMI.")
+            elif diff_ticket > 0 and ultimo['CAGR Vol. Target'] > 0:
+                st.success("🚀 **Consolidamento**: Cresce sia il volume totale che il valore dei singoli progetti. Settore in forte capitalizzazione.")
 
