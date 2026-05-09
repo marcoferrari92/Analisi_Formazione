@@ -219,72 +219,75 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
-    # --- ANALISI INTEGRALE DELLE TRIPLETTE (12 MESI SCORREVOLI) ---
-    import datetime as dt
-    
+    # --- ANALISI DINAMICA DELLE FINESTRE TEMPORALI ---
+ 
     st.write("")
-    st.subheader("📊 Ranking Integrale delle Finestre Temporali (3 mesi)")
+    st.subheader("🎚️ Analisi Dinamica delle Finestre di Mercato")
+
+    # 1. Slider per definire l'ampiezza della finestra
+    window_size = st.slider("Seleziona l'ampiezza della finestra (mesi):", min_value=1, max_value=12, value=3)
 
     anno_attuale = dt.datetime.now().year
-    # Filtriamo gli anni completi per avere una statistica pulita
     df_clean = df_temp[(df_temp['IS_TARGET'] == 1) & (df_temp['Anno'] < anno_attuale)].copy()
     
     if not df_clean.empty:
-        # 1. Calcolo del budget totale storico (Target) per la quota %
         budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
-        
-        # 2. Creazione del dataset Anno/Mese
         df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
 
-        # 3. Generazione delle 12 triplette (Scorrevoli su 12 mesi)
         rolling_data = []
+        # Generiamo le 12 possibili finestre di partenza
         for i in range(1, 13):
-            # Definiamo i 3 mesi della finestra (gestendo il reset dopo Dicembre)
-            m1 = i
-            m2 = i + 1 if i + 1 <= 12 else i + 1 - 12
-            m3 = i + 2 if i + 2 <= 12 else i + 2 - 12
+            mesi_w = []
+            nomi_mesi_w = []
             
-            nome_w = f"{mesi_ita[m1]}-{mesi_ita[m2]}-{mesi_ita[m3]}"
-            mesi_w = [m1, m2, m3]
+            # Costruiamo la finestra dinamica in base al window_size scelto
+            for offset in range(window_size):
+                m = i + offset
+                if m > 12: m -= 12
+                mesi_w.append(m)
+                nomi_mesi_w.append(mesi_ita[m])
             
-            # Per ogni anno calcoliamo il valore di questa specifica finestra
+            # Nome della finestra (es. "Set-Ott-Nov" o "Ott-Nov-Dic-Gen")
+            if window_size == 1:
+                nome_w = nomi_mesi_w[0]
+            else:
+                nome_w = f"{nomi_mesi_w[0]}-{nomi_mesi_w[-1]}"
+            
+            # Calcolo per ogni anno
             for anno in df_m_y['Anno'].unique():
                 valore = df_m_y[(df_m_y['Anno'] == anno) & (df_m_y['Mese_Num'].isin(mesi_w))]['RNA_ELEMENTO_DI_AIUTO'].sum()
                 rolling_data.append({'Anno': int(anno), 'Finestra': nome_w, 'Budget': valore})
 
         df_rolling_all = pd.DataFrame(rolling_data)
 
-        # 4. Calcolo delle metriche per la classifica
-        # A. Budget Medio per finestra
-        stats_w = df_rolling_all.groupby('Finestra')['Budget'].mean().reset_index()
-        stats_w.rename(columns={'Budget': 'Budget Medio (€)'}, inplace=True)
+        # 2. Calcolo Metriche
+        stats_w = df_rolling_all.groupby('Finestra')['Budget'].agg(['mean', 'sum']).reset_index()
+        stats_w.columns = ['Finestra', 'Budget Medio (€)', 'Somma Totale']
         
-        # B. Quota sul Budget Totale Storico (%)
-        # Nota: sommiamo i budget medi e normalizziamo (o usiamo la somma totale dei budget della finestra / budget totale storico)
-        somma_storica_w = df_rolling_all.groupby('Finestra')['Budget'].sum().reset_index()
-        stats_w['Quota sul Totale %'] = (somma_storica_w['Budget'] / budget_totale_storico) * 100
+        # Quota % reale sul totale storico
+        stats_w['Quota sul Totale %'] = (stats_w['Somma Totale'] / budget_totale_storico) * 100
 
-        # C. Conteggio Vittorie (quante volte è stata la Top Window dell'anno)
+        # Vittorie Annuali
         idx_max = df_rolling_all.groupby('Anno')['Budget'].idxmax()
         vincitori_annuali = df_rolling_all.loc[idx_max]
         vittorie = vincitori_annuali['Finestra'].value_counts().reset_index()
         vittorie.columns = ['Finestra', 'Vittorie']
         
-        # D. Elenco Anni Vittoria
         anni_vittoria = vincitori_annuali.groupby('Finestra')['Anno'].apply(lambda x: ', '.join(map(str, sorted(x, reverse=True)))).reset_index()
         anni_vittoria.columns = ['Finestra', 'Anni Vittoria']
 
-        # 5. Unione finale dei dati
+        # Unione e Ordinamento
         classifica_finale = stats_w.merge(vittorie, on='Finestra', how='left').fillna(0)
         classifica_finale = classifica_finale.merge(anni_vittoria, on='Finestra', how='left').fillna("-")
         classifica_finale['Vittorie'] = classifica_finale['Vittorie'].astype(int)
-
-        # Ordinamento per importanza economica e vittorie
+        
         classifica_finale = classifica_finale.sort_values(['Vittorie', 'Budget Medio (€)'], ascending=False)
 
         # --- VISUALIZZAZIONE ---
+        st.write(f"Analisi basata su finestre di **{window_size} mesi**:")
+        
         st.dataframe(
-            classifica_finale.style.format({
+            classifica_finale[['Finestra', 'Vittorie', 'Anni Vittoria', 'Budget Medio (€)', 'Quota sul Totale %']].style.format({
                 'Budget Medio (€)': '{:,.0f} €',
                 'Quota sul Totale %': '{:.2f} %'
             }).background_gradient(cmap='YlOrRd', subset=['Quota sul Totale %', 'Vittorie']),
@@ -292,14 +295,17 @@ def time_analysis(df):
             hide_index=True
         )
 
-        st.info("""
-        💡 **Come leggere la tabella:**
-        * **Quota sul Totale %**: Indica quanto "pesa" quella tripletta rispetto a tutti i soldi erogati negli anni. Poiché le finestre sono scorrevoli e si sovrappongono, la somma delle quote supererà il 100%.
-        * **Vittorie**: È il dato più solido. Indica quante volte quella specifica finestra ha battuto tutte le altre 11 nello stesso anno.
-        """)
+        # Insight Dinamico
+        top_f = classifica_finale.iloc[0]['Finestra']
+        if window_size <= 3:
+            st.info(f"🎯 **Focus Tattico:** La miglior finestra breve è **{top_f}**. Ideale per campagne btl e promozioni dirette.")
+        elif window_size <= 6:
+            st.info(f"🏗️ **Focus Strategico:** La miglior finestra semestrale è **{top_f}**. Ideale per la pianificazione finanziaria.")
+        else:
+            st.info(f"🌍 **Focus Macro:** Finestra ampia di **{top_f}**. Mostra la stabilità del mercato su lunghi periodi.")
 
     else:
-        st.warning("Dati insufficienti negli anni conclusi per generare il ranking delle triplette.")
+        st.warning("Dati insufficienti per l'analisi dinamica.")
 
 
 
