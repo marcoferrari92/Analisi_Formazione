@@ -308,34 +308,74 @@ def time_analysis(df):
         }
     )
 
-    # --- 4. ANALISI DEL TICKET MEDIO E CONCENTRAZIONE ---
+    # --- 4. ANALISI INCROCIATA: TICKET MEDIO E CAGR ---
     st.divider()
-    col_a, col_b = st.columns(2)
+    st.subheader("📈 Analisi Strategica: Valore Medio vs Crescita Composta")
+    
+    # Calcolo Ticket Medio (Volume Target / Numero Pratiche Target)
+    df_annual['Ticket_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
+    
+    # Prepariamo il grafico a doppio asse
+    fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
 
-    with col_a:
-        st.subheader("💰 Ticket Medio Target")
-        # Calcoliamo il valore medio per pratica nel settore target
-        df_annual['Ticket_Medio'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
-        
-        fig_ticket = px.line(
-            df_annual, x='Anno', y='Ticket_Medio',
-            title="Evoluzione del Contributo Medio (€)",
-            markers=True, line_shape="spline",
-            color_discrete_sequence=['#2ecc71']
-        )
-        fig_ticket.update_layout(yaxis_title="Euro (€)", xaxis_title="")
-        st.plotly_chart(fig_ticket, use_container_width=True)
+    # Traccia 1: Ticket Medio (Barre)
+    fig_strategy.add_trace(
+        go.Bar(
+            x=df_annual['Anno'],
+            y=df_annual['Ticket_Medio_Target'],
+            name="Ticket Medio (€)",
+            marker_color='rgba(52, 152, 219, 0.6)', # Blu trasparente
+            hovertemplate="Anno %{x}<br>Ticket Medio: € %{y:,.0f}<extra></extra>"
+        ),
+        secondary_y=False,
+    )
 
-    with col_b:
-        st.subheader("🎯 Top Beneficiari (Quota Budget)")
-        # Vediamo se il budget è concentrato su pochi
-        top_beneficiari = df_temp[df_temp['IS_TARGET'] == 1].groupby('DENOMINAZIONE')['RNA_ELEMENTO_DI_AIUTO'].sum().nlargest(10).reset_index()
+    # Traccia 2: CAGR Volume Target (Linea)
+    # Nota: escludiamo l'anno start (dove è 0) e l'anno corrente (che è TBD) per pulizia
+    df_cagr_plot = df_annual.dropna(subset=['CAGR Vol. Target'])
+    
+    fig_strategy.add_trace(
+        go.Scatter(
+            x=df_cagr_plot['Anno'],
+            y=df_cagr_plot['CAGR Vol. Target'],
+            name="CAGR Vol. Target (%)",
+            line=dict(color='#2ecc71', width=4, shape='spline'),
+            mode='lines+markers+text',
+            text=[f"{v:.1f}%" if v != 0 else "" for v in df_cagr_plot['CAGR Vol. Target']],
+            textposition="top center",
+            hovertemplate="Anno %{x}<br>CAGR: %{y:.2f}%<extra></extra>"
+        ),
+        secondary_y=True,
+    )
+
+    # Configurazione Layout
+    fig_strategy.update_layout(
+        title="Evoluzione del Valore per Pratica e Tasso di Crescita",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        height=500,
+        template="plotly_white"
+    )
+
+    # Assi
+    fig_strategy.update_yaxes(title_text="Ticket Medio (€)", secondary_y=False, tickformat="€,.0f", gridcolor="#f0f0f0")
+    fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, showgrid=False, ticksuffix="%")
+    fig_strategy.update_xaxes(type='category') # Forza gli anni come etichette discrete
+
+    st.plotly_chart(fig_strategy, use_container_width=True)
+
+    # --- 5. INTERPRETAZIONE AUTOMATICA ---
+    if len(df_annual) > 1:
+        ultimo_anno = df_annual.iloc[-1] # L'anno più recente è l'ultimo nel df_annual ordinato per Anno
+        penultimo_anno = df_annual.iloc[-2]
         
-        fig_top = px.bar(
-            top_beneficiari, x='RNA_ELEMENTO_DI_AIUTO', y='DENOMINAZIONE',
-            orientation='h', title="Top 10 Aziende nel Settore",
-            color_discrete_sequence=['#e67e22']
-        )
-        fig_top.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Budget Totale (€)")
-        st.plotly_chart(fig_top, use_container_width=True)
+        diff_ticket = ultimo_anno['Ticket_Medio_Target'] - penultimo_anno['Ticket_Medio_Target']
+        
+        st.info("💡 **Analisi Rapida:**")
+        if diff_ticket < 0 and ultimo_anno['CAGR Vol. Target'] > 0:
+            st.write("✅ **Democratizzazione in corso**: Il volume totale cresce (CAGR+) ma il ticket medio scende. Il bando sta raggiungendo una base di aziende molto più ampia e diversificata.")
+        elif diff_ticket > 0 and ultimo_anno['CAGR Vol. Target'] > 0:
+            st.write("🚀 **Consolidamento e Valore**: Sia il volume che il valore medio per pratica stanno salendo. Il settore attira progetti sempre più ambiziosi e costosi.")
+        else:
+            st.write("🧐 **Stabilità**: Il mercato sta seguendo un trend lineare senza scostamenti strutturali tra valore e volume.")
 
