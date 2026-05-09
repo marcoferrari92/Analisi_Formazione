@@ -220,7 +220,7 @@ def time_analysis(df):
 
     # --- TABELLA DI ANALISI STAGIONALE E MARKETING ---
     st.write("")
-    st.subheader("📊 Classifica Stagionale del Budget Target")
+    st.write(f"####Classifica Stagionale del Budget Target")
     
     # 1. Calcolo la somma del budget per ogni mese su tutta la serie storica
     df_mesi_stat = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
@@ -244,7 +244,7 @@ def time_analysis(df):
         df_rank.columns = ['Mese', 'Budget Totale (€)', 'Incidenza %']
         
         # 4. Visualizzazione Tabellare con Formattazione
-        col1, col2, col3 = st.columns([1, 2, 2]) 
+        col1, col2 = st.columns([2, 2]) 
         with col1:
             st.dataframe(
                 df_rank.style.format({
