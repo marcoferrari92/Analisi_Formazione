@@ -218,48 +218,53 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
-    # --- 6. IDENTIFICAZIONE AUTOMATICA PERIODI SPOT ---
+    # --- TABELLA DI ANALISI STAGIONALE E MARKETING ---
     st.write("")
+    st.subheader("📊 Classifica Stagionale del Budget Target")
     
-    # Calcoliamo la stagionalità media (somma budget per mese / somma totale)
-    stagionalita = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    totale_storico = stagionalita['RNA_ELEMENTO_DI_AIUTO'].sum()
+    # 1. Calcolo la somma del budget per ogni mese su tutta la serie storica
+    df_mesi_stat = df_temp[df_temp['IS_TARGET'] == 1].groupby('Mese_Num')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
     
-    if totale_storico > 0:
-        stagionalita['Peso_%'] = (stagionalita['RNA_ELEMENTO_DI_AIUTO'] / totale_storico) * 100
+    # Calcolo il totale complessivo per la normalizzazione
+    tot_budget_target = df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'].sum()
+    
+    if tot_budget_target > 0:
+        # 2. Normalizzazione: Calcolo il peso percentuale
+        df_mesi_stat['Peso %'] = (df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / tot_budget_target * 100)
         
-        # Identifichiamo i mesi "Hot" (quelli sopra la media 1/12 = 8.33% o i top 3)
-        mesi_top = stagionalita.sort_values('Peso_%', ascending=False).head(3)
-        nomi_mesi_top = [mesi_ita[m] for m in mesi_top['Mese_Num'].tolist()]
+        # 3. Preparazione per la visualizzazione
+        # Aggiungiamo i nomi dei mesi
+        df_mesi_stat['Mese'] = df_mesi_stat['Mese_Num'].map(mesi_ita)
         
-        st.subheader("🎯 Intelligence: Finestre di Marketing")
+        # Ordiniamo dal migliore al peggiore
+        df_rank = df_mesi_stat.sort_values('Peso %', ascending=False).reset_index(drop=True)
         
-        col1, col2 = st.columns([1, 2])
+        # Rinominiamo le colonne per l'utente finale
+        df_rank = df_rank[['Mese', 'RNA_ELEMENTO_DI_AIUTO', 'Peso %']]
+        df_rank.columns = ['Mese', 'Budget Totale (€)', 'Incidenza %']
         
-        with col1:
-            st.metric("Mese di Picco Storico", nomi_mesi_top[0], f"{mesi_top['Peso_%'].iloc[0]:.1f}% del Budget")
+        # 4. Visualizzazione Tabellare con Formattazione
+        st.dataframe(
+            df_rank.style.format({
+                'Budget Totale (€)': '{:,.0f} €',
+                'Incidenza %': '{:.2f} %'
+            }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=max(df_rank['Incidenza %'])),
+            use_container_width=True,
+            hide_index=True
+        )
         
-        with col2:
-            st.markdown(f"""
-            **Analisi Predittiva Stagionale:**
-            I dati storici indicano che i periodi migliori per le campagne marketing sono **{', '.join(nomi_mesi_top)}**. 
-            In questi mesi si concentra la maggiore spesa pubblica del settore target.
-            """)
-            
-            # Suggerimento operativo basato sulla data attuale
-            mese_attuale = datetime.datetime.now().month
-            if mese_attuale in mesi_top['Mese_Num'].tolist():
-                st.success(f"🔥 **Opportunità Alta:** Sei nel periodo di picco (**{mesi_ita[mese_attuale]}**). Massimizzare la pressione commerciale ora.")
-            else:
-                prossimo_mese_hot = mesi_top[mesi_top['Mese_Num'] > mese_attuale].sort_values('Mese_Num').head(1)
-                if not prossimo_mese_hot.empty:
-                    st.info(f"📅 **Preparazione:** Il prossimo picco atteso è a **{mesi_ita[prossimo_mese_hot['Mese_Num'].iloc[0]]}**. Inizia la lead generation 30 giorni prima.")
-                else:
-                    # Se siamo a fine anno e il prossimo picco è a inizio anno nuovo
-                    st.info(f"📅 **Preparazione:** Pianificare le attività per **{nomi_mesi_top[0]}**, primo grande hub di spesa dell'anno.")
-
+        # --- 5. INSIGHT AUTOMATICO SUI PERIODI SPOT ---
+        top_mese = df_rank.iloc[0]['Mese']
+        peso_top = df_rank.iloc[0]['Incidenza %']
+        
+        st.info(f"""
+        🎯 **Insight Operativo:** Il mese di **{top_mese}** è il periodo spot più rilevante, 
+        concentrando da solo il **{peso_top:.1f}%** delle risorse totali allocate storicamente. 
+        Si consiglia di pianificare le campagne di acquisizione clienti con un anticipo di 30-45 giorni rispetto ai primi 3 mesi in classifica.
+        """)
+        
     else:
-        st.caption("Nessun dato target disponibile per l'analisi stagionale.")
+        st.warning("Nessun dato disponibile per generare la classifica stagionale.")
 
 
 
