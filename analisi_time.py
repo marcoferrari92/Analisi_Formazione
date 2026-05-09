@@ -365,18 +365,16 @@ def time_analysis(df):
             # Testo dinamico per il numero di aiuti
             txt_n = f"nonostante un calo di {abs(diff_n)} aiuti" if diff_n < 0 else f"grazie anche a {diff_n} aiuti in più"
 
+             # --- CASISTICA ---
             st.write("")
-            st.subheader("🎯 Sintesi Strategica del Mercato Target")
 
-            # --- CASISTICA ---
-            
             # CASO 1: CRESCITA RALLENTATA + AIUTO SU (CONSOLIDAMENTO)
             if cagr_att > 0 and diff_cagr < 0 and diff_aiuto > 0:
                 st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
                 st.markdown(f"""
                 * Il volume del **Settore Target** cresce al **{cagr_att:.1f}%**, ma è **in rallentamento** rispetto al {int(penultimo['Anno'])} ({cagr_prec:.1f}%).
                 * L'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({perc_aiuto:+.1f}%) arrivando a **€ {aiuto_med_att:,.0f}**.
-                * **Significato:** Dopo un'annata d'oro, il mercato sta rallentando, {txt_n}. Il focus si è spostato su meno concessioni ma più corpose (progetti di valore maggiore).
+                * **Significato:** Dopo un'annata d'oro, il mercato sta rallentando ({txt_n}). Il focus si è spostato su meno concessioni ma più corpose.
                 """)
 
             # CASO 2: CRESCITA RALLENTATA + AIUTO GIÙ (DEMOCRATIZZAZIONE RALLENTATA)
