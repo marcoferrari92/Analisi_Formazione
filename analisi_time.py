@@ -229,9 +229,7 @@ def time_analysis(df):
     if not df_clean.empty:
         with col_controlli:
             window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
-            st.write("")
-            st.info("💡 Questo filtro ti permette di eliminare il 'rumore' di fondo e vedere solo dove storicamente si sono concentrati i grandi volumi.")
-
+            
         # Logica di calcolo (identica alla precedente)
         df_m_y = df_clean.groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
         budget_totale_storico = df_clean['RNA_ELEMENTO_DI_AIUTO'].sum()
