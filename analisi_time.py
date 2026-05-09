@@ -218,70 +218,79 @@ def time_analysis(df):
     
     st.plotly_chart(fig_heat, use_container_width=True, key="heatmap_stagionalita")
 
-    # --- TABELLA DI ANALISI STAGIONALE E MARKETING ---
+    # --- ANALISI A FINESTRA MOBILE (TRIMESTRI SCORREVOLI) ---
     st.write("")
-    st.write("Classifica Stagionale del Budget Target")
-    
-    # 1. Calcolo del budget per Mese e Anno per identificare i picchi isolati
-    df_raw_spot = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    
-    if not df_raw_spot.empty:
-        # Calcoliamo quanto ogni mese ha pesato sul TOTALE STORICO
-        totale_generale = df_raw_spot['RNA_ELEMENTO_DI_AIUTO'].sum()
-        
-        # Raggruppiamo per mese per la classifica
-        df_mesi_stat = df_raw_spot.groupby('Mese_Num').agg({
-            'RNA_ELEMENTO_DI_AIUTO': 'sum',      # Budget totale storico
-            'Anno': 'nunique'                    # In quanti anni quel mese è stato attivo
-        }).reset_index()
-        
-        df_mesi_stat['Incidenza %'] = (df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / totale_generale * 100)
-        df_mesi_stat['Mese'] = df_mesi_stat['Mese_Num'].map(mesi_ita)
-        
-        # --- LOGICA ANTI-GONFIAMENTO ---
-        # Calcoliamo la media per anno per vedere se un mese è "costante" o "casuale"
-        df_mesi_stat['Media per Anno'] = df_mesi_stat['RNA_ELEMENTO_DI_AIUTO'] / df_mesi_stat['Anno']
-        
-        df_rank = df_mesi_stat.sort_values('Incidenza %', ascending=False).reset_index(drop=True)
-        
-        # Prepariamo la tabella finale
-        df_view = df_rank[['Mese', 'RNA_ELEMENTO_DI_AIUTO', 'Anno', 'Incidenza %']]
-        df_view.columns = ['Mese', 'Budget Totale (€)', 'Anni Attivi', 'Incidenza %']
+    st.subheader("🔄 Analisi delle Finestre Temporali Scorrevoli (3 mesi)")
 
-        col_tab, col_info = st.columns([3.5, 1.5])
+    # 1. Sommiamo il budget per ogni Anno e Mese
+    df_rolling = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
 
-        with col_tab:
+    if not df_rolling.empty:
+        # Creiamo tutte le possibili finestre di 3 mesi
+        windows = []
+        for i in range(1, 13):
+            m1 = i
+            m2 = i + 1 if i + 1 <= 12 else i + 1 - 12
+            m3 = i + 2 if i + 2 <= 12 else i + 2 - 12
+            nome_finestra = f"{mesi_ita[m1]}-{mesi_ita[m2]}-{mesi_ita[m3]}"
+            windows.append({'Mesi': [m1, m2, m3], 'Nome': nome_finestra})
+
+        # 2. Calcoliamo il valore di ogni finestra per ogni anno
+        risultati_finestre = []
+        for anno in df_rolling['Anno'].unique():
+            df_anno = df_rolling[df_rolling['Anno'] == anno]
+            for w in windows:
+                budget_finestra = df_anno[df_anno['Mese_Num'].isin(w['Mesi'])]['RNA_ELEMENTO_DI_AIUTO'].sum()
+                risultati_finestre.append({
+                    'Anno': anno,
+                    'Finestra': w['Nome'],
+                    'Budget': budget_finestra
+                })
+        
+        df_res_w = pd.DataFrame(risultati_finestre)
+
+        # 3. Identifichiamo la finestra vincitrice per ogni anno
+        idx_max_w = df_res_w.groupby('Anno')['Budget'].idxmax()
+        df_vincitori_w = df_res_w.loc[idx_max_w].copy()
+
+        # 4. Classifica della Ricorrenza
+        classifica_w = df_vincitori_w['Finestra'].value_counts().reset_index()
+        classifica_w.columns = ['Finestra Temporale', 'Anni da Leader']
+        
+        # Aggiungiamo il budget medio per finestra per dare peso economico
+        media_budget_w = df_res_w.groupby('Finestra')['Budget'].mean().reset_index()
+        classifica_w = classifica_w.merge(media_budget_w, left_on='Finestra Temporale', right_on='Finestra').drop('Finestra', axis=1)
+        classifica_w.rename(columns={'Budget': 'Budget Medio Finestra (€)'}, inplace=True)
+
+        col_w1, col_w2 = st.columns([1.2, 1])
+
+        with col_w1:
+            st.write("**Ranking delle Finestre di Marketing**")
             st.dataframe(
-                df_view.style.format({
-                    'Budget Totale (€)': '{:,.0f} €',
-                    'Incidenza %': '{:.2f} %'
-                }).bar(subset=['Incidenza %'], color='#ff4b4b', vmin=0, vmax=df_view['Incidenza %'].max()),
+                classifica_w.style.background_gradient(subset=['Anni da Leader'], cmap='Oranges')
+                .format({'Budget Medio Finestra (€)': '{:,.0f} €'}),
                 use_container_width=True,
                 hide_index=True
             )
 
-        with col_info:
-            # Identifichiamo se il primo mese è un "falso positivo"
-            top_row = df_rank.iloc[0]
-            num_anni_totali = df_raw_spot['Anno'].nunique()
+        with col_w2:
+            top_spot = classifica_w.iloc[0]['Finestra Temporale']
+            volte_w = int(classifica_w.iloc[0]['Anni da Leader'])
+            tot_anni_w = df_vincitori_w['Anno'].nunique()
+
+            st.markdown(f"### 🎯 Finestra Strategica: **{top_spot}**")
+            st.write(f"""
+            L'analisi scorrevole conferma che la finestra **{top_spot}** è la più performante, 
+            essendo stata la "zona" con più budget per **{volte_w} anni su {tot_anni_w}**.
+            """)
             
-            if top_row['Anno'] < (num_anni_totali / 2):
-                st.warning(f"""
-                ⚠️ **Attenzione Outlier:**
-                Il mese di **{top_row['Mese']}** risulta primo per budget, ma è stato rilevante solo in **{int(top_row['Anno'])}** anni su {num_anni_totali}. 
-                Il dato potrebbe essere gonfiato da un singolo maxi-finanziamento isolato.
-                """)
-            else:
-                st.success(f"""
-                ✅ **Dato Ricorrente:**
-                Il mese di **{top_row['Mese']}** è costantemente alto (attivo in {int(top_row['Anno'])} anni su {num_anni_totali}). 
-                È un periodo strutturale su cui puntare.
-                """)
-                
-            st.caption("La colonna 'Anni Attivi' indica quante volte quel mese si è ripresentato con finanziamenti nel tempo.")
+            if "Set-Ott-Nov" in classifica_w['Finestra Temporale'].values[:2]:
+                st.success(f"✅ La tua intuizione è confermata: il periodo autunnale è tra i primi per ricorrenza storica.")
+            
+            st.info(f"💡 **Consiglio Marketing:** Inizia la pressione pubblicitaria 30 giorni prima di **{top_spot.split('-')[0]}**.")
 
     else:
-        st.warning("Dati insufficienti per l'analisi anti-gonfiamento.")
+        st.warning("Dati insufficienti per l'analisi a finestra mobile.")
 
 
 
