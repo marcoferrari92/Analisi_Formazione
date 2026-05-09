@@ -595,7 +595,7 @@ def time_analysis(df):
         # 1. Calcolo metriche TOTALI (su tutto il DF senza filtri IS_TARGET)
         analisi_tot = df_temp.groupby('CF_TROVATO').agg({
             'CF_TROVATO': 'count',
-            'DATA_CONCESSIONE': ['min', 'max']
+            'RNA_DATA_CONCESSIONE': ['min', 'max']
         })
         analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto Tot', 'Ultimo Aiuto Tot']
         analisi_tot = analisi_tot.reset_index()
