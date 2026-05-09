@@ -8,7 +8,7 @@ import datetime as dt
 
 
 GUIDA_TIMELINE = """ Vedi se il settore target è in crescita, in declino o se ha un andamento periodico legato a bandi stagionali"""
-GUIDA_TIMEMAP = """ Periodi che si ripetono come i più intensi (vincitori) in più annate, e che hanno anche un budget medio annuo più alto, possono indicare trend da sfruttare per individuare i momenti migliori per le campagne marketing"""
+GUIDA_TIMEMAP = """ Periodi che si ripetono come i più intensi (vincitori) in più annate, e che hanno anche un budget medio annuo più alto, possono indicare un trend reale da sfruttare per individuare i momenti migliori per le campagne marketing"""
 GUIDA_CAGR = r"""
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
