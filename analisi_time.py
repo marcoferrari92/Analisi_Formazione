@@ -612,7 +612,7 @@ def time_analysis(df):
                 'RAGIONE SOCIALE': 'first',
                 'RNA_ELEMENTO_DI_AIUTO': 'sum',
                 'CF_TROVATO': 'count',
-                'DATA_CONCESSIONE': ['min', 'max']
+                'RNA_DATA_CONCESSIONE': ['min', 'max']
             })
             analisi_target.columns = ['Ragione Sociale', 'Budget Target Totale (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
             analisi_target = analisi_target.reset_index()
