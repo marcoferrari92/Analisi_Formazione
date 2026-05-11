@@ -680,11 +680,12 @@ def time_analysis(df):
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
                 opacity=0.7, height=800,
                 hover_data={
-                  "Ragione Sociale": True,  
-                  "Budget Target (€)": ":,.0f",
-                  "Vivacità Target": True, 
-                  "Ultimo Target (gg)": True,
-                  "Freq. Aiuti Target (gg)": True
+                    "Ragione Sociale": True,             # customdata[0]
+                    "Budget Target (€)": ":,.0f",        # customdata[1]
+                    "N° Aiuti Target": True,             # customdata[2]
+                    "Vivacità Target": True,             # customdata[3]
+                    "Ultimo Target (gg)": True,          # customdata[4]
+                    "Freq. Aiuti Target (gg)": ":.0f"    # customdata[5]
                 }
             )
             # AGGIUNTA FINESTRE COLORATE
@@ -711,14 +712,15 @@ def time_analysis(df):
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
                 hovertemplate=(
-                  "<b>%{customdata[0]}</b><br>" +             # Ragione Sociale
-                  "Budget Target: %{customdata[1]} €<br>" +   # Budget
-                  "<i>%{customdata[2]}</i><br><br>" +         # Vivacità Target
-                  "Ultimo Aiuto Target: %{customdata[3]} gg fa<br>" + # Recency
-                  "Freq. Aiuti Target: %{customdata[4]:.0f} gg" +    # Frequenza specifica
-                  "<extra></extra>"
+                    "<b>%{customdata[0]}</b><br>" +                  # Ragione Sociale
+                    "Budget: %{customdata[1]} €<br>" +               # Budget Target
+                    "N° Aiuti Target: %{customdata[2]}<br>" +        # Num Aiuti Target
+                    "Stato: %{customdata[3]}<br>" +                  # Vivacità Target
+                    "Ultimo Aiuto: %{customdata[4]} gg fa<br>" +     # Ultimo Target
+                    "Frequenza Target: %{customdata[5]} gg" +        # Freq. Aiuti Target
+                    "<extra></extra>"
                 ),
-              selector=dict(type='box')
+                selector=dict(type='box')
             )
             fig_combined.update_layout(
                 # 1. Distanza tra ISTOGRAMMA e BOXPLOT 
