@@ -642,7 +642,6 @@ def time_analysis(df):
         analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti (gg)']], on='CF_TROVATO', how='left')
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
-        
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
 
         # --- 4. CALCOLO SOGLIE E VIVACITÀ ---
@@ -651,13 +650,7 @@ def time_analysis(df):
         q1_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
         med_t = analisi_finale['Freq. Aiuti Target (gg)'].median()
         q3_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
-        
-        # SOGLIE FREQUENZA (Per le finestre del grafico)
-        freq_target_valide = analisi_finale['Freq. Aiuti Target (gg)'].dropna()
-        q1_f = freq_target_valide.quantile(0.25)
-        med_f = freq_target_valide.median()
-        q3_f = freq_target_valide.quantile(0.75)
-        max_f = freq_target_valide.max() if not freq_target_valide.empty else 1000
+        max_t = analisi_finale['Freq. Aiuti Target (gg)'].max()
 
         def get_vivacita_target(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
@@ -689,15 +682,15 @@ def time_analysis(df):
                 hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
             # AGGIUNTA FINESTRE COLORATE
-            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=0, x1=q1_t, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q1_t, x1=med_t, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=med_t, x1=q3_t, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q3_t, x1=max_t, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
             finestre = [
-                {"label": "IPER.", "x0": 0, "x1": q1_f},
-                {"label": "VIVA", "x0": q1_f, "x1": med_f},
-                {"label": "DIS.", "x0": med_f, "x1": q3_f},
-                {"label": "MORTA", "x0": q3_f, "x1": max_f}
+                {"label": "IPER.", "x0": 0, "x1": q1_t},
+                {"label": "VIVA", "x0": q1_f, "x1": med_t},
+                {"label": "DIS.", "x0": med_f, "x1": q3_t},
+                {"label": "MORTA", "x0": q3_f, "x1": max_t}
             ]
             for f in finestre:
                 fig_combined.add_annotation(
@@ -711,7 +704,7 @@ def time_analysis(df):
                 )
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
-                hovertemplate="<b>%{customdata[0]}</b><br>Stato: %{customdata[1]}<br>Frequenza: %{x:.0f} gg<extra></extra>",
+                hovertemplate="<b>%{customdata[0]}</b><br>Stato: %{customdata[1]}<br>Freq. Aiuti Target: %{x:.0f} gg</b><br>Ultimo Aiuto Target: %{customdata[1]gg}<br><extra></extra>",
                 selector=dict(type='box')
             )
             fig_combined.update_layout(
