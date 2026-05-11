@@ -704,8 +704,14 @@ def time_analysis(df):
                 )
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
-                hovertemplate="<b>%{customdata[0]}</b><br>Stato: %{customdata[1]}<br>Freq. Aiuti Target: %{x:.0f} gg</b><br>Ultimo Aiuto Target: %{customdata[1]gg}<br><extra></extra>",
-                selector=dict(type='box')
+                hover_data={
+                  "Ragione Sociale": True,    
+                  "Vivacità Target": True,     
+                  "Freq. Aiuti Target (gg)": True,  
+                  "Ultimo Target (gg)": True,  
+                  "Budget Target (€)": ":,.0f"
+                },
+              selector=dict(type='box')
             )
             fig_combined.update_layout(
                 # 1. Distanza tra ISTOGRAMMA e BOXPLOT 
@@ -726,7 +732,7 @@ def time_analysis(df):
         col_view = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
                     'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
 
-        def style_stato(val):
+        def style_vivacita(val):
             colori = {
                 '🔥 IPERATTIVA': 'background-color: #2ecc71; color: white; font-weight: bold;',       # IPERATTIVA: Verde acceso
                 '✅ VIVA': 'background-color: #c8e6c9; color: #2e7d32; font-weight: bold;',           # VIVA: Verde pallido (Salvia/Pastello)
