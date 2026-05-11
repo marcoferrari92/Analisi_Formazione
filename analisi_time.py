@@ -615,9 +615,11 @@ def time_analysis(df):
     analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto', 'Ultimo Aiuto']
     analisi_tot = analisi_tot.reset_index()
     
-    # Freq. Aiuti (Logica N-1)
-    analisi_tot['Freq. Aiuti'] = (analisi_tot['Ultimo Aiuto'] - analisi_tot['Primo Aiuto']).dt.days / (analisi_tot['N° Aiuti Tot'] - 1)
-    analisi_tot['Freq. Aiuti'] = analisi_tot['Freq. Aiuti'].replace([float('inf'), -float('inf')], 0).fillna(0)
+    # Calcolo Freq. Aiuti
+    # Usiamo .mask() per trasformare in NaN i casi dove non c'è frequenza (N=1)
+    diff_date_tot = (analisi_tot['Ultimo Aiuto'] - analisi_tot['Primo Aiuto']).dt.days
+    analisi_tot['Freq. Aiuti'] = diff_date_tot / (analisi_tot['N° Aiuti Tot'] - 1)
+    analisi_tot['Freq. Aiuti'] = analisi_tot['Freq. Aiuti'].replace([float('inf'), -float('inf')], pd.NA)
 
     # 2. Metriche settore TARGET
     df_target = df_temp[df_temp['IS_TARGET'] == 1].copy()
@@ -636,9 +638,10 @@ def time_analysis(df):
         # Giorni dall'ultimo aiuto target (Recency)
         analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
         
-        # Freq. Aiuti Target (Logica N-1)
-        analisi_target['Freq. Aiuti Target'] = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days / (analisi_target['N° Aiuti Target'] - 1)
-        analisi_target['Freq. Aiuti Target'] = analisi_target['Freq. Aiuti Target'].replace([float('inf'), -float('inf')], 0).fillna(0)
+        # Freq. Aiuti Target
+        diff_date_target = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days
+        analisi_target['Freq. Aiuti Target'] = diff_date_target / (analisi_target['N° Aiuti Target'] - 1)
+        analisi_target['Freq. Aiuti Target'] = analisi_target['Freq. Aiuti Target'].replace([float('inf'), -float('inf')], pd.NA)
 
         # 3. Merge e Creazione colonna composta "Aiuti Target (%)"
         analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
