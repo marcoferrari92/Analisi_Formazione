@@ -648,9 +648,9 @@ def time_analysis(df):
         # --- 4. CALCOLO SOGLIE E VIVACITÀ ---
     
         # SOGLIE RECENCY (Per lo Stato in tabella)
-        q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
-        med_t = analisi_finale['Ultimo Target (gg)'].median()
-        q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+        q1_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
+        med_t = analisi_finale['Freq. Aiuti Target (gg)'].median()
+        q3_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
         
         # SOGLIE FREQUENZA (Per le finestre del grafico)
         freq_target_valide = analisi_finale['Freq. Aiuti Target (gg)'].dropna()
