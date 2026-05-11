@@ -674,26 +674,27 @@ def time_analysis(df):
         c3.metric("Freq. Target (Med)", f"{med_f:.0f} gg") # Usiamo med_f
         c4.metric("Recency Target (Med)", f"{med_t:.0f} gg") # Usiamo med_t
 
-        # --- 6. GRAFICO CON FINESTRE CORRETTE ---
+        # --- 6. GRAFICO CON FINESTRE COLORATE ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
         
         if not df_stats.empty:
             fig_combined = px.histogram(
-                df_stats, 
-                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
-                marginal="box", 
-                nbins=50,
-                barmode='overlay',
-                title="Distribuzione Frequenze (Soglie su Frequenza Target)",
+                df_stats, x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
+                marginal="box", nbins=50, barmode='overlay',
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
-                opacity=0.6, height=800,
-                hover_data={"Ragione Sociale": True, "Vivacità Target": True, "Ultimo Target (gg)": True}
+                opacity=0.7, height=800,
+                hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
-            
-            # POSIZIONAMENTO LINEE SULL'ASSE X (FREQUENZA)
-            fig_combined.add_vline(x=q1_f, line_dash="dash", line_color="green", annotation_text=f"Q1 Freq: {q1_f:.0f}gg")
-            fig_combined.add_vline(x=med_f, line_dash="dash", line_color="blue", annotation_text=f"Med Freq: {med_f:.0f}gg")
-            fig_combined.add_vline(x=q3_f, line_dash="dash", line_color="orange", annotation_text=f"Q3 Freq: {q3_f:.0f}gg")
+
+            # AGGIUNTA FINESTRE COLORATE (SHAPES)
+            # IPERATTIVA (Verde chiaro)
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.3, layer="below", line_width=0, annotation_text="IPERATTIVA")
+            # VIVA (Verde)
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.1, layer="below", line_width=0, annotation_text="VIVA")
+            # DISINTERESSATA (Arancione/Giallo)
+            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.3, layer="below", line_width=0, annotation_text="DISINTERESSATA")
+            # MORTA (Rosso chiaro)
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.4, layer="below", line_width=0, annotation_text="MORTA")
 
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
@@ -702,10 +703,8 @@ def time_analysis(df):
             )
             
             fig_combined.update_layout(
-                yaxis=dict(domain=[0, 0.5]), 
-                yaxis2=dict(domain=[0.55, 1]),
-                bargap=0.05,
-                xaxis_title="Giorni (Intervallo tra aiuti)",
+                yaxis=dict(domain=[0, 0.5]), yaxis2=dict(domain=[0.55, 1]),
+                bargap=0.05, xaxis_title="Giorni (Intervallo tra aiuti)",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             
