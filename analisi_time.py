@@ -687,13 +687,14 @@ def time_analysis(df):
                 df_stats, 
                 x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
                 marginal="box",
+                marginal_subplot_size=0.6,
                 barmode='overlay',
                 nbins=50,
                 title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#ff7f0e"},
                 opacity=0.6,
-                height=600 
+                height=800 
             )
 
             fig_combined.update_layout(
@@ -708,6 +709,7 @@ def time_analysis(df):
             )
 
             st.plotly_chart(fig_combined, use_container_width=True)
+          
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
