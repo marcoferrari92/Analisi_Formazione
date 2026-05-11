@@ -777,51 +777,39 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        # --- 7. TABELLA CON STILE AGGIORNATO ---
+        # --- 7. VISUALIZZAZIONE TABELLA ---
+        st.write("")
         
-        # Definiamo esplicitamente le colonne da mostrare per evitare l'errore "name not defined"
-        colonne_finali = [
-            'P.IVA', 
-            'Ragione Sociale', 
-            'Budget Target (€)', 
-            'Aiuti Target (%)', 
-            'Ultimo Target (gg)', 
-            'Vivacità', 
-            'Vivacità Target'
+        # Definiamo le colonne da visualizzare (assicurandoci che i nomi siano corretti)
+        colonne_visualizzate = [
+            'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 
+            'Aiuti Target (%)', 'Ultimo Target (gg)', 
+            'Vivacità', 'Vivacità Target'
         ]
 
-        def style_vivacita_doppia(val):
-            if not isinstance(val, str): return ""
-            if "OCCASIONALE" in val: return 'color: #95a5a6;'
-            
-            style = 'font-weight: bold;'
-            # Colori per la colonna GENERALE (Vivacità)
-            if "IPERATTIVA" in val: style += ' color: #1b5e20; background-color: #e8f5e9;'
-            elif "VIVA" in val: style += ' color: #2ecc71;'
-            elif "STANCA" in val: style += ' color: #f39c12;'
-            elif "MORENTE" in val: style += ' color: #e74c3c; opacity: 0.8;'
-            
-            # Colori per la colonna TARGET (Vivacità Target)
-            if "FEDELE" in val: style += ' color: #2e7d32; border-left: 3px solid #2e7d32;'
-            elif "INTERESSATA" in val: style += ' color: #2ecc71;'
-            elif "DISTRATTA" in val: style += ' color: #f39c12;'
-            elif "DISINTERESSATA" in val: style += ' color: #e74c3c; background-color: #ffebee;'
-            
-            return style
+        def style_stato(val):
+            colori = {
+                '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
+                '🌑 MORENTE': 'color: #c62828; opacity: 0.8;',
+                '🎯 FEDELE': 'color: #1b5e20; font-weight: bold;',
+                '🚫 DISINTERESSATA': 'background-color: #ffebee; color: #b71c1c; font-weight: bold;',
+                '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
+            }
+            return colori.get(val, '')
 
-        # Visualizzazione Tabella
-        st.write("---")
-        st.write("**🏢 Ranking Strategico: Stato Generale vs Focus Target**")
-        
-        # Usiamo .map() per applicare lo stile alle due colonne di vivacità
-        st.dataframe(
-            analisi_finale[colonne_finali].sort_values('Ultimo Target (gg)').style.format({
-                'Budget Target (€)': '{:,.0f} €',
-                'Ultimo Target (gg)': '{:.0f} gg'
-            }).map(style_vivacita_doppia, subset=['Vivacità', 'Vivacità Target'])
-            .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
-            use_container_width=True, hide_index=True
-        )
+        # Verifichiamo se le colonne esistono prima di mostrare la tabella (debug silenzioso)
+        if 'Vivacità Target' in analisi_finale.columns:
+            st.dataframe(
+                analisi_finale[colonne_visualizzate].sort_values('Ultimo Target (gg)').style.format({
+                    'Budget Target (€)': '{:,.0f} €',
+                    'Ultimo Target (gg)': '{:.0f} gg'
+                })
+                .map(style_stato, subset=['Vivacità', 'Vivacità Target'])
+                .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
+                use_container_width=True, hide_index=True
+            )
+        else:
+            st.error("Errore: Le colonne di vivacità non sono state create correttamente.")
 
         
     
