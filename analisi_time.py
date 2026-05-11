@@ -650,18 +650,70 @@ def time_analysis(df):
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
-        # 4. Definizione Status
+        # --- 4. CALCOLO STATUS E PULIZIA FINALE ---
         def segmenta_status(row):
             if row['N° Aiuti Target'] > 1 and row['Ultimo Target (gg)'] > (row['Freq. Aiuti Target'] * 1.5) and row['Ultimo Target (gg)'] > 365:
                 return "⚠️ In Abbandono"
             return "✅ Attivo" if row['N° Aiuti Target'] > 1 else "🌱 Occasionale"
 
         analisi_finale['Status'] = analisi_finale.apply(segmenta_status, axis=1)
-        
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA', 'Freq. Aiuti': 'Freq. Aiuti (gg)', 'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'}, inplace=True)
 
-        # --- VISUALIZZAZIONE ---
-        # Ordinamento: dai più recenti ai più "vecchi"
+        # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
+        st.divider()
+        st.subheader("📊 Key Performance Indicators (Mediane)")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        # Calcolo delle mediane (escludendo i None/NaN per le frequenze)
+        m_aiuti_tot = analisi_finale['N° Aiuti Tot'].median()
+        m_aiuti_target = analisi_finale['N° Aiuti Target'].median()
+        m_freq_tot = analisi_finale['Freq. Aiuti (gg)'].median()
+        m_freq_target = analisi_finale['Freq. Aiuti Target (gg)'].median()
+
+        with col1:
+            st.metric("Mediana Aiuti Totali", f"{m_aiuti_tot:.0f}")
+        with col2:
+            st.metric("Mediana Aiuti Target", f"{m_aiuti_target:.0f}")
+        with col3:
+            st.metric("Mediana Freq. Totale", f"{m_freq_tot:.0f} gg")
+        with col4:
+            st.metric("Mediana Freq. Target", f"{m_freq_target:.0f} gg")
+
+        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI ---
+        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
+
+        if not df_stats.empty:
+            fig_combined = px.histogram(
+                df_stats, 
+                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
+                marginal="box",
+                barmode='overlay',
+                nbins=50,
+                title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
+                labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
+                color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#ff7f0e"},
+                opacity=0.6,
+                height=600 
+            )
+
+            fig_combined.update_layout(
+                xaxis_title="Giorni",
+                yaxis_title="Numero di Aziende",
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+
+            fig_combined.update_traces(
+                boxpoints='all', pointpos=0, jitter=1, marker=dict(size=4),
+                selector=dict(type='box')
+            )
+
+            st.plotly_chart(fig_combined, use_container_width=True)
+        else:
+            st.warning("Dati insufficienti per generare i grafici statistici.")
+
+        # --- 7. VISUALIZZAZIONE: TABELLA DI DETTAGLIO ---
+        st.subheader("🏢 Dettaglio Aziendale")
         df_display = analisi_finale.sort_values('Ultimo Target (gg)', ascending=True)
         
         colonne_finali = [
@@ -672,63 +724,13 @@ def time_analysis(df):
         st.dataframe(
             df_display[colonne_finali].style.format({
                 'Budget Target (€)': '{:,.0f} €',
-                'Freq. Aiuti (gg)': '{:.0f} gg',
-                'Freq. Aiuti Target (gg)': '{:.0f} gg',
+                'Freq. Aiuti (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "None",
+                'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "None",
                 'Ultimo Target (gg)': '{:.0f} gg'
             }).background_gradient(
-                cmap='RdYlGn_r', # Rosso (Rd) -> Giallo (Yl) -> Verde (Gn) invertito (_r)
+                cmap='RdYlGn_r', 
                 subset=['Ultimo Target (gg)']
             ),
             use_container_width=True, hide_index=True
         )
-
-        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT CON JITTER ---
-        st.write("")
-        
-        # Filtriamo e prepariamo i dati
-        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
-
-        if not df_stats.empty:
-            # Creiamo il grafico combinato
-            fig_combined = px.histogram(
-                df_stats, 
-                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
-                marginal="box", # Box Plot orizzontali sopra
-                barmode='overlay',
-                nbins=50,
-                title="Distribuzione e Dispersione Frequenze con Dettaglio Punti",
-                labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
-                color_discrete_map={
-                    "Freq. Aiuti (gg)": "#1f77b4", 
-                    "Freq. Aiuti Target (gg)": "#ff7f0e"
-                },
-                opacity=0.6,
-                # Aumentiamo l'altezza totale del grafico per dare spazio ai boxplot
-                height=600 
-            )
-
-            # Affiniamo il layout
-            fig_combined.update_layout(
-                xaxis_title="Giorni",
-                yaxis_title="Numero di Aziende (Istogramma)",
-                bargap=0.01,
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-            )
-
-            # --- CONFIGURAZIONE AVANZATA BOX PLOT (Punti + Jitter) ---
-            # 1. Mostriamo tutti i punti (boxpoints='all')
-            # 2. pointpos=0 centra i punti all'interno del boxplot
-            # 3. jitter=1 massimizza lo sparpagliamento orizzontale
-            fig_combined.update_traces(
-                boxpoints='all', 
-                pointpos=0, 
-                jitter=1, 
-                marker=dict(size=4), # Punti leggermente più piccoli per non sovrapporsi troppo
-                selector=dict(type='box')
-            )
-
-            st.plotly_chart(fig_combined, use_container_width=True)
-            
-        else:
-            st.warning("Dati insufficienti per generare i grafici statistici comparativi.")
         
