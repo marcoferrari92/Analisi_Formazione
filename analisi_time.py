@@ -689,10 +689,10 @@ def time_analysis(df):
                 hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
             # AGGIUNTA FINESTRE COLORATE
-            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#2ecc71", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
             fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
             fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ef5350", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
             finestre = [
                 {"label": "IPER.", "x0": 0, "x1": q1_f},
                 {"label": "VIVA", "x0": q1_f, "x1": med_f},
