@@ -661,8 +661,6 @@ def time_analysis(df):
 
         
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
-        st.divider()
-        st.subheader("📊 Key Performance Indicators (Mediane)")
         
         col1, col2, col3, col4 = st.columns(4)
         
@@ -672,14 +670,15 @@ def time_analysis(df):
         m_freq_tot = analisi_finale['Freq. Aiuti (gg)'].median()
         m_freq_target = analisi_finale['Freq. Aiuti Target (gg)'].median()
 
+        st.write("**📊 Key Performance Indicators (Mediane)**")
         with col1:
-            st.metric("Mediana Aiuti Totali", f"{m_aiuti_tot:.0f}")
+            st.metric("Aiuti Totali", f"{m_aiuti_tot:.0f}")
         with col2:
-            st.metric("Mediana Aiuti Target", f"{m_aiuti_target:.0f}")
+            st.metric("Aiuti Target", f"{m_aiuti_target:.0f}")
         with col3:
-            st.metric("Mediana Freq. Totale", f"{m_freq_tot:.0f} gg")
+            st.metric("Freq. Aiuti", f"{m_freq_tot:.0f} gg")
         with col4:
-            st.metric("Mediana Freq. Target", f"{m_freq_target:.0f} gg")
+            st.metric("Freq. Aiuti Target", f"{m_freq_target:.0f} gg")
 
         # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
