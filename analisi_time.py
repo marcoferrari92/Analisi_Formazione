@@ -665,10 +665,10 @@ def time_analysis(df):
         # --- 5. KPI ---
         st.write("")
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Mediana Aiuti Target", f"{analisi_finale['N° Aiuti Target'].median():.0f}")
-        c2.metric("Freq. Totale (Med)", f"{analisi_finale['Freq. Aiuti (gg)'].median():.0f} gg")
-        c3.metric("Freq. Target (Med)", f"{med_f:.0f} gg") # Usiamo med_f
-        c4.metric("Recency Target (Med)", f"{med_t:.0f} gg") # Usiamo med_t
+        c1.metric("Aiuti (Mediana)", f"{analisi_finale['N° Aiuti Tot'].median():.0f}")
+        c2.metric("Aiuti Target (Mediana)", f"{analisi_finale['N° Aiuti Target'].median():.0f}")
+        c3.metric("Freq. Aiuti (Mediana)", f"{analisi_finale['Freq. Aiuti (gg)'].median():.0f} gg")
+        c4.metric("Freq. Aiuti (Mediana)", f"{med_t:.0f} gg") # Usiamo med_t
 
         # --- 6. GRAFICO CON FINESTRE COLORATE E SPAZIATURA GESTITA ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
