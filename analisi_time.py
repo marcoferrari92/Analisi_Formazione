@@ -642,14 +642,28 @@ def time_analysis(df):
         
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
 
-        # 4. SOGLIE E VIVACITÀ
-        q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
-        med_t = analisi_finale['Ultimo Target (gg)'].median()
-        q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+        # --- 4. CALCOLO SOGLIE (SULLA FREQUENZA) E VIVACITÀ ---
+        
+        # Calcoliamo le soglie basandoci sulla colonna visualizzata nel grafico (Frequenza)
+        # Escludiamo i NaN per avere quartili precisi
+        freq_data = analisi_finale['Freq. Aiuti Target (gg)'].dropna()
+        
+        q1_f = freq_data.quantile(0.25)
+        med_f = freq_data.median()
+        q3_f = freq_data.quantile(0.75)
 
+        # La vivacità la calcoliamo comunque sulla Recency (Ultimo Target) 
+        # perché definisce lo stato attuale, ma per le "finestre" del grafico 
+        # dobbiamo usare le soglie della frequenza per coerenza visiva.
+        
         def get_vivacita_target(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
             rec = row['Ultimo Target (gg)']
+            # Usiamo le soglie della recency per lo stato (coerente con tabella)
+            q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
+            med_t = analisi_finale['Ultimo Target (gg)'].median()
+            q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+            
             if rec <= q1_t: return "🔥 IPERATTIVA"
             if rec <= med_t: return "✅ VIVA"
             if rec <= q3_t: return "⚠️ DISINTERESSATA"
@@ -664,6 +678,46 @@ def time_analysis(df):
         c2.metric("Freq. Totale (Med)", f"{analisi_finale['Freq. Aiuti (gg)'].median():.0f} gg")
         c3.metric("Freq. Target (Med)", f"{analisi_finale['Freq. Aiuti Target (gg)'].median():.0f} gg")
         c4.metric("Recency Target (Med)", f"{med_t:.0f} gg")
+
+        # --- 6. GRAFICO CON FINESTRE CORRETTE ---
+        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
+        
+        if not df_stats.empty:
+            fig_combined = px.histogram(
+                df_stats, 
+                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
+                marginal="box", 
+                nbins=50,
+                barmode='overlay',
+                title="Distribuzione Frequenze (Soglie su Freq. Target)",
+                color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
+                opacity=0.6, height=800,
+                hover_data={"Ragione Sociale": True, "Vivacità Target": True, "Ultimo Target (gg)": True}
+            )
+            
+            # ORA LE LINEE SONO SULLA FREQUENZA (Asse X)
+            fig_combined.add_vline(x=q1_f, line_dash="dash", line_color="green", 
+                                   annotation_text=f"Q1: {q1_f:.0f}gg")
+            fig_combined.add_vline(x=med_f, line_dash="dash", line_color="blue", 
+                                   annotation_text=f"Med: {med_f:.0f}gg")
+            fig_combined.add_vline(x=q3_f, line_dash="dash", line_color="orange", 
+                                   annotation_text=f"Q3: {q3_f:.0f}gg")
+
+            fig_combined.update_traces(
+                boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
+                hovertemplate="<b>%{customdata[0]}</b><br>Stato: %{customdata[1]}<br>Frequenza: %{x:.0f} gg<extra></extra>",
+                selector=dict(type='box')
+            )
+            
+            fig_combined.update_layout(
+                yaxis=dict(domain=[0, 0.5]), 
+                yaxis2=dict(domain=[0.55, 1]),
+                bargap=0.05,
+                xaxis_title="Giorni di Intervallo tra Aiuti"
+            )
+            
+            st.plotly_chart(fig_combined, use_container_width=True)
+
 
         # 6. GRAFICO COMBINATO (RIPRISTINATO)
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
