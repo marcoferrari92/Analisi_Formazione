@@ -651,13 +651,23 @@ def time_analysis(df):
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
-        # --- 4. CALCOLO STATUS E PULIZIA FINALE ---
-        def segmenta_status(row):
-            if row['N° Aiuti Target'] > 1 and row['Ultimo Target (gg)'] > (row['Freq. Aiuti Target'] * 1.5) and row['Ultimo Target (gg)'] > 365:
-                return "⚠️ In Abbandono"
-            return "✅ Attivo" if row['N° Aiuti Target'] > 1 else "🌱 Occasionale"
-
-        analisi_finale['Status'] = analisi_finale.apply(segmenta_status, axis=1)
+        # 4. MERGE E CALCOLO VIVACITÀ (Logica Statistica Quartili)
+        analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
+        
+        # Calcolo soglie statistiche sulla popolazione Target
+        q1 = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
+        mediana = analisi_finale['Freq. Aiuti Target (gg)'].median()
+        q3 = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
+    
+        def segmenta_vivacita(row):
+            if row['N° Aiuti Target'] <= 1: return "OCCASIONALE"
+            rec = row['Ultimo Target (gg)']
+            if rec <= q1: return "IPERATTIVA"
+            if rec <= mediana: return "VIVA"
+            if rec <= q3: return "MORENTE"
+            return "MORTA"
+    
+        analisi_finale['Vivacità'] = analisi_finale.apply(segmenta_vivacita, axis=1)
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA', 'Freq. Aiuti': 'Freq. Aiuti (gg)', 'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'}, inplace=True)
 
         
