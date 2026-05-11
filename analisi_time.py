@@ -656,23 +656,35 @@ def time_analysis(df):
             'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'
         }, inplace=True)
         
-        # A. Calcoliamo la Recency Totale (giorni dall'ultimo aiuto qualunque)
-        oggi_dt = dt.datetime.now()
-        analisi_tot['Recency Totale'] = (oggi_dt - analisi_tot['Ultimo Aiuto']).dt.days
-        
-        # B. Portiamo la Recency Totale nel DataFrame finale
-        analisi_finale = analisi_finale.merge(analisi_tot[['CF_TROVATO', 'Recency Totale']], left_on='P.IVA', right_on='CF_TROVATO', how='left')
-
-        # C. Calcolo soglie statistiche (Quartili) per entrambi i mondi
-        # Target
-        q1_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
-        med_t = analisi_finale['Freq. Aiuti Target (gg)'].median()
-        q3_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
-        
-        # Generale (basato sulla Recency Totale della popolazione)
+        # Soglie per lo stato GENERALE (Recency Totale)
         q1_g = analisi_finale['Recency Totale'].quantile(0.25)
         med_g = analisi_finale['Recency Totale'].median()
         q3_g = analisi_finale['Recency Totale'].quantile(0.75)
+        
+        # Soglie per lo stato TARGET (Ultimo Target gg)
+        q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
+        med_t = analisi_finale['Ultimo Target (gg)'].median()
+        q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+
+        # 2. Definizione funzioni
+        def get_viv_gen(row):
+            rec = row['Recency Totale']
+            if rec <= q1_g: return "🔥 IPERATTIVA"
+            if rec <= med_g: return "✅ VIVA"
+            if rec <= q3_g: return "⚠️ STANCA"
+            return "🌑 MORENTE"
+
+        def get_viv_tar(row):
+            if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
+            rec = row['Ultimo Target (gg)']
+            if rec <= q1_t: return "🎯 FEDELE"
+            if rec <= med_t: return "👍 INTERESSATA"
+            if rec <= q3_t: return "💨 DISTRATTA"
+            return "🚫 DISINTERESSATA"
+
+        # CREAZIONE COLONNE
+        analisi_finale['Vivacità'] = analisi_finale.apply(get_viv_gen, axis=1)
+        analisi_finale['Vivacità Target'] = analisi_finale.apply(get_viv_tar, axis=1)
 
         def definisci_vivacita_doppia(row):
             # Caso base
