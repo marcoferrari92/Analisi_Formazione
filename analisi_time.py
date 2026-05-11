@@ -692,7 +692,7 @@ def time_analysis(df):
                 nbins=50,
                 title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
-                color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#ff7f0e"},
+                color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
                 opacity=0.6,
                 height=800,
                 # Usiamo hover_data invece di customdata
@@ -707,7 +707,6 @@ def time_analysis(df):
                 "Budget Target: %{customdata[1]:,.0f} €" +
                 "<extra></extra>"
             )
-
             fig_combined.update_layout(
                 yaxis=dict(domain=[0, 0.5]),      
                 yaxis2=dict(domain=[0.55, 1]),   
@@ -716,7 +715,6 @@ def time_analysis(df):
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 bargap=0.01
             )
-
             fig_combined.update_traces(
                 boxpoints='all', 
                 pointpos=0, 
@@ -725,7 +723,6 @@ def time_analysis(df):
                 hovertemplate=hovertemplate_dots,
                 selector=dict(type='box') 
             )
-
             st.plotly_chart(fig_combined, use_container_width=True)
           
         else:
