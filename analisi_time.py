@@ -739,26 +739,29 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        # --- 7. VISUALIZZAZIONE: TABELLA DI DETTAGLIO ---
+        # 7. TABELLA DETTAGLIO CON COLORI
         st.write("")
-        st.write("")
-        df_display = analisi_finale.sort_values('Ultimo Target (gg)', ascending=True)
         
-        colonne_finali = [
-            'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
-            'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Status'
-        ]
-        
+        def style_vivacita(val):
+            colori = {
+                '🔥 Iperattiva': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
+                '✅ Viva': 'color: #2ecc71;',
+                '⚠️ In Rallentamento': 'color: #f39c12;',
+                '🌑 Dormiente': 'color: #e74c3c; font-weight: bold;',
+                '🌱 Occasionale': 'color: #95a5a6;'
+            }
+            return colori.get(val, '')
+
+        col_tab = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità']
         st.dataframe(
-            df_display[colonne_finali].style.format({
+            analisi_finale[col_tab].sort_values('Ultimo Target (gg)').style.format({
                 'Budget Target (€)': '{:,.0f} €',
-                'Freq. Aiuti (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "None",
-                'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "None",
+                'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
                 'Ultimo Target (gg)': '{:.0f} gg'
-            }).background_gradient(
-                cmap='RdYlGn_r', 
-                subset=['Ultimo Target (gg)']
-            ),
+            }).applymap(style_vivacita, subset=['Vivacità'])
+            .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
             use_container_width=True, hide_index=True
         )
+else:
+    st.warning("Nessun dato Target disponibile per il calcolo delle frequenze.")
 
