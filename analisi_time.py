@@ -623,7 +623,7 @@ def time_analysis(df):
     analisi_tot['Freq. Aiuti'] = analisi_tot['Freq. Aiuti'].replace([float('inf'), -float('inf')], pd.NA)
 
     # 2. Metriche settore TARGET
-    df_target = df_temp_filtrato[df_temp_filtrato['IS_TARGET'] == 1].copy()
+    df_target = df_temp[df_temp['IS_TARGET'] == 1].copy()
     
     if not df_target.empty:
         analisi_target = df_target.groupby('CF_TROVATO').agg({
