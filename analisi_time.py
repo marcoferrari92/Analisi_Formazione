@@ -647,10 +647,15 @@ def time_analysis(df):
         # --- 4. CALCOLO SOGLIE E VIVACITÀ ---
     
         # SOGLIE RECENCY (Per lo Stato in tabella)
-        q1_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
-        med_t = analisi_finale['Freq. Aiuti Target (gg)'].median()
-        q3_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
-        max_t = analisi_finale['Freq. Aiuti Target (gg)'].max()
+        q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
+        med_t = analisi_finale['Ultimo Target (gg)'].median()
+        q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+      
+        # SOGLIE FREQUENCY (Per lo Stato in tabella)
+        q1_f = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
+        med_f = analisi_finale['Freq. Aiuti Target (gg)'].median()
+        q3_f = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
+        max_f = analisi_finale['Freq. Aiuti Target (gg)'].max()
 
         def get_vivacita_target(row):
           n_aiuti = row['N° Aiuti Target']
@@ -737,14 +742,14 @@ def time_analysis(df):
             )
         
             # AGGIUNTA FINESTRE COLORATE (Resta uguale)
-            fig_combined.add_vrect(x0=0, x1=q1_t, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q1_t, x1=med_t, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=med_t, x1=q3_t, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q3_t, x1=max_t, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
         
             # Etichette finestre
-            finestre = [{"label": "IPER.", "x0": 0, "x1": q1_t}, {"label": "VIVA", "x0": q1_t, "x1": med_t},
-                        {"label": "DIS.", "x0": med_t, "x1": q3_t}, {"label": "MORTA", "x0": q3_t, "x1": max_t}]
+            finestre = [{"label": "IPER.", "x0": 0, "x1": q1_f}, {"label": "VIVA", "x0": q1_f, "x1": med_f},
+                        {"label": "DIS.", "x0": med_f, "x1": q3_f}, {"label": "MORTA", "x0": q3_f, "x1": max_f}]
             for f in finestre:
                 fig_combined.add_annotation(x=(f["x0"]+f["x1"])/2, y=1, yref="paper", text=f["label"], 
                                            showarrow=False, font=dict(size=12, color="grey", family="Arial Black"), yanchor="bottom")
