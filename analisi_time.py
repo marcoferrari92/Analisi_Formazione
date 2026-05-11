@@ -662,7 +662,7 @@ def time_analysis(df):
         
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
         st.write("")
-        col1, col2, col3, col4 = st.columns(4)
+        col0, col1, col2, col3, col4, col5 = st.columns(6)
         
         # Calcolo delle mediane
         m_aiuti_tot = analisi_finale['N° Aiuti Tot'].median()
