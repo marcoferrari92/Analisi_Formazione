@@ -226,7 +226,7 @@ def time_analysis(df):
     
     if not df_clean.empty:
         with col1:
-            window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=3, key="slider_vincitori")
+            window_size = st.slider("Ampiezza finestra (mesi):", min_value=1, max_value=12, value=4, key="slider_vincitori")
             with st.popover("💡 Strategia"):
               st.info(GUIDA_TIMEMAP)
       
