@@ -412,6 +412,7 @@ def time_analysis(df):
     
     # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
     if len(df_annual) >= 2:
+      
         df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
         ultimo = df_valid.iloc[-1]
         penultimo = df_valid.iloc[-2]
@@ -673,6 +674,7 @@ def time_analysis(df):
                 if not df_churn.empty:
                     st.dataframe(
                         df_churn[colonne_churn].style.format({
+                            'Ultimo Target': lambda x: x.strftime('%Y-%m-%d'), # <--- AGGIUNGI QUESTA RIGA
                             'Budget Target (€)': '{:,.0f} €',
                             'Freq. Aiuti (gg)': '{:.0f} gg',
                             'Freq. Aiuti Target (gg)': '{:.0f} gg',
