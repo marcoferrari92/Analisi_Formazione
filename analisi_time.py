@@ -695,7 +695,7 @@ def time_analysis(df):
                 opacity=0.6,
                 height=800,
                 # Passiamo i dati extra che vogliamo nell'hover
-                custom_data=[df_stats['Ragione Sociale'], df_stats['Budget Target (€)']]
+                customdata=[df_stats['Ragione Sociale'], df_stats['Budget Target (€)']]
             )
 
             # Definiamo il template dell'hover per i Box Plot (i pallini)
