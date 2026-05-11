@@ -688,19 +688,17 @@ def time_analysis(df):
                 opacity=0.7, height=800,
                 hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
-
-            # AGGIUNTA FINESTRE COLORATE (Senza testo interno)
-            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.5, layer="below", line_width=0)
-            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.5, layer="below", line_width=0)
+            # AGGIUNTA FINESTRE COLORATE
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#2ecc71", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ef5350", opacity=0.5, layer="below", line_width=0)
             finestre = [
                 {"label": "IPER.", "x0": 0, "x1": q1_f},
                 {"label": "VIVA", "x0": q1_f, "x1": med_f},
                 {"label": "DIS.", "x0": med_f, "x1": q3_f},
                 {"label": "MORTA", "x0": q3_f, "x1": max_f}
             ]
-
             for f in finestre:
                 fig_combined.add_annotation(
                     x=(f["x0"] + f["x1"]) / 2, # Centro della finestra sull'asse X
@@ -711,14 +709,11 @@ def time_analysis(df):
                     font=dict(size=12, color="grey", family="Arial Black"),
                     yanchor="bottom"           # Ancora il testo sopra il confine del grafico
                 )
-
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
                 hovertemplate="<b>%{customdata[0]}</b><br>Stato: %{customdata[1]}<br>Frequenza: %{x:.0f} gg<extra></extra>",
                 selector=dict(type='box')
             )
-            
-            # --- GESTIONE SPAZI E LAYOUT ---
             fig_combined.update_layout(
                 # 1. Distanza tra ISTOGRAMMA e BOXPLOT 
                 yaxis=dict(domain=[0, 0.5]),      
@@ -733,17 +728,18 @@ def time_analysis(df):
             st.plotly_chart(fig_combined, use_container_width=True)
 
         # 7. TABELLA
-        st.write("---")
+        st.write("")
+        st.write("")
         col_view = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
                     'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
 
-        def style_vivacita(val):
+        def style_stato(val):
             colori = {
-                '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
-                '✅ VIVA': 'color: #2ecc71; font-weight: bold;',
-                '⚠️ DISINTERESSATA': 'color: #f39c12; font-weight: bold;',
-                '🌑 MORTA': 'background-color: #ffebee; color: #c62828; font-weight: bold;',
-                '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
+                '🔥 IPERATTIVA': 'background-color: #2ecc71; color: white; font-weight: bold;',       # IPERATTIVA: Verde acceso
+                '✅ VIVA': 'background-color: #c8e6c9; color: #2e7d32; font-weight: bold;',           # VIVA: Verde pallido (Salvia/Pastello)
+                '⚠️ DISINTERESSATA': 'background-color: #fff176; color: #f57f17; font-weight: bold;', # DISINTERESSATA: Giallo
+                '🌑 MORTA': 'background-color: #ef5350; color: white; font-weight: bold;',            # MORTA: Rosso
+                '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'                               # OCCASIONALE: Grigio neutro
             }
             return colori.get(val, '')
 
