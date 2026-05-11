@@ -688,9 +688,9 @@ def time_analysis(df):
             fig_combined.add_vrect(x0=q3_t, x1=max_t, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
             finestre = [
                 {"label": "IPER.", "x0": 0, "x1": q1_t},
-                {"label": "VIVA", "x0": q1_f, "x1": med_t},
-                {"label": "DIS.", "x0": med_f, "x1": q3_t},
-                {"label": "MORTA", "x0": q3_f, "x1": max_t}
+                {"label": "VIVA", "x0": q1_t, "x1": med_t},
+                {"label": "DIS.", "x0": med_t, "x1": q3_t},
+                {"label": "MORTA", "x0": q3_t, "x1": max_t}
             ]
             for f in finestre:
                 fig_combined.add_annotation(
