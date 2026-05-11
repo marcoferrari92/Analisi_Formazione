@@ -594,18 +594,18 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-    # ***********************
-    # FREQUENZE AIUTI TARGET 
-    # ***********************
-
-    # Calcolo Freq. Aiuti
-    # Diff. tra primo e ultimo aiuto normalizzato per (N-1) con N numero aiuti totali. 
-    # Si usa (N - 1) perché la frequenza non misura il numero di eventi, 
-    # ma la durata media degli INTERVALLI tra di essi.
-    # -> Il primo aiuto è il 'punto zero' e non ha un'attesa precedente.
-    # -> Se N=1, il risultato è 0 (nessuna ricorrenza possibile con un solo evento).
-
-   st.divider()
+      # ***********************
+      # FREQUENZE AIUTI TARGET 
+      # ***********************
+  
+      # Calcolo Freq. Aiuti
+      # Diff. tra primo e ultimo aiuto normalizzato per (N-1) con N numero aiuti totali. 
+      # Si usa (N - 1) perché la frequenza non misura il numero di eventi, 
+      # ma la durata media degli INTERVALLI tra di essi.
+      # -> Il primo aiuto è il 'punto zero' e non ha un'attesa precedente.
+      # -> Se N=1, il risultato è 0 (nessuna ricorrenza possibile con un solo evento).
+  
+     st.divider()
     st.subheader("🏢 Analisi Frequenze e Vivacità Target")
     
     # 1. Filtro preventivo budget nullo e calcolo metriche totali
@@ -613,7 +613,7 @@ def time_analysis(df):
     analisi_tot = df_temp_filtrato.groupby('CF_TROVATO').agg({'CF_TROVATO': 'count'})
     analisi_tot.columns = ['N° Aiuti Tot']
     analisi_tot = analisi_tot.reset_index()
-
+  
     # 2. Metriche settore TARGET
     df_target = df_temp_filtrato[df_temp_filtrato['IS_TARGET'] == 1].copy()
     
@@ -633,19 +633,19 @@ def time_analysis(df):
         diff_date_target = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days
         analisi_target['Freq. Aiuti Target (gg)'] = diff_date_target / (analisi_target['N° Aiuti Target'] - 1)
         analisi_target['Freq. Aiuti Target (gg)'] = analisi_target['Freq. Aiuti Target (gg)'].replace([float('inf'), -float('inf')], pd.NA)
-
+  
         # 3. Merge Finale
         analisi_finale = analisi_target.merge(analisi_tot, on='CF_TROVATO', how='left')
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
         
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
-
+  
         # --- 4. CALCOLO SOGLIE (FINESTRE) E VIVACITÀ ---
         q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
         med_t = analisi_finale['Ultimo Target (gg)'].median()
         q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
-
+  
         def get_vivacita_target(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
             rec = row['Ultimo Target (gg)']
@@ -653,16 +653,16 @@ def time_analysis(df):
             if rec <= med_t: return "✅ VIVA"
             if rec <= q3_t: return "⚠️ DISINTERESSATA"
             return "🌑 MORTA"
-
+  
         analisi_finale['Vivacità Target'] = analisi_finale.apply(get_vivacita_target, axis=1)
-
+  
         # --- 5. KPI ---
         st.write("")
         c1, c2, c3 = st.columns(3)
         c1.metric("Mediana Aiuti Target", f"{analisi_finale['N° Aiuti Target'].median():.0f}")
         c2.metric("Freq. Target (Mediana)", f"{analisi_finale['Freq. Aiuti Target (gg)'].median():.0f} gg")
         c3.metric("Recency Target (Mediana)", f"{med_t:.0f} gg")
-
+  
         # --- 6. GRAFICO CON FINESTRE STATISTICHE ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti Target (gg)']).copy()
         if not df_stats.empty:
@@ -683,7 +683,7 @@ def time_analysis(df):
             fig_combined.add_vline(x=q1_t, line_dash="dash", line_color="green", annotation_text="Soglia Iperattive")
             fig_combined.add_vline(x=med_t, line_dash="dash", line_color="blue", annotation_text="Mediana")
             fig_combined.add_vline(x=q3_t, line_dash="dash", line_color="orange", annotation_text="Soglia Morte")
-
+  
             hovertemplate_dots = (
                 "<b>%{customdata[0]}</b><br>" +
                 "Stato: %{customdata[2]}<br>" +
@@ -698,12 +698,12 @@ def time_analysis(df):
                 hovertemplate=hovertemplate_dots, selector=dict(type='box')
             )
             st.plotly_chart(fig_combined, use_container_width=True)
-
+  
         # --- 7. TABELLA FINALE ---
         st.write("---")
         col_view = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
                     'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
-
+  
         def style_vivacita(val):
             colori = {
                 '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
@@ -713,7 +713,7 @@ def time_analysis(df):
                 '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
             }
             return colori.get(val, '')
-
+  
         st.dataframe(
             analisi_finale[col_view].sort_values('Ultimo Target (gg)').style.format({
                 'Budget Target (€)': '{:,.0f} €',
