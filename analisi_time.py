@@ -782,7 +782,27 @@ def time_analysis(df):
                     'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
 
         
-        
+        def style_vivacita(val):
+            colori = {
+                '🔥 IPERATTIVA': 'background-color: #2ecc71; color: white; font-weight: bold;',       # IPERATTIVA: Verde acceso
+                '✅ VIVA': 'background-color: #c8e6c9; color: #2e7d32; font-weight: bold;',           # VIVA: Verde pallido (Salvia/Pastello)
+                '⚠️ DISINTERESSATA': 'background-color: #fff176; color: #f57f17; font-weight: bold;', # DISINTERESSATA: Giallo
+                '🌑 MORTA': 'background-color: #ef5350; color: white; font-weight: bold;',            # MORTA: Rosso
+                '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'                               # OCCASIONALE: Grigio neutro
+            }
+            return colori.get(val, '')
+
+        st.dataframe(
+            analisi_finale[col_view].sort_values('Ultimo Target (gg)').style.format({
+                'Budget Target (€)': '{:,.0f} €',
+                'Freq. Aiuti (gg)': '{:.0f} gg',
+                'Freq. Aiuti Target (gg)': '{:.0f} gg',
+                'Ultimo Target (gg)': '{:.0f} gg'
+            })
+            .map(style_vivacita, subset=['Vivacità Target'])
+            .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
+            use_container_width=True, hide_index=True
+        )
 
         
     
