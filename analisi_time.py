@@ -190,7 +190,7 @@ def time_analysis(df):
     # --- HEATMAP (STAGIONALITÀ) ---
     st.divider()
     st.write("")
-    st.subheader("🔥 Intensità delle Concessioni per Mese e Anno")
+    st.subheader("🔥 Intensità degli Aiuti per Mese e Anno")
     st.write("")
               
     df_heat_data = df_temp[df_temp['IS_TARGET'] == 1].groupby(['Anno', 'Mese_Num'])['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
