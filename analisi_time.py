@@ -594,136 +594,136 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-  # ***********************
-  # FREQUENZE AIUTI TARGET 
-  # ***********************
-  
-  # Calcolo Freq. Aiuti
-  # Diff. tra primo e ultimo aiuto normalizzato per (N-1) con N numero aiuti totali. 
-  # Si usa (N - 1) perché la frequenza non misura il numero di eventi, 
-  # ma la durata media degli INTERVALLI tra di essi.
-  # -> Il primo aiuto è il 'punto zero' e non ha un'attesa precedente.
-  # -> Se N=1, il risultato è 0 (nessuna ricorrenza possibile con un solo evento).
-  
-  st.divider()
-  st.subheader("🏢 Analisi Frequenze e Vivacità Target")
-  
-  # 1. Filtro preventivo budget nullo e calcolo metriche totali
-  df_temp_filtrato = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
-  analisi_tot = df_temp_filtrato.groupby('CF_TROVATO').agg({'CF_TROVATO': 'count'})
-  analisi_tot.columns = ['N° Aiuti Tot']
-  analisi_tot = analisi_tot.reset_index()
-  
-  # 2. Metriche settore TARGET
-  df_target = df_temp_filtrato[df_temp_filtrato['IS_TARGET'] == 1].copy()
-  
-  if not df_target.empty:
-      analisi_target = df_target.groupby('CF_TROVATO').agg({
-          'RAGIONE SOCIALE': 'first',
-          'RNA_ELEMENTO_DI_AIUTO': 'sum',
-          'CF_TROVATO': 'count',
-          'RNA_DATA_CONCESSIONE': ['min', 'max']
-      })
-      analisi_target.columns = ['Ragione Sociale', 'Budget Target (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
-      analisi_target = analisi_target.reset_index()
-      
-      oggi_dt = dt.datetime.now()
-      analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
-      
-      diff_date_target = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days
-      analisi_target['Freq. Aiuti Target (gg)'] = diff_date_target / (analisi_target['N° Aiuti Target'] - 1)
-      analisi_target['Freq. Aiuti Target (gg)'] = analisi_target['Freq. Aiuti Target (gg)'].replace([float('inf'), -float('inf')], pd.NA)
-  
-      # 3. Merge Finale
-      analisi_finale = analisi_target.merge(analisi_tot, on='CF_TROVATO', how='left')
-      analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
-      analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
-      
-      analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
-  
-      # --- 4. CALCOLO SOGLIE (FINESTRE) E VIVACITÀ ---
-      q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
-      med_t = analisi_finale['Ultimo Target (gg)'].median()
-      q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
-  
-      def get_vivacita_target(row):
-          if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
-          rec = row['Ultimo Target (gg)']
-          if rec <= q1_t: return "🔥 IPERATTIVA"
-          if rec <= med_t: return "✅ VIVA"
-          if rec <= q3_t: return "⚠️ DISINTERESSATA"
-          return "🌑 MORTA"
-  
-      analisi_finale['Vivacità Target'] = analisi_finale.apply(get_vivacita_target, axis=1)
-  
-      # --- 5. KPI ---
-      st.write("")
-      c1, c2, c3 = st.columns(3)
-      c1.metric("Mediana Aiuti Target", f"{analisi_finale['N° Aiuti Target'].median():.0f}")
-      c2.metric("Freq. Target (Mediana)", f"{analisi_finale['Freq. Aiuti Target (gg)'].median():.0f} gg")
-      c3.metric("Recency Target (Mediana)", f"{med_t:.0f} gg")
-  
-      # --- 6. GRAFICO CON FINESTRE STATISTICHE ---
-      df_stats = analisi_finale.dropna(subset=['Freq. Aiuti Target (gg)']).copy()
-      if not df_stats.empty:
-          fig_combined = px.histogram(
-              df_stats, x="Freq. Aiuti Target (gg)", marginal="box", nbins=50,
-              title="Distribuzione Frequenze con Finestre di Vivacità",
-              color_discrete_sequence=["#FF0000"], opacity=0.6, height=600,
-              hover_data={
-                  "Ragione Sociale": True, 
-                  "Budget Target (€)": ":,.0f",
-                  "Vivacità Target": True,
-                  "Ultimo Target (gg)": True
-              }
-          )
-          
-          # Aggiunta delle "Finestre" (Linee Verticali)
-          # Usiamo le soglie della Recency proiettate sull'asse delle Frequenze per coerenza visiva
-          fig_combined.add_vline(x=q1_t, line_dash="dash", line_color="green", annotation_text="Soglia Iperattive")
-          fig_combined.add_vline(x=med_t, line_dash="dash", line_color="blue", annotation_text="Mediana")
-          fig_combined.add_vline(x=q3_t, line_dash="dash", line_color="orange", annotation_text="Soglia Morte")
-  
-          hovertemplate_dots = (
-              "<b>%{customdata[0]}</b><br>" +
-              "Stato: %{customdata[2]}<br>" +
-              "Frequenza: %{x:.0f} gg<br>" +
-              "Ultimo Bando: %{customdata[3]} gg fa<br>" +
-              "Budget: %{customdata[1]:,.0f} €" +
-              "<extra></extra>"
-          )
-          
-          fig_combined.update_traces(
-              boxpoints='all', jitter=0.5, marker=dict(size=4),
-              hovertemplate=hovertemplate_dots, selector=dict(type='box')
-          )
-          st.plotly_chart(fig_combined, use_container_width=True)
-  
-      # --- 7. TABELLA FINALE ---
-      st.write("---")
-      col_view = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
-                  'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
-  
-      def style_vivacita(val):
-          colori = {
-              '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
-              '✅ VIVA': 'color: #2ecc71; font-weight: bold;',
-              '⚠️ DISINTERESSATA': 'color: #f39c12; font-weight: bold;',
-              '🌑 MORTA': 'background-color: #ffebee; color: #c62828; font-weight: bold;',
-              '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
-          }
-          return colori.get(val, '')
-  
-      st.dataframe(
-          analisi_finale[col_view].sort_values('Ultimo Target (gg)').style.format({
-              'Budget Target (€)': '{:,.0f} €',
-              'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
-              'Ultimo Target (gg)': '{:.0f} gg'
-          })
-          .map(style_vivacita, subset=['Vivacità Target'])
-          .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
-          use_container_width=True, hide_index=True
-      )
+    # ***********************
+    # FREQUENZE AIUTI TARGET 
+    # ***********************
+    
+    # Calcolo Freq. Aiuti
+    # Diff. tra primo e ultimo aiuto normalizzato per (N-1) con N numero aiuti totali. 
+    # Si usa (N - 1) perché la frequenza non misura il numero di eventi, 
+    # ma la durata media degli INTERVALLI tra di essi.
+    # -> Il primo aiuto è il 'punto zero' e non ha un'attesa precedente.
+    # -> Se N=1, il risultato è 0 (nessuna ricorrenza possibile con un solo evento).
+    
+    st.divider()
+    st.subheader("🏢 Analisi Frequenze e Vivacità Target")
+    
+    # 1. Filtro preventivo budget nullo e calcolo metriche totali
+    df_temp_filtrato = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
+    analisi_tot = df_temp_filtrato.groupby('CF_TROVATO').agg({'CF_TROVATO': 'count'})
+    analisi_tot.columns = ['N° Aiuti Tot']
+    analisi_tot = analisi_tot.reset_index()
+    
+    # 2. Metriche settore TARGET
+    df_target = df_temp_filtrato[df_temp_filtrato['IS_TARGET'] == 1].copy()
+    
+    if not df_target.empty:
+        analisi_target = df_target.groupby('CF_TROVATO').agg({
+            'RAGIONE SOCIALE': 'first',
+            'RNA_ELEMENTO_DI_AIUTO': 'sum',
+            'CF_TROVATO': 'count',
+            'RNA_DATA_CONCESSIONE': ['min', 'max']
+        })
+        analisi_target.columns = ['Ragione Sociale', 'Budget Target (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
+        analisi_target = analisi_target.reset_index()
+        
+        oggi_dt = dt.datetime.now()
+        analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
+        
+        diff_date_target = (analisi_target['Ultimo Target'] - analisi_target['Primo Target']).dt.days
+        analisi_target['Freq. Aiuti Target (gg)'] = diff_date_target / (analisi_target['N° Aiuti Target'] - 1)
+        analisi_target['Freq. Aiuti Target (gg)'] = analisi_target['Freq. Aiuti Target (gg)'].replace([float('inf'), -float('inf')], pd.NA)
+    
+        # 3. Merge Finale
+        analisi_finale = analisi_target.merge(analisi_tot, on='CF_TROVATO', how='left')
+        analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
+        analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
+        
+        analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
+    
+        # --- 4. CALCOLO SOGLIE (FINESTRE) E VIVACITÀ ---
+        q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
+        med_t = analisi_finale['Ultimo Target (gg)'].median()
+        q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
+    
+        def get_vivacita_target(row):
+            if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
+            rec = row['Ultimo Target (gg)']
+            if rec <= q1_t: return "🔥 IPERATTIVA"
+            if rec <= med_t: return "✅ VIVA"
+            if rec <= q3_t: return "⚠️ DISINTERESSATA"
+            return "🌑 MORTA"
+    
+        analisi_finale['Vivacità Target'] = analisi_finale.apply(get_vivacita_target, axis=1)
+    
+        # --- 5. KPI ---
+        st.write("")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Mediana Aiuti Target", f"{analisi_finale['N° Aiuti Target'].median():.0f}")
+        c2.metric("Freq. Target (Mediana)", f"{analisi_finale['Freq. Aiuti Target (gg)'].median():.0f} gg")
+        c3.metric("Recency Target (Mediana)", f"{med_t:.0f} gg")
+    
+        # --- 6. GRAFICO CON FINESTRE STATISTICHE ---
+        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti Target (gg)']).copy()
+        if not df_stats.empty:
+            fig_combined = px.histogram(
+                df_stats, x="Freq. Aiuti Target (gg)", marginal="box", nbins=50,
+                title="Distribuzione Frequenze con Finestre di Vivacità",
+                color_discrete_sequence=["#FF0000"], opacity=0.6, height=600,
+                hover_data={
+                    "Ragione Sociale": True, 
+                    "Budget Target (€)": ":,.0f",
+                    "Vivacità Target": True,
+                    "Ultimo Target (gg)": True
+                }
+            )
+            
+            # Aggiunta delle "Finestre" (Linee Verticali)
+            # Usiamo le soglie della Recency proiettate sull'asse delle Frequenze per coerenza visiva
+            fig_combined.add_vline(x=q1_t, line_dash="dash", line_color="green", annotation_text="Soglia Iperattive")
+            fig_combined.add_vline(x=med_t, line_dash="dash", line_color="blue", annotation_text="Mediana")
+            fig_combined.add_vline(x=q3_t, line_dash="dash", line_color="orange", annotation_text="Soglia Morte")
+    
+            hovertemplate_dots = (
+                "<b>%{customdata[0]}</b><br>" +
+                "Stato: %{customdata[2]}<br>" +
+                "Frequenza: %{x:.0f} gg<br>" +
+                "Ultimo Bando: %{customdata[3]} gg fa<br>" +
+                "Budget: %{customdata[1]:,.0f} €" +
+                "<extra></extra>"
+            )
+            
+            fig_combined.update_traces(
+                boxpoints='all', jitter=0.5, marker=dict(size=4),
+                hovertemplate=hovertemplate_dots, selector=dict(type='box')
+            )
+            st.plotly_chart(fig_combined, use_container_width=True)
+    
+        # --- 7. TABELLA FINALE ---
+        st.write("---")
+        col_view = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
+                    'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità Target']
+    
+        def style_vivacita(val):
+            colori = {
+                '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
+                '✅ VIVA': 'color: #2ecc71; font-weight: bold;',
+                '⚠️ DISINTERESSATA': 'color: #f39c12; font-weight: bold;',
+                '🌑 MORTA': 'background-color: #ffebee; color: #c62828; font-weight: bold;',
+                '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
+            }
+            return colori.get(val, '')
+    
+        st.dataframe(
+            analisi_finale[col_view].sort_values('Ultimo Target (gg)').style.format({
+                'Budget Target (€)': '{:,.0f} €',
+                'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
+                'Ultimo Target (gg)': '{:.0f} gg'
+            })
+            .map(style_vivacita, subset=['Vivacità Target'])
+            .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
+            use_container_width=True, hide_index=True
+        )
         
 
         
