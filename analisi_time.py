@@ -610,7 +610,7 @@ def time_analysis(df):
     st.subheader("🏢 Frequenze di Aiuti")
     
     # 1. Metriche TOTALI
-    analisi_tot = df_temp_filtrato.groupby('CF_TROVATO').agg({
+    analisi_tot = df_temp.groupby('CF_TROVATO').agg({
         'CF_TROVATO': 'count',
         'RNA_DATA_CONCESSIONE': ['min', 'max']
     })
