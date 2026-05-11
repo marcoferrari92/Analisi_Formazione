@@ -507,7 +507,7 @@ def time_analysis(df):
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
             * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Fase di contrazione: il rallentamento è accompagnato da un calo sia nel numero di aiuti che nel loro valore medio.
+            * **Significato:** Fase di contrazione: il rallentamento del mercato target è accompagnato da un calo sia nel numero di aiuti che nel loro valore medio.
             """)
 
         # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
