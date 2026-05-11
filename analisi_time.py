@@ -678,8 +678,9 @@ def time_analysis(df):
             st.metric("Mediana Freq. Aiuti", f"{m_freq_tot:.0f} gg")
         with col4:
             st.metric("Mediana Freq. Aiuti Target", f"{m_freq_target:.0f} gg")
+          
 
-        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI CON HOVER PERSONALIZZATO ---
+        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI CON HOVER FUNZIONANTE ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
 
         if not df_stats.empty:
@@ -694,16 +695,16 @@ def time_analysis(df):
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#ff7f0e"},
                 opacity=0.6,
                 height=800,
-                # Passiamo i dati extra che vogliamo nell'hover
-                customdata=[df_stats['Ragione Sociale'], df_stats['Budget Target (€)']]
+                # Usiamo hover_data invece di customdata
+                hover_data={
+                    "Ragione Sociale": True,
+                    "Budget Target (€)": ":,.0f"
+                }
             )
-
-            # Definiamo il template dell'hover per i Box Plot (i pallini)
-            # customdata[0] = Ragione Sociale, customdata[1] = P.IVA, customdata[2] = Budget
             hovertemplate_dots = (
                 "<b>%{customdata[0]}</b><br>" +
-                "Valore: %{x:.0f} gg<br>" +
-                "Budget Target: %{customdata[2]:,.0f} €" +
+                "Frequenza: %{x:.0f} gg<br>" +
+                "Budget Target: %{customdata[1]:,.0f} €" +
                 "<extra></extra>"
             )
 
@@ -721,8 +722,8 @@ def time_analysis(df):
                 pointpos=0, 
                 jitter=1, 
                 marker=dict(size=4),
-                hovertemplate=hovertemplate_dots, # Applichiamo il template
-                selector=dict(type='box') # Lo applichiamo solo ai box/pallini
+                hovertemplate=hovertemplate_dots,
+                selector=dict(type='box') 
             )
 
             st.plotly_chart(fig_combined, use_container_width=True)
