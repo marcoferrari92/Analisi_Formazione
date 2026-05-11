@@ -755,12 +755,21 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        # --- 7. VISUALIZZAZIONE TABELLA ---
+        # --- 7. VISUALIZZAZIONE TABELLA COMPLETA ---
         st.write("---")
+        st.write("**🏢 Ranking Strategico e Analisi delle Frequenze**")
+        
+        # Inseriamo le frequenze nella lista delle colonne
         colonne_visualizzate = [
-            'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 
-            'Aiuti Target (%)', 'Ultimo Target (gg)', 
-            'Vivacità', 'Vivacità Target'
+            'P.IVA', 
+            'Ragione Sociale', 
+            'Budget Target (€)', 
+            'Aiuti Target (%)', 
+            'Freq. Aiuti (gg)',         # <--- AGGIUNTA
+            'Freq. Aiuti Target (gg)',  # <--- AGGIUNTA
+            'Ultimo Target (gg)', 
+            'Vivacità', 
+            'Vivacità Target'
         ]
 
         def style_stato(val):
@@ -784,14 +793,14 @@ def time_analysis(df):
             st.dataframe(
                 analisi_finale[colonne_visualizzate].sort_values('Ultimo Target (gg)').style.format({
                     'Budget Target (€)': '{:,.0f} €',
+                    'Freq. Aiuti (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
+                    'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
                     'Ultimo Target (gg)': '{:.0f} gg'
                 })
                 .map(style_stato, subset=['Vivacità', 'Vivacità Target'])
                 .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
                 use_container_width=True, hide_index=True
             )
-    else:
-        st.warning("Nessun dato Target disponibile.")
         
 
         
