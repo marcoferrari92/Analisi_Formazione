@@ -679,7 +679,7 @@ def time_analysis(df):
         with col4:
             st.metric("Mediana Freq. Aiuti Target", f"{m_freq_target:.0f} gg")
 
-        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI ---
+        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI CON HOVER PERSONALIZZATO ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
 
         if not df_stats.empty:
@@ -687,25 +687,42 @@ def time_analysis(df):
                 df_stats, 
                 x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
                 marginal="box",
-                marginal_subplot_size=0.6,
                 barmode='overlay',
                 nbins=50,
                 title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#ff7f0e"},
                 opacity=0.6,
-                height=800 
+                height=800,
+                # Passiamo i dati extra che vogliamo nell'hover
+                custom_data=[df_stats['Ragione Sociale'], df_stats['Budget Target (€)']]
+            )
+
+            # Definiamo il template dell'hover per i Box Plot (i pallini)
+            # customdata[0] = Ragione Sociale, customdata[1] = P.IVA, customdata[2] = Budget
+            hovertemplate_dots = (
+                "<b>%{customdata[0]}</b><br>" +
+                "Valore: %{x:.0f} gg<br>" +
+                "Budget Target: %{customdata[2]:,.0f} €" +
+                "<extra></extra>"
             )
 
             fig_combined.update_layout(
+                yaxis=dict(domain=[0, 0.5]),      
+                yaxis2=dict(domain=[0.55, 1]),   
                 xaxis_title="Giorni",
                 yaxis_title="Numero di Aziende",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                bargap=0.01
             )
 
             fig_combined.update_traces(
-                boxpoints='all', pointpos=0, jitter=1, marker=dict(size=4),
-                selector=dict(type='box')
+                boxpoints='all', 
+                pointpos=0, 
+                jitter=1, 
+                marker=dict(size=4),
+                hovertemplate=hovertemplate_dots, # Applichiamo il template
+                selector=dict(type='box') # Lo applichiamo solo ai box/pallini
             )
 
             st.plotly_chart(fig_combined, use_container_width=True)
