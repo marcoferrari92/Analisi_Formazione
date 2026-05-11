@@ -594,7 +594,10 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-   # ***********************
+
+  
+
+    # ***********************
     # FREQUENZE AIUTI TARGET 
     # ***********************
     
@@ -686,11 +689,28 @@ def time_analysis(df):
                 hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
 
-            # AGGIUNTA FINESTRE COLORATE
-            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.5, layer="below", line_width=0, annotation_text="IPERATTIVA")
-            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0, annotation_text="VIVA")
-            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.5, layer="below", line_width=0, annotation_text="DISINTERESSATA")
-            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.5, layer="below", line_width=0, annotation_text="MORTA")
+            # AGGIUNTA FINESTRE COLORATE (Senza testo interno)
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.5, layer="below", line_width=0)
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.5, layer="below", line_width=0)
+            finestre = [
+                {"label": "IPER.", "x0": 0, "x1": q1_f},
+                {"label": "VIVA", "x0": q1_f, "x1": med_f},
+                {"label": "DIS.", "x0": med_f, "x1": q3_f},
+                {"label": "MORTA", "x0": q3_f, "x1": max_f}
+            ]
+
+            for f in finestre:
+                fig_combined.add_annotation(
+                    x=(f["x0"] + f["x1"]) / 2, # Centro della finestra sull'asse X
+                    y=1,                       # In cima al grafico
+                    yref="paper",              # Coordinate relative (1 = 100% altezza)
+                    text=f["label"],
+                    showarrow=False,
+                    font=dict(size=12, color="grey", family="Arial Black"),
+                    yanchor="bottom"           # Ancora il testo sopra il confine del grafico
+                )
 
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
