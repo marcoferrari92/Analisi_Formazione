@@ -682,9 +682,10 @@ def time_analysis(df):
             use_container_width=True, hide_index=True
         )
 
-        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT SOVRAPPOSTI ---
+        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT CON JITTER ---
         st.write("")
         
+        # Filtriamo e prepariamo i dati
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
 
         if not df_stats.empty:
@@ -692,19 +693,21 @@ def time_analysis(df):
             fig_combined = px.histogram(
                 df_stats, 
                 x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
-                marginal="box", 
+                marginal="box", # Box Plot orizzontali sopra
                 barmode='overlay',
                 nbins=50,
-                title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
+                title="Distribuzione e Dispersione Frequenze con Dettaglio Punti",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
                 color_discrete_map={
                     "Freq. Aiuti (gg)": "#1f77b4", 
                     "Freq. Aiuti Target (gg)": "#ff7f0e"
                 },
-                opacity=0.6
+                opacity=0.6,
+                # Aumentiamo l'altezza totale del grafico per dare spazio ai boxplot
+                height=600 
             )
 
-            # Aggiornamento layout
+            # Affiniamo il layout
             fig_combined.update_layout(
                 xaxis_title="Giorni",
                 yaxis_title="Numero di Aziende (Istogramma)",
@@ -712,12 +715,20 @@ def time_analysis(df):
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
 
-            # CORREZIONE ERRORE: Usiamo 'boxpoints' invece di 'points'
-            # Impostiamo su False per non mostrare tutti i puntini e pulire il grafico
-            fig_combined.update_traces(boxpoints=False, selector=dict(type='box'))
+            # --- CONFIGURAZIONE AVANZATA BOX PLOT (Punti + Jitter) ---
+            # 1. Mostriamo tutti i punti (boxpoints='all')
+            # 2. pointpos=0 centra i punti all'interno del boxplot
+            # 3. jitter=1 massimizza lo sparpagliamento orizzontale
+            fig_combined.update_traces(
+                boxpoints='all', 
+                pointpos=0, 
+                jitter=1, 
+                marker=dict(size=4), # Punti leggermente più piccoli per non sovrapporsi troppo
+                selector=dict(type='box')
+            )
 
             st.plotly_chart(fig_combined, use_container_width=True)
             
         else:
-            st.warning("Dati insufficienti per generare i grafici statistici.")
+            st.warning("Dati insufficienti per generare i grafici statistici comparativi.")
         
