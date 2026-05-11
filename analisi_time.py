@@ -650,23 +650,48 @@ def time_analysis(df):
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
-        # 4. CALCOLO VIVACITÀ (Logica Statistica Quartili)
-        # Calcoliamo le soglie sulla frequenza della popolazione target
-        q1 = analisi_finale['Freq. Aiuti Target'].quantile(0.25)
-        mediana = analisi_finale['Freq. Aiuti Target'].median()
-        q3 = analisi_finale['Freq. Aiuti Target'].quantile(0.75)
-    
-        def segmenta_vivacita(row):
-            if row['N° Aiuti Target'] <= 1: return "🌱 Occasionale"
-            rec = row['Ultimo Target (gg)']
-            if rec <= q1: return "🔥 Iperattiva"
-            if rec <= mediana: return "✅ Viva"
-            if rec <= q3: return "⚠️ In Rallentamento"
-            return "🌑 Dormiente"
-    
-        analisi_finale['Vivacità'] = analisi_finale.apply(segmenta_vivacita, axis=1)
-        # Rinominiamo le colonne finali
-        analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA', 'Freq. Aiuti': 'Freq. Aiuti (gg)', 'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'}, inplace=True)
+        # --- 4. CALCOLO VIVACITÀ COMPOSTA (TARGET + GENERALE) ---
+        
+        # A. Calcoliamo la Recency Totale (giorni dall'ultimo aiuto qualunque)
+        oggi_dt = dt.datetime.now()
+        analisi_tot['Recency Totale'] = (oggi_dt - analisi_tot['Ultimo Aiuto']).dt.days
+        
+        # B. Portiamo la Recency Totale nel DataFrame finale
+        analisi_finale = analisi_finale.merge(analisi_tot[['CF_TROVATO', 'Recency Totale']], left_on='P.IVA', right_on='CF_TROVATO', how='left')
+
+        # C. Calcolo soglie statistiche (Quartili) per entrambi i mondi
+        # Target
+        q1_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
+        med_t = analisi_finale['Freq. Aiuti Target (gg)'].median()
+        q3_t = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
+        
+        # Generale (basato sulla Recency Totale della popolazione)
+        q1_g = analisi_finale['Recency Totale'].quantile(0.25)
+        med_g = analisi_finale['Recency Totale'].median()
+        q3_g = analisi_finale['Recency Totale'].quantile(0.75)
+
+        def definisci_vivacita_doppia(row):
+            # Caso base
+            if row['N° Aiuti Target'] <= 1: 
+                return "🌱 OCCASIONALE"
+            
+            # 1. Valutazione GENERALE
+            rec_g = row['Recency Totale']
+            if rec_g <= q1_g: stato_g = "IPERATTIVA"
+            elif rec_g <= med_g: stato_g = "VIVA"
+            elif rec_g <= q3_g: stato_g = "STANCA"
+            else: stato_g = "MORENTE"
+            
+            # 2. Valutazione TARGET
+            rec_t = row['Ultimo Target (gg)']
+            if rec_t <= q1_t: stato_t = "FEDELE"
+            elif rec_t <= med_t: stato_t = "INTERESSATA"
+            elif rec_t <= q3_t: stato_t = "DISTRATTA"
+            else: stato_t = "DISINTERESSATA"
+            
+            return f"{stato_g} - {stato_t}"
+
+        analisi_finale['Vivacità'] = analisi_finale.apply(definisci_vivacita_doppia, axis=1)
 
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
         st.write("")
@@ -736,28 +761,33 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        # --- 7. TABELLA DETTAGLIO CON COLORI (VERSIONE PANDAS 2.x) ---
-        st.write("")
         
-        def style_vivacita(val):
-            colori = {
-                '🔥 Iperattiva': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
-                '✅ Viva': 'color: #2ecc71; font-weight: bold;',
-                '⚠️ In Rallentamento': 'color: #f39c12; font-weight: bold;',
-                '🌑 Dormiente': 'color: #e74c3c; font-weight: bold;',
-                '🌱 Occasionale': 'color: #95a5a6;'
-            }
-            return colori.get(val, '')
 
-        col_tab = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità']
-        
-        # Usiamo .map() invece di .applymap()
+        # --- 7. TABELLA CON STILE AGGIORNATO ---
+        def style_vivacita_doppia(val):
+            if "OCCASIONALE" in val: return 'color: #95a5a6;'
+            
+            style = 'font-weight: bold;'
+            # Colori basati sullo stato Target (la seconda parola)
+            if "FEDELE" in val: style += ' color: #2e7d32;'
+            elif "INTERESSATA" in val: style += ' color: #2ecc71;'
+            elif "DISTRATTA" in val: style += ' color: #f39c12;'
+            elif "DISINTERESSATA" in val: style += ' color: #e74c3c;'
+            
+            # Evidenzia se è IPERATTIVA (sfondo leggero)
+            if "IPERATTIVA" in val: style += ' background-color: #f1f8e9;'
+            # Evidenzia se è MORENTE (testo barrato o opaco - opzionale)
+            if "MORENTE" in val: style += ' opacity: 0.7;'
+            
+            return style
+
+        # Visualizzazione Tabella
         st.dataframe(
-            analisi_finale[col_tab].sort_values('Ultimo Target (gg)').style.format({
+            analisi_finale[colonne_finali].sort_values('Ultimo Target (gg)').style.format({
                 'Budget Target (€)': '{:,.0f} €',
                 'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
                 'Ultimo Target (gg)': '{:.0f} gg'
-            }).map(style_vivacita, subset=['Vivacità']) # <--- CORREZIONE QUI
+            }).map(style_vivacita_doppia, subset=['Vivacità'])
             .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
             use_container_width=True, hide_index=True
         )
