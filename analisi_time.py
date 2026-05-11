@@ -594,7 +594,7 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-# ***********************
+    # ***********************
     # FREQUENZE AIUTI TARGET 
     # ***********************
 
@@ -649,7 +649,18 @@ def time_analysis(df):
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
-        # --- 4. CALCOLO VIVACITÀ COMPOSTA (TARGET + GENERALE) ---
+        # --- 3. Merge e Creazione colonna composta "Aiuti Target (%)" ---
+        oggi_dt = dt.datetime.now()
+        analisi_tot['Recency Totale'] = (oggi_dt - analisi_tot['Ultimo Aiuto']).dt.days
+        analisi_finale = analisi_target.merge(
+            analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti', 'Recency Totale']], 
+            on='CF_TROVATO', 
+            how='left'
+        )
+        analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
+        analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
+
+        # --- 4. CALCOLO VIVACITÀ COMPOSTA ---
         analisi_finale.rename(columns={
             'CF_TROVATO': 'P.IVA', 
             'Freq. Aiuti': 'Freq. Aiuti (gg)', 
