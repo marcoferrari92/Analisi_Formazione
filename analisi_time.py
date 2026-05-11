@@ -662,7 +662,7 @@ def time_analysis(df):
         
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
         with st.container(border=True):
-            st.write("** Panoramica frequenze aiuti nel settore target**")
+            
             
             # --- KPI: METRICHE PRINCIPALI ---
             col1, col2, col3, col4 = st.columns(4)
@@ -678,9 +678,9 @@ def time_analysis(df):
             with col2:
                 st.metric("Mediana Aiuti Target", f"{m_aiuti_target:.0f}")
             with col3:
-                st.metric("Mediana Freq. Totale", f"{m_freq_tot:.0f} gg")
+                st.metric("Mediana Freq. Aiuti", f"{m_freq_tot:.0f} gg")
             with col4:
-                st.metric("Mediana Freq. Target", f"{m_freq_target:.0f} gg")
+                st.metric("Mediana Freq. Aiuti Target", f"{m_freq_target:.0f} gg")
 
         # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
