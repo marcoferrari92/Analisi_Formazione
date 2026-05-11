@@ -750,3 +750,62 @@ def time_analysis(df):
             ),
             use_container_width=True, hide_index=True
         )
+
+        # --- 7. SCATTER PLOT: BUDGET VS FREQUENZA TARGET ---
+        st.write("---")
+        st.write("**🎯 Correlazione: Budget vs Velocità nel Target**")
+        
+        # Filtriamo i dati per avere solo aziende con frequenza calcolabile e budget > 0
+        df_corr = analisi_finale.dropna(subset=['Freq. Aiuti Target (gg)']).copy()
+        df_corr = df_corr[df_corr['Budget Target (€)'] > 0]
+
+        if not df_corr.empty:
+            fig_scatter = px.scatter(
+                df_corr,
+                x="Freq. Aiuti Target (gg)",
+                y="Budget Target (€)",
+                color="Status",
+                size="N° Aiuti Target", # La grandezza del pallino indica quanti aiuti ha preso
+                hover_name="Ragione Sociale",
+                # Trendline per vedere la correlazione (richiede statsmodels installato)
+                trendline="ols", 
+                trendline_color_override="black",
+                title="Analisi Correlazione: Più budget significa più velocità?",
+                labels={
+                    "Freq. Aiuti Target (gg)": "Frequenza (Giorni tra aiuti)",
+                    "Budget Target (€)": "Budget Totale Target (€)"
+                },
+                color_discrete_map={
+                    "✅ Attivo": "#2ecc71",      # Verde
+                    "⚠️ In Abbandono": "#e74c3c", # Rosso
+                    "🌱 Occasionale": "#95a5a6"   # Grigio
+                },
+                height=600,
+                # Hover personalizzato
+                hover_data={
+                    "Freq. Aiuti Target (gg)": ":.0f",
+                    "Budget Target (€)": ":,.0f",
+                    "N° Aiuti Target": True,
+                    "Status": False
+                }
+            )
+
+            fig_scatter.update_layout(
+                xaxis=dict(gridcolor='lightgray'),
+                yaxis=dict(gridcolor='lightgray'),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)'
+            )
+
+            st.plotly_chart(fig_scatter, use_container_width=True)
+
+            # --- BREVE ANALISI ---
+            st.info("""
+            **Come interpretare questo grafico:**
+            * **In alto a sinistra:** Aziende "Star" (Grandi budget presi molto frequentemente).
+            * **In basso a sinistra:** Aziende "Seriali" (Piccoli budget ma presi con ritmo costante).
+            * **In alto a destra:** Aziende "One-shot" pesanti (Grandi budget ma presi raramente).
+            * **Linea di tendenza:** Se pende verso il basso a destra, indica che solitamente chi vince budget enormi tende a farlo con intervalli di tempo più lunghi.
+            """)
+        else:
+            st.warning("Dati insufficienti per calcolare la correlazione budget/frequenza.")
