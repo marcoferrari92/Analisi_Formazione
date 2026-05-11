@@ -606,8 +606,7 @@ def time_analysis(df):
   
     st.divider()
     st.subheader("🏢 Frequenze di Aiuti")
-
-        
+    
     # 1. Metriche TOTALI
     analisi_tot = df_temp.groupby('CF_TROVATO').agg({
         'CF_TROVATO': 'count',
@@ -634,7 +633,7 @@ def time_analysis(df):
         analisi_target = analisi_target.reset_index()
         
         oggi_dt = dt.datetime.now()
-        # Calcoliamo i giorni dall'ultimo aiuto target
+        # Giorni dall'ultimo aiuto target (Recency)
         analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
         
         # Freq. Aiuti Target (Logica N-1)
@@ -644,7 +643,6 @@ def time_analysis(df):
         # 3. Merge e Creazione colonna composta "Aiuti Target (%)"
         analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
         
-        # Calcolo quota percentuale e stringa formattata
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
@@ -656,11 +654,10 @@ def time_analysis(df):
 
         analisi_finale['Status'] = analisi_finale.apply(segmenta_status, axis=1)
         
-        # Rinominazione colonne per visualizzazione
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA', 'Freq. Aiuti': 'Freq. Aiuti (gg)', 'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'}, inplace=True)
 
-        # --- VISUALIZZAZIONE UNICA ---
-        # Ordiniamo in base al minor tempo dall'ultimo aiuto (Ascending=True)
+        # --- VISUALIZZAZIONE ---
+        # Ordinamento: dai più recenti ai più "vecchi"
         df_display = analisi_finale.sort_values('Ultimo Target (gg)', ascending=True)
         
         colonne_finali = [
@@ -668,19 +665,20 @@ def time_analysis(df):
             'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Status'
         ]
         
-        st.write("Elenco aziende ordinato per l'attività più recente nel settore Target.")
-        
         st.dataframe(
             df_display[colonne_finali].style.format({
                 'Budget Target (€)': '{:,.0f} €',
                 'Freq. Aiuti (gg)': '{:.0f} gg',
                 'Freq. Aiuti Target (gg)': '{:.0f} gg',
                 'Ultimo Target (gg)': '{:.0f} gg'
-            }).background_gradient(cmap='Reds_r', subset=['Ultimo Target (gg)']), # Reds_r inverte il colore: rosso per i valori alti (lontani)
+            }).background_gradient(
+                cmap='RdYlGn_r', # Rosso (Rd) -> Giallo (Yl) -> Verde (Gn) invertito (_r)
+                subset=['Ultimo Target (gg)']
+            ),
             use_container_width=True, hide_index=True
         )
     else:
-        st.warning("Nessun dato disponibile per il settore Target selezionato.")
+        st.warning("Dati Target non disponibili.")
 
     
         
