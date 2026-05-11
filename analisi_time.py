@@ -661,7 +661,7 @@ def time_analysis(df):
 
         def get_vivacita_target(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
-            rec = row['Ultimo Target (gg)']
+            rec = row['Freq. Aiuti Target (gg)']
             if rec <= q1_t: return "🔥 IPERATTIVA"
             if rec <= med_t: return "✅ VIVA"
             if rec <= q3_t: return "⚠️ DISINTERESSATA"
