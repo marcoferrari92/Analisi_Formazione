@@ -594,7 +594,7 @@ def time_analysis(df):
             * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
             """)
 
-    # ***********************
+   # ***********************
     # FREQUENZE AIUTI TARGET 
     # ***********************
     
@@ -602,8 +602,6 @@ def time_analysis(df):
     # Diff. tra primo e ultimo aiuto normalizzato per (N-1) con N numero aiuti totali. 
     # Si usa (N - 1) perché la frequenza non misura il numero di eventi, 
     # ma la durata media degli INTERVALLI tra di essi.
-    # -> Il primo aiuto è il 'punto zero' e non ha un'attesa precedente.
-    # -> Se N=1, il risultato è 0 (nessuna ricorrenza possibile con un solo evento).
     
     st.divider()
     st.subheader("🏢 Analisi Frequenze e Vivacità Target")
@@ -679,7 +677,6 @@ def time_analysis(df):
             )
             
             # Aggiunta delle "Finestre" (Linee Verticali)
-            # Usiamo le soglie della Recency proiettate sull'asse delle Frequenze per coerenza visiva
             fig_combined.add_vline(x=q1_t, line_dash="dash", line_color="green", annotation_text="Soglia Iperattive")
             fig_combined.add_vline(x=med_t, line_dash="dash", line_color="blue", annotation_text="Mediana")
             fig_combined.add_vline(x=q3_t, line_dash="dash", line_color="orange", annotation_text="Soglia Morte")
@@ -724,6 +721,8 @@ def time_analysis(df):
             .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
             use_container_width=True, hide_index=True
         )
+    else:
+        st.warning("Nessun dato Target disponibile.")
         
 
         
