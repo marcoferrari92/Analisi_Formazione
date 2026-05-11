@@ -670,15 +670,24 @@ def time_analysis(df):
         c3.metric("Freq. Aiuti (Mediana)", f"{analisi_finale['Freq. Aiuti (gg)'].median():.0f} gg")
         c4.metric("Freq. Aiuti (Mediana)", f"{med_t:.0f} gg") # Usiamo med_t
 
-        # --- 6. GRAFICO CON FINESTRE COLORATE (FIX BOXPLOT SPARITO) ---
-        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
+        # --- 6. GRAFICO CON FINESTRE COLORATE (VERSIONE DEFINITIVA) ---
+        # Creiamo un dataframe specifico per il grafico per evitare conflitti
+        df_grafico = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
         
-        if not df_stats.empty:
-            # Trasformiamo il dataframe in formato "long" per gestire meglio le due serie
-            # Questo è il modo più solido per evitare che i boxplot spariscano
+        if not df_grafico.empty:
+            # TRUCCO FONDAMENTALE: Trasformiamo le due colonne in una colonna "Valore" e una "Tipo"
+            # Questo obbliga Plotly a creare due tracce Box Plot distinte e visibili
+            df_long = df_grafico.melt(
+                id_vars=['Ragione Sociale', 'Budget Target (€)', 'N° Aiuti Target', 'Vivacità Target', 'Ultimo Target (gg)'],
+                value_vars=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)'],
+                var_name='Tipo Frequenza',
+                value_name='Giorni'
+            )
+        
             fig_combined = px.histogram(
-                df_stats, 
-                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
+                df_long, 
+                x="Giorni", 
+                color="Tipo Frequenza",  # Forza la creazione di due legende e due boxplot
                 marginal="box", 
                 nbins=50, 
                 barmode='overlay',
@@ -686,49 +695,38 @@ def time_analysis(df):
                 opacity=0.7, 
                 height=800,
                 hover_data={
-                    "Ragione Sociale": True,             # customdata[0]
-                    "Budget Target (€)": ":,.0f",        # customdata[1]
-                    "N° Aiuti Target": True,             # customdata[2]
-                    "Vivacità Target": True,             # customdata[3]
-                    "Ultimo Target (gg)": True,          # customdata[4]
-                    "Freq. Aiuti Target (gg)": ":.0f"    # customdata[5]
+                    "Ragione Sociale": True,          # customdata[0]
+                    "Budget Target (€)": ":,.0f",     # customdata[1]
+                    "N° Aiuti Target": True,          # customdata[2]
+                    "Vivacità Target": True,          # customdata[3]
+                    "Ultimo Target (gg)": True,       # customdata[4]
+                    "Tipo Frequenza": False           # Escludiamo dai customdata se non serve
                 }
             )
         
-            # AGGIUNTA FINESTRE COLORATE
+            # AGGIUNTA FINESTRE COLORATE (Resta uguale)
             fig_combined.add_vrect(x0=0, x1=q1_t, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
             fig_combined.add_vrect(x0=q1_t, x1=med_t, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
             fig_combined.add_vrect(x0=med_t, x1=q3_t, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
             fig_combined.add_vrect(x0=q3_t, x1=max_t, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
         
-            # ETICHETTE FINESTRE
-            finestre = [
-                {"label": "IPER.", "x0": 0, "x1": q1_t},
-                {"label": "VIVA", "x0": q1_t, "x1": med_t},
-                {"label": "DIS.", "x0": med_t, "x1": q3_t},
-                {"label": "MORTA", "x0": q3_t, "x1": max_t}
-            ]
+            # Etichette finestre
+            finestre = [{"label": "IPER.", "x0": 0, "x1": q1_t}, {"label": "VIVA", "x0": q1_t, "x1": med_t},
+                        {"label": "DIS.", "x0": med_t, "x1": q3_t}, {"label": "MORTA", "x0": q3_t, "x1": max_t}]
             for f in finestre:
-                fig_combined.add_annotation(
-                    x=(f["x0"] + f["x1"]) / 2, y=1, yref="paper",
-                    text=f["label"], showarrow=False,
-                    font=dict(size=12, color="grey", family="Arial Black"), yanchor="bottom"
-                )
+                fig_combined.add_annotation(x=(f["x0"]+f["x1"])/2, y=1, yref="paper", text=f["label"], 
+                                           showarrow=False, font=dict(size=12, color="grey", family="Arial Black"), yanchor="bottom")
         
-            # APPLICAZIONE HOVER (Sistemata per non rompere le tracce)
+            # APPLICAZIONE HOVER SU TUTTI I BOX
             fig_combined.update_traces(
-                boxpoints='all', 
-                pointpos=0, 
-                jitter=0.5, 
-                marker=dict(size=4),
+                boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>" +
-                    "Budget Target: %{customdata[1]} €<br>" +
+                    "Budget: %{customdata[1]} €<br>" +
                     "N° Aiuti Target: %{customdata[2]}<br>" +
                     "Stato: %{customdata[3]}<br>" +
-                    "Ultimo Aiuto: %{customdata[4]} gg<br>" +
-                    "Frequenza Target: %{customdata[5]} gg" +
-                    "<extra></extra>"
+                    "Ultimo: %{customdata[4]} gg fa<br>" +
+                    "Frequenza: %{x:.0f} gg<extra></extra>"
                 ),
                 selector=dict(type='box')
             )
@@ -737,8 +735,8 @@ def time_analysis(df):
                 yaxis=dict(domain=[0, 0.45]),      
                 yaxis2=dict(domain=[0.55, 1]),     
                 bargap=0.05, 
-                boxgap=0.4,           # Aumentato per separare i due boxplot
-                boxgroupgap=0.2, 
+                boxgap=0.3,           # Spazio tra i boxplot delle due serie
+                boxgroupgap=0.1,      # Spazio tra i box nello stesso gruppo
                 xaxis_title="Frequenza Aiuti (gg)",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
