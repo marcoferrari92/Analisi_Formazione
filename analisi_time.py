@@ -653,12 +653,44 @@ def time_analysis(df):
         max_t = analisi_finale['Freq. Aiuti Target (gg)'].max()
 
         def get_vivacita_target(row):
-            if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
-            rec = row['Freq. Aiuti Target (gg)']
-            if rec <= q1_t: return "🔥 IPERATTIVA"
-            if rec <= med_t: return "✅ VIVA"
-            if rec <= q3_t: return "⚠️ DISINTERESSATA"
-            return "🌑 MORTA"
+          n_aiuti = row['N° Aiuti Target']
+          rec = row['Ultimo Target (gg)']
+          
+          # 1. GESTIONE ZERO O INATTIVITÀ GRAVE (Il "Cimitero")
+          if n_aiuti == 0:
+              return "🌑 MORTA (MAI ATTIVA)"
+          
+          # Se l'ultimo aiuto è più vecchio del 75% del mercato, l'azienda è ferma.
+          if rec > q3_t:
+              return "🌑 MORTA (INATTIVA)"
+      
+          # 2. LOGICA PER AZIENDE ATTIVE (Recency <= Q3)
+          if n_aiuti == 1:
+              return "🌱 POTENZIALE (NUOVA)"
+      
+          # Per chi ha più di 1 aiuto, calcoliamo il "Ritmo"
+          freq = row['Freq. Aiuti Target (gg)']
+          # Il ritardo è il rapporto tra l'attesa attuale e la media storica
+          ritardo = rec / freq if freq > 0 else 1
+      
+          # --- IL CUORE DELLA LOGICA ---
+          
+          # 🔥 IPERATTIVA: Deve essere RECENTE (Rec < Mediana) E VELOCE (Freq < Q1)
+          # È l'azienda che vince spesso e ha vinto da poco.
+          if rec <= med_t and freq <= q1_f:
+              return "🔥 IPERATTIVA"
+      
+          # ✅ VIVA: È a ritmo. Non importa quanto vince, l'importante è che 
+          # l'ultimo aiuto sia coerente con la sua media storica.
+          if ritardo <= 1.2:
+              return "✅ VIVA (A RITMO)"
+      
+          # ⚠️ DISINTERESSATA: È fuori ritmo. Sta aspettando da più tempo 
+          # di quanto solitamente faccia tra un bando e l'altro.
+          if ritardo > 1.2:
+              return "⚠️ DISINTERESSATA"
+      
+          return "🌑 MORTA"
 
         analisi_finale['Vivacità Target'] = analisi_finale.apply(get_vivacita_target, axis=1)
 
