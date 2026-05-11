@@ -642,23 +642,23 @@ def time_analysis(df):
         
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA'}, inplace=True)
 
-       # --- 4. CALCOLO SOGLIE (FINESTRE) E VIVACITÀ ---
-        
-        # SOGLIE RECENCY (Per definire lo Stato in tabella e KPI)
+        # --- 4. CALCOLO SOGLIE E VIVACITÀ ---
+    
+        # SOGLIE RECENCY (Per lo Stato in tabella)
         q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
         med_t = analisi_finale['Ultimo Target (gg)'].median()
         q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
         
-        # SOGLIE FREQUENZA (Per posizionare le linee verticali nel grafico X)
+        # SOGLIE FREQUENZA (Per le finestre del grafico)
         freq_target_valide = analisi_finale['Freq. Aiuti Target (gg)'].dropna()
         q1_f = freq_target_valide.quantile(0.25)
         med_f = freq_target_valide.median()
         q3_f = freq_target_valide.quantile(0.75)
+        max_f = freq_target_valide.max() if not freq_target_valide.empty else 1000
 
         def get_vivacita_target(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
             rec = row['Ultimo Target (gg)']
-            # Lo stato si basa sulla Recency (quanto tempo è passato dall'ultimo)
             if rec <= q1_t: return "🔥 IPERATTIVA"
             if rec <= med_t: return "✅ VIVA"
             if rec <= q3_t: return "⚠️ DISINTERESSATA"
