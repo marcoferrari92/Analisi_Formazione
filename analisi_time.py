@@ -736,7 +736,7 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        # --- 7. TABELLA DETTAGLIO CON COLORI ---
+        # --- 7. TABELLA DETTAGLIO CON COLORI (VERSIONE PANDAS 2.x) ---
         st.write("")
         
         def style_vivacita(val):
@@ -751,15 +751,14 @@ def time_analysis(df):
 
         col_tab = ['P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Vivacità']
         
+        # Usiamo .map() invece di .applymap()
         st.dataframe(
             analisi_finale[col_tab].sort_values('Ultimo Target (gg)').style.format({
                 'Budget Target (€)': '{:,.0f} €',
                 'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
                 'Ultimo Target (gg)': '{:.0f} gg'
-            }).applymap(style_vivacita, subset=['Vivacità'])
+            }).map(style_vivacita, subset=['Vivacità']) # <--- CORREZIONE QUI
             .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
             use_container_width=True, hide_index=True
         )
-    else:
-        st.warning("Nessun dato Target disponibile per il calcolo delle frequenze.")
 
