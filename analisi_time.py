@@ -683,5 +683,59 @@ def time_analysis(df):
     else:
         st.warning("Dati Target non disponibili.")
 
+    # --- VISUALIZZAZIONE DISTRIBUZIONE FREQUENZE ---
+    st.write("")
+    st.subheader("📈 Distribuzione Statistica delle Frequenze")
     
+    import plotly.figure_factory as ff
+    import plotly.express as px
+
+    # Puliamo i dati dai None per il grafico (altrimenti plotly dà errore)
+    df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)'])
+
+    if not df_stats.empty:
+        # 1. ISTOGRAMMA COMPARATIVO
+        fig_hist = px.histogram(
+            df_stats, 
+            x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
+            barmode='overlay',
+            nbins=50,
+            title="Confronto Distribuzione Frequenze (Totale vs Target)",
+            labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
+            color_discrete_map={
+                "Freq. Aiuti (gg)": "rgba(31, 119, 180, 0.6)", # Blu
+                "Freq. Aiuti Target (gg)": "rgba(255, 127, 14, 0.6)" # Arancio
+            }
+        )
+        fig_hist.update_layout(xaxis_title="Giorni", yaxis_title="Numero di Aziende")
+        st.plotly_chart(fig_hist, use_container_width=True)
+
+        # 2. BOX PLOT PER DISPERSIONE
+        fig_box = px.box(
+            df_stats.melt(
+                id_vars=['P.IVA'], 
+                value_vars=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)'],
+                var_name='Tipo Frequenza', 
+                value_name='Giorni'
+            ), 
+            y="Giorni", 
+            x="Tipo Frequenza", 
+            points="all", # Mostra anche i singoli punti/aziende
+            color="Tipo Frequenza",
+            title="Analisi della Dispersione e Valori Anomali (Outliers)"
+        )
+        st.plotly_chart(fig_box, use_container_width=True)
+
+        # 3. INSIGHT STATISTICO
+        mediana_tot = df_stats['Freq. Aiuti (gg)'].median()
+        mediana_target = df_stats['Freq. Aiuti Target (gg)'].median()
+        
+        st.info(f"""
+        💡 **Insight Statistico:**
+        * La **Mediana Totale** è di **{mediana_tot:.0f} giorni**: indica la velocità standard di crociera delle aziende.
+        * La **Mediana Target** è di **{mediana_target:.0f} giorni**: se è molto più alta della totale, conferma che il settore target è più difficile o meno presidiato.
+        * Nel **Box Plot**, i punti molto in alto sono aziende "lente" o "dormienti", mentre i punti in basso sono i tuoi competitor più aggressivi (i "frequenti").
+        """)
+    else:
+        st.warning("Dati insufficienti per generare i grafici di distribuzione (servono aziende con almeno 2 aiuti).")
         
