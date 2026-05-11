@@ -616,6 +616,10 @@ def time_analysis(df):
     analisi_tot.columns = ['N° Aiuti Tot', 'Primo Aiuto', 'Ultimo Aiuto']
     analisi_tot = analisi_tot.reset_index()
     
+    # Calcolo Recency Totale (Indispensabile per la vivacità generale)
+    oggi_dt = dt.datetime.now()
+    analisi_tot['Recency Totale'] = (oggi_dt - analisi_tot['Ultimo Aiuto']).dt.days
+
     # Calcolo Freq. Aiuti Totale
     diff_date_tot = (analisi_tot['Ultimo Aiuto'] - analisi_tot['Primo Aiuto']).dt.days
     analisi_tot['Freq. Aiuti'] = diff_date_tot / (analisi_tot['N° Aiuti Tot'] - 1)
@@ -634,7 +638,6 @@ def time_analysis(df):
         analisi_target.columns = ['Ragione Sociale', 'Budget Target (€)', 'N° Aiuti Target', 'Primo Target', 'Ultimo Target']
         analisi_target = analisi_target.reset_index()
         
-        oggi_dt = dt.datetime.now()
         # Giorni dall'ultimo aiuto target (Recency)
         analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
         
@@ -643,47 +646,39 @@ def time_analysis(df):
         analisi_target['Freq. Aiuti Target'] = diff_date_target / (analisi_target['N° Aiuti Target'] - 1)
         analisi_target['Freq. Aiuti Target'] = analisi_target['Freq. Aiuti Target'].replace([float('inf'), -float('inf')], pd.NA)
 
-        # 3. Merge e Creazione colonna composta "Aiuti Target (%)"
-        analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
-        
-        analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
-        analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
-
-        # --- 3. Merge e Creazione colonna composta "Aiuti Target (%)" ---
-        oggi_dt = dt.datetime.now()
-        analisi_tot['Recency Totale'] = (oggi_dt - analisi_tot['Ultimo Aiuto']).dt.days
+        # 3. Merge Finale (Includendo Recency Totale)
         analisi_finale = analisi_target.merge(
             analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti', 'Recency Totale']], 
             on='CF_TROVATO', 
             how='left'
         )
+        
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
-        # --- 4. CALCOLO VIVACITÀ COMPOSTA ---
+        # --- 4. CALCOLO VIVACITÀ SEPARATA ---
         analisi_finale.rename(columns={
             'CF_TROVATO': 'P.IVA', 
             'Freq. Aiuti': 'Freq. Aiuti (gg)', 
             'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'
         }, inplace=True)
         
-        # Soglie per lo stato GENERALE (Recency Totale)
+        # Soglie statistiche
         q1_g = analisi_finale['Recency Totale'].quantile(0.25)
         med_g = analisi_finale['Recency Totale'].median()
         q3_g = analisi_finale['Recency Totale'].quantile(0.75)
         
-        # Soglie per lo stato TARGET (Ultimo Target gg)
         q1_t = analisi_finale['Ultimo Target (gg)'].quantile(0.25)
         med_t = analisi_finale['Ultimo Target (gg)'].median()
         q3_t = analisi_finale['Ultimo Target (gg)'].quantile(0.75)
 
-        # 2. Definizione funzioni
+        # Funzioni di assegnazione stato (Nomi puliti senza icone per la logica)
         def get_viv_gen(row):
             rec = row['Recency Totale']
-            if rec <= q1_g: return "🔥 IPERATTIVA"
-            if rec <= med_g: return "✅ VIVA"
-            if rec <= q3_g: return "⚠️ STANCA"
-            return "🌑 MORENTE"
+            if rec <= q1_g: return "IPERATTIVA"
+            if rec <= med_g: return "VIVA"
+            if rec <= q3_g: return "STANCA"
+            return "MORENTE"
 
         def get_viv_tar(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 OCCASIONALE"
@@ -693,53 +688,25 @@ def time_analysis(df):
             if rec <= q3_t: return "💨 DISTRATTA"
             return "🚫 DISINTERESSATA"
 
-        # CREAZIONE COLONNE
+        # Applicazione colonne separate
         analisi_finale['Vivacità'] = analisi_finale.apply(get_viv_gen, axis=1)
         analisi_finale['Vivacità Target'] = analisi_finale.apply(get_viv_tar, axis=1)
-
-        def definisci_vivacita_doppia(row):
-            # Caso base
-            if row['N° Aiuti Target'] <= 1: 
-                return "🌱 OCCASIONALE"
-            
-            # 1. Valutazione GENERALE
-            rec_g = row['Recency Totale']
-            if rec_g <= q1_g: stato_g = "IPERATTIVA"
-            elif rec_g <= med_g: stato_g = "VIVA"
-            elif rec_g <= q3_g: stato_g = "STANCA"
-            else: stato_g = "MORENTE"
-            
-            # 2. Valutazione TARGET
-            rec_t = row['Ultimo Target (gg)']
-            if rec_t <= q1_t: stato_t = "FEDELE"
-            elif rec_t <= med_t: stato_t = "INTERESSATA"
-            elif rec_t <= q3_t: stato_t = "DISTRATTA"
-            else: stato_t = "DISINTERESSATA"
-            
-            return f"{stato_g} - {stato_t}"
-
-        analisi_finale['Vivacità'] = analisi_finale.apply(definisci_vivacita_doppia, axis=1)
 
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
         st.write("")
         col0, col1, col2, col3, col4, col5 = st.columns(6)
         
-        # Calcolo delle mediane per i KPI
         m_aiuti_tot = analisi_finale['N° Aiuti Tot'].median()
         m_aiuti_target = analisi_finale['N° Aiuti Target'].median()
         m_freq_tot = analisi_finale['Freq. Aiuti (gg)'].median()
         m_freq_target = analisi_finale['Freq. Aiuti Target (gg)'].median()
 
-        with col1:
-            st.metric("Mediana Aiuti Totali", f"{m_aiuti_tot:.0f}")
-        with col2:
-            st.metric("Mediana Aiuti Target", f"{m_aiuti_target:.0f}")
-        with col3:
-            st.metric("Mediana Freq. Aiuti", f"{m_freq_tot:.0f} gg")
-        with col4:
-            st.metric("Mediana Freq. Target", f"{m_freq_target:.0f} gg")
+        with col1: st.metric("Mediana Aiuti Totali", f"{m_aiuti_tot:.0f}")
+        with col2: st.metric("Mediana Aiuti Target", f"{m_aiuti_target:.0f}")
+        with col3: st.metric("Mediana Freq. Aiuti", f"{m_freq_tot:.0f} gg")
+        with col4: st.metric("Mediana Freq. Target", f"{m_freq_target:.0f} gg")
 
-        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI ---
+        # --- 6. VISUALIZZAZIONE: GRAFICI STATISTICI (CODICE INTEGRALE) ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
 
         if not df_stats.empty:
@@ -789,7 +756,7 @@ def time_analysis(df):
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
         # --- 7. VISUALIZZAZIONE TABELLA ---
-      
+        st.write("---")
         colonne_visualizzate = [
             'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 
             'Aiuti Target (%)', 'Ultimo Target (gg)', 
@@ -798,9 +765,13 @@ def time_analysis(df):
 
         def style_stato(val):
             colori = {
-                '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
-                '✅ VIVA': 'color: #2ecc71;',
-                '🌑 MORENTE': 'color: #c62828; opacity: 0.8;',
+                # Stati colonna Vivacità (Generale)
+                'IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
+                'VIVA': 'color: #2ecc71; font-weight: bold;',
+                'STANCA': 'color: #f39c12;',
+                'MORENTE': 'color: #c62828; opacity: 0.8;',
+                
+                # Stati colonna Vivacità Target
                 '🎯 FEDELE': 'color: #1b5e20; font-weight: bold;',
                 '👍 INTERESSATA': 'color: #2ecc71;',
                 '💨 DISTRATTA': 'color: #f39c12;',
@@ -819,6 +790,8 @@ def time_analysis(df):
                 .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
                 use_container_width=True, hide_index=True
             )
+    else:
+        st.warning("Nessun dato Target disponibile.")
 
         
     
