@@ -760,7 +760,34 @@ def time_analysis(df):
         else:
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
-        
+        # --- 7. TABELLA CON STILE AGGIORNATO ---
+        def style_vivacita_doppia(val):
+            if "OCCASIONALE" in val: return 'color: #95a5a6;'
+            
+            style = 'font-weight: bold;'
+            # Colori basati sullo stato Target (la seconda parola)
+            if "FEDELE" in val: style += ' color: #2e7d32;'
+            elif "INTERESSATA" in val: style += ' color: #2ecc71;'
+            elif "DISTRATTA" in val: style += ' color: #f39c12;'
+            elif "DISINTERESSATA" in val: style += ' color: #e74c3c;'
+            
+            # Evidenzia se è IPERATTIVA (sfondo leggero)
+            if "IPERATTIVA" in val: style += ' background-color: #f1f8e9;'
+            # Evidenzia se è MORENTE (testo barrato o opaco - opzionale)
+            if "MORENTE" in val: style += ' opacity: 0.7;'
+            
+            return style
+
+        # Visualizzazione Tabella
+        st.dataframe(
+            analisi_finale[colonne_finali].sort_values('Ultimo Target (gg)').style.format({
+                'Budget Target (€)': '{:,.0f} €',
+                'Freq. Aiuti Target (gg)': lambda x: f"{x:.0f} gg" if pd.notnull(x) else "-",
+                'Ultimo Target (gg)': '{:.0f} gg'
+            }).map(style_vivacita_doppia, subset=['Vivacità'])
+            .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
+            use_container_width=True, hide_index=True
+        )
 
         
     
