@@ -652,9 +652,9 @@ def time_analysis(df):
 
         # 4. CALCOLO VIVACITÀ (Logica Statistica Quartili)
         # Calcoliamo le soglie sulla frequenza della popolazione target
-        q1 = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.25)
-        mediana = analisi_finale['Freq. Aiuti Target (gg)'].median()
-        q3 = analisi_finale['Freq. Aiuti Target (gg)'].quantile(0.75)
+        q1 = analisi_finale['Freq. Aiuti Target'].quantile(0.25)
+        mediana = analisi_finale['Freq. Aiuti Target'].median()
+        q3 = analisi_finale['Freq. Aiuti Target'].quantile(0.75)
     
         def segmenta_vivacita(row):
             if row['N° Aiuti Target'] <= 1: return "🌱 Occasionale"
