@@ -722,11 +722,11 @@ def time_analysis(df):
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>" +
-                    "Budget: %{customdata[1]} €<br>" +
+                    "Budget Target: %{customdata[1]} €<br>" +
                     "N° Aiuti Target: %{customdata[2]}<br>" +
                     "Stato: %{customdata[3]}<br>" +
-                    "Ultimo: %{customdata[4]} gg fa<br>" +
-                    "Frequenza: %{x:.0f} gg<extra></extra>"
+                    "Ultimo Aiuto Target: %{customdata[4]} gg<br>" +
+                    "Freq. Aiuti Target: %{x:.0f} gg<extra></extra>"
                 ),
                 selector=dict(type='box')
             )
