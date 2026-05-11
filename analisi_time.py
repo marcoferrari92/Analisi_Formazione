@@ -682,54 +682,42 @@ def time_analysis(df):
             use_container_width=True, hide_index=True
         )
 
-        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT SOVRAPPOSTI (STESSI COLORI) ---
+        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT SOVRAPPOSTI ---
         st.write("")
         
-        # Filtriamo e prepariamo i dati
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
 
         if not df_stats.empty:
-            # Creiamo il grafico combinato usando marginal='box'
-            # Questo posiziona automaticamente i box plot sopra l'istogramma in orizzontale
+            # Creiamo il grafico combinato
             fig_combined = px.histogram(
                 df_stats, 
                 x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
-                marginal="box", # <--- Posiziona i Box Plot orizzontali sopra
-                barmode='overlay', # Sovrapposizione barre
+                marginal="box", 
+                barmode='overlay',
                 nbins=50,
                 title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
-                # Mappatura colori esatta e coerente per entrambi i tipi di grafico
                 color_discrete_map={
-                    "Freq. Aiuti (gg)": "#1f77b4", # Blu standard
-                    "Freq. Aiuti Target (gg)": "#ff7f0e" # Arancione standard
+                    "Freq. Aiuti (gg)": "#1f77b4", 
+                    "Freq. Aiuti Target (gg)": "#ff7f0e"
                 },
-                opacity=0.6 # Trasparenza per l'overlay dell'istogramma
+                opacity=0.6
             )
 
-            # Affiniamo il layout
+            # Aggiornamento layout
             fig_combined.update_layout(
                 xaxis_title="Giorni",
                 yaxis_title="Numero di Aziende (Istogramma)",
-                bargap=0.01, # Piccolo spazio tra le barre
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1) # Legenda orizzontale in alto
+                bargap=0.01,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
 
-            # Rimuoviamo i punti individuali dai box plot per pulizia (opzionale)
-            fig_combined.update_traces(points=False, selector=dict(type='box'))
+            # CORREZIONE ERRORE: Usiamo 'boxpoints' invece di 'points'
+            # Impostiamo su False per non mostrare tutti i puntini e pulire il grafico
+            fig_combined.update_traces(boxpoints=False, selector=dict(type='box'))
 
             st.plotly_chart(fig_combined, use_container_width=True)
-
-            # --- INSIGHT STATISTICO ---
-            mediana_tot = df_stats['Freq. Aiuti (gg)'].median()
-            mediana_target = df_stats['Freq. Aiuti Target (gg)'].median()
             
-            st.info(f"""
-            💡 **Come leggere il grafico combinato:**
-            * **Box Plot (Alto):** La linea centrale nella scatola è la **Mediana**. La scatola Totale (Blu) ha la mediana a **{mediana_tot:.0f} gg**, mentre quella Target (Arancio) è a **{mediana_target:.0f} gg**.
-            * **Istogramma (Basso):** Mostra quante aziende hanno quella specifica frequenza. La sovrapposizione evidenzia le zone di comportamento comune.
-            * **Allineamento:** Un valore sull'asse X (es. 400 giorni) corrisponde verticalmente sia alla barra dell'istogramma che alla posizione nel box plot, permettendo un confronto immediato tra conteggio e dispersione.
-            """)
         else:
-            st.warning("Dati insufficienti per generare i grafici statistici comparativi.")
+            st.warning("Dati insufficienti per generare i grafici statistici.")
         
