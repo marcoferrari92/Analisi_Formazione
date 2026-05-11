@@ -679,7 +679,13 @@ def time_analysis(df):
                 marginal="box", nbins=50, barmode='overlay',
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
                 opacity=0.7, height=800,
-                hover_data={"Ragione Sociale": True, "Vivacità Target": True}
+                hover_data={
+                  "Ragione Sociale": True,  
+                  "Budget Target (€)": ":,.0f",
+                  "Vivacità Target": True, 
+                  "Ultimo Target (gg)": True,
+                  "Freq. Aiuti Target (gg)": True
+                }
             )
             # AGGIUNTA FINESTRE COLORATE
             fig_combined.add_vrect(x0=0, x1=q1_t, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
@@ -704,13 +710,14 @@ def time_analysis(df):
                 )
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
-                hover_data={
-                  "Ragione Sociale": True,    
-                  "Vivacità Target": True,     
-                  "Freq. Aiuti Target (gg)": True,  
-                  "Ultimo Target (gg)": True,  
-                  "Budget Target (€)": ":,.0f"
-                },
+                hovertemplate=(
+                  "<b>%{customdata[0]}</b><br>" +             # Ragione Sociale
+                  "Budget Target: %{customdata[1]} €<br>" +   # Budget
+                  "<i>%{customdata[2]}</i><br><br>" +         # Vivacità Target
+                  "Ultimo Aiuto Target: %{customdata[3]} gg fa<br>" + # Recency
+                  "Freq. Aiuti Target: %{customdata[4]:.0f} gg" +    # Frequenza specifica
+                  "<extra></extra>"
+                ),
               selector=dict(type='box')
             )
             fig_combined.update_layout(
