@@ -688,13 +688,13 @@ def time_analysis(df):
 
             # AGGIUNTA FINESTRE COLORATE (SHAPES)
             # IPERATTIVA (Verde chiaro)
-            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.3, layer="below", line_width=0, annotation_text="IPERATTIVA")
+            fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.5, layer="below", line_width=0, annotation_text="IPERATTIVA")
             # VIVA (Verde)
-            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.1, layer="below", line_width=0, annotation_text="VIVA")
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.5, layer="below", line_width=0, annotation_text="VIVA")
             # DISINTERESSATA (Arancione/Giallo)
-            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.3, layer="below", line_width=0, annotation_text="DISINTERESSATA")
+            fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.5, layer="below", line_width=0, annotation_text="DISINTERESSATA")
             # MORTA (Rosso chiaro)
-            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.4, layer="below", line_width=0, annotation_text="MORTA")
+            fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.5, layer="below", line_width=0, annotation_text="MORTA")
 
             fig_combined.update_traces(
                 boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
@@ -704,7 +704,7 @@ def time_analysis(df):
             
             fig_combined.update_layout(
                 yaxis=dict(domain=[0, 0.5]), yaxis2=dict(domain=[0.55, 1]),
-                bargap=0.05, xaxis_title="Giorni (Intervallo tra aiuti)",
+                bargap=0.05, xaxis_title="Frequenza Aiuti",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             
