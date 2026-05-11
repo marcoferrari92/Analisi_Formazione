@@ -789,9 +789,7 @@ def time_analysis(df):
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
         # --- 7. VISUALIZZAZIONE TABELLA ---
-        st.write("")
-        
-        # Definiamo le colonne da visualizzare (assicurandoci che i nomi siano corretti)
+      
         colonne_visualizzate = [
             'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 
             'Aiuti Target (%)', 'Ultimo Target (gg)', 
@@ -801,14 +799,16 @@ def time_analysis(df):
         def style_stato(val):
             colori = {
                 '🔥 IPERATTIVA': 'background-color: #e8f5e9; color: #2e7d32; font-weight: bold;',
+                '✅ VIVA': 'color: #2ecc71;',
                 '🌑 MORENTE': 'color: #c62828; opacity: 0.8;',
                 '🎯 FEDELE': 'color: #1b5e20; font-weight: bold;',
+                '👍 INTERESSATA': 'color: #2ecc71;',
+                '💨 DISTRATTA': 'color: #f39c12;',
                 '🚫 DISINTERESSATA': 'background-color: #ffebee; color: #b71c1c; font-weight: bold;',
                 '🌱 OCCASIONALE': 'color: #95a5a6; font-style: italic;'
             }
             return colori.get(val, '')
 
-        # Verifichiamo se le colonne esistono prima di mostrare la tabella (debug silenzioso)
         if 'Vivacità Target' in analisi_finale.columns:
             st.dataframe(
                 analisi_finale[colonne_visualizzate].sort_values('Ultimo Target (gg)').style.format({
@@ -819,8 +819,6 @@ def time_analysis(df):
                 .background_gradient(cmap='RdYlGn_r', subset=['Ultimo Target (gg)']),
                 use_container_width=True, hide_index=True
             )
-        else:
-            st.error("Errore: Le colonne di vivacità non sono state create correttamente.")
 
         
     
