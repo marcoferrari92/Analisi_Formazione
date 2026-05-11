@@ -715,7 +715,8 @@ def time_analysis(df):
             st.warning("Dati insufficienti per generare i grafici statistici.")
 
         # --- 7. VISUALIZZAZIONE: TABELLA DI DETTAGLIO ---
-        st.subheader("🏢 Dettaglio Aziendale")
+        st.write("")
+        st.write("")
         df_display = analisi_finale.sort_values('Ultimo Target (gg)', ascending=True)
         
         colonne_finali = [
