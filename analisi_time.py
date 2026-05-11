@@ -674,7 +674,7 @@ def time_analysis(df):
         c3.metric("Freq. Target (Med)", f"{med_f:.0f} gg") # Usiamo med_f
         c4.metric("Recency Target (Med)", f"{med_t:.0f} gg") # Usiamo med_t
 
-        # --- 6. GRAFICO CON FINESTRE COLORATE ---
+        # --- 6. GRAFICO CON FINESTRE COLORATE E SPAZIATURA GESTITA ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
         
         if not df_stats.empty:
@@ -686,14 +686,10 @@ def time_analysis(df):
                 hover_data={"Ragione Sociale": True, "Vivacità Target": True}
             )
 
-            # AGGIUNTA FINESTRE COLORATE (SHAPES)
-            # IPERATTIVA (Verde chiaro)
+            # AGGIUNTA FINESTRE COLORATE
             fig_combined.add_vrect(x0=0, x1=q1_f, fillcolor="#e8f5e9", opacity=0.5, layer="below", line_width=0, annotation_text="IPERATTIVA")
-            # VIVA (Verde)
-            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.5, layer="below", line_width=0, annotation_text="VIVA")
-            # DISINTERESSATA (Arancione/Giallo)
+            fig_combined.add_vrect(x0=q1_f, x1=med_f, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0, annotation_text="VIVA")
             fig_combined.add_vrect(x0=med_f, x1=q3_f, fillcolor="#fff9c4", opacity=0.5, layer="below", line_width=0, annotation_text="DISINTERESSATA")
-            # MORTA (Rosso chiaro)
             fig_combined.add_vrect(x0=q3_f, x1=max_f, fillcolor="#ffebee", opacity=0.5, layer="below", line_width=0, annotation_text="MORTA")
 
             fig_combined.update_traces(
@@ -702,9 +698,15 @@ def time_analysis(df):
                 selector=dict(type='box')
             )
             
+            # --- GESTIONE SPAZI E LAYOUT ---
             fig_combined.update_layout(
-                yaxis=dict(domain=[0, 0.5]), yaxis2=dict(domain=[0.55, 1]),
-                bargap=0.05, xaxis_title="Frequenza Aiuti",
+                # 1. Distanza tra ISTOGRAMMA e BOXPLOT 
+                yaxis=dict(domain=[0, 0.5]),      
+                yaxis2=dict(domain=[0.5, 1]),     
+                bargap=0.05, # 2. Spazio tra le barre dell'istogramma
+                boxgap=0., # 3. Distanza tra i due BOX PLOT
+                boxgroupgap=0.2, # 4. Spessore del singolo Box Plot rispetto al suo spazio dedicato
+                xaxis_title="Frequenza Aiuti (gg)",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             
