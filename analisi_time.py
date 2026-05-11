@@ -670,15 +670,21 @@ def time_analysis(df):
         c3.metric("Freq. Aiuti (Mediana)", f"{analisi_finale['Freq. Aiuti (gg)'].median():.0f} gg")
         c4.metric("Freq. Aiuti (Mediana)", f"{med_t:.0f} gg") # Usiamo med_t
 
-        # --- 6. GRAFICO CON FINESTRE COLORATE E SPAZIATURA GESTITA ---
+        # --- 6. GRAFICO CON FINESTRE COLORATE (FIX BOXPLOT SPARITO) ---
         df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
         
         if not df_stats.empty:
+            # Trasformiamo il dataframe in formato "long" per gestire meglio le due serie
+            # Questo è il modo più solido per evitare che i boxplot spariscano
             fig_combined = px.histogram(
-                df_stats, x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
-                marginal="box", nbins=50, barmode='overlay',
+                df_stats, 
+                x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"], 
+                marginal="box", 
+                nbins=50, 
+                barmode='overlay',
                 color_discrete_map={"Freq. Aiuti (gg)": "#1f77b4", "Freq. Aiuti Target (gg)": "#FF0000"},
-                opacity=0.7, height=800,
+                opacity=0.7, 
+                height=800,
                 hover_data={
                     "Ragione Sociale": True,             # customdata[0]
                     "Budget Target (€)": ":,.0f",        # customdata[1]
@@ -688,11 +694,14 @@ def time_analysis(df):
                     "Freq. Aiuti Target (gg)": ":.0f"    # customdata[5]
                 }
             )
+        
             # AGGIUNTA FINESTRE COLORATE
             fig_combined.add_vrect(x0=0, x1=q1_t, fillcolor="#2ecc71", opacity=0.3, layer="below", line_width=0)
             fig_combined.add_vrect(x0=q1_t, x1=med_t, fillcolor="#c8e6c9", opacity=0.5, layer="below", line_width=0)
             fig_combined.add_vrect(x0=med_t, x1=q3_t, fillcolor="#fff176", opacity=0.5, layer="below", line_width=0)
             fig_combined.add_vrect(x0=q3_t, x1=max_t, fillcolor="#ef5350", opacity=0.3, layer="below", line_width=0)
+        
+            # ETICHETTE FINESTRE
             finestre = [
                 {"label": "IPER.", "x0": 0, "x1": q1_t},
                 {"label": "VIVA", "x0": q1_t, "x1": med_t},
@@ -701,34 +710,35 @@ def time_analysis(df):
             ]
             for f in finestre:
                 fig_combined.add_annotation(
-                    x=(f["x0"] + f["x1"]) / 2, # Centro della finestra sull'asse X
-                    y=1,                       # In cima al grafico
-                    yref="paper",              # Coordinate relative (1 = 100% altezza)
-                    text=f["label"],
-                    showarrow=False,
-                    font=dict(size=12, color="grey", family="Arial Black"),
-                    yanchor="bottom"           # Ancora il testo sopra il confine del grafico
+                    x=(f["x0"] + f["x1"]) / 2, y=1, yref="paper",
+                    text=f["label"], showarrow=False,
+                    font=dict(size=12, color="grey", family="Arial Black"), yanchor="bottom"
                 )
+        
+            # APPLICAZIONE HOVER (Sistemata per non rompere le tracce)
             fig_combined.update_traces(
-                boxpoints='all', pointpos=0, jitter=0.5, marker=dict(size=4),
+                boxpoints='all', 
+                pointpos=0, 
+                jitter=0.5, 
+                marker=dict(size=4),
                 hovertemplate=(
-                    "<b>%{customdata[0]}</b><br>" +                  # Ragione Sociale
-                    "Budget: %{customdata[1]} €<br>" +               # Budget Target
-                    "N° Aiuti Target: %{customdata[2]}<br>" +        # Num Aiuti Target
-                    "Stato: %{customdata[3]}<br>" +                  # Vivacità Target
-                    "Ultimo Aiuto: %{customdata[4]} gg fa<br>" +     # Ultimo Target
-                    "Frequenza Target: %{customdata[5]} gg" +        # Freq. Aiuti Target
+                    "<b>%{customdata[0]}</b><br>" +
+                    "Budget Target: %{customdata[1]} €<br>" +
+                    "N° Aiuti Target: %{customdata[2]}<br>" +
+                    "Stato: %{customdata[3]}<br>" +
+                    "Ultimo Aiuto: %{customdata[4]} gg<br>" +
+                    "Frequenza Target: %{customdata[5]} gg" +
                     "<extra></extra>"
                 ),
                 selector=dict(type='box')
             )
+        
             fig_combined.update_layout(
-                # 1. Distanza tra ISTOGRAMMA e BOXPLOT 
-                yaxis=dict(domain=[0, 0.5]),      
-                yaxis2=dict(domain=[0.5, 1]),     
-                bargap=0.05, # 2. Spazio tra le barre dell'istogramma
-                boxgap=0., # 3. Distanza tra i due BOX PLOT
-                boxgroupgap=0.2, # 4. Spessore del singolo Box Plot rispetto al suo spazio dedicato
+                yaxis=dict(domain=[0, 0.45]),      
+                yaxis2=dict(domain=[0.55, 1]),     
+                bargap=0.05, 
+                boxgap=0.4,           # Aumentato per separare i due boxplot
+                boxgroupgap=0.2, 
                 xaxis_title="Frequenza Aiuti (gg)",
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
