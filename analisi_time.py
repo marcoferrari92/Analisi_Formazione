@@ -650,6 +650,11 @@ def time_analysis(df):
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
         # --- 4. CALCOLO VIVACITÀ COMPOSTA (TARGET + GENERALE) ---
+        analisi_finale.rename(columns={
+            'CF_TROVATO': 'P.IVA', 
+            'Freq. Aiuti': 'Freq. Aiuti (gg)', 
+            'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'
+        }, inplace=True)
         
         # A. Calcoliamo la Recency Totale (giorni dall'ultimo aiuto qualunque)
         oggi_dt = dt.datetime.now()
