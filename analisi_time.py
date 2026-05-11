@@ -606,7 +606,8 @@ def time_analysis(df):
   
     st.divider()
     st.subheader("🏢 Frequenze di Aiuti")
-    
+
+        
     # 1. Metriche TOTALI
     analisi_tot = df_temp.groupby('CF_TROVATO').agg({
         'CF_TROVATO': 'count',
@@ -633,7 +634,7 @@ def time_analysis(df):
         analisi_target = analisi_target.reset_index()
         
         oggi_dt = dt.datetime.now()
-        # Calcoliamo i giorni dall'ultimo aiuto (che chiameremo Ultimo Target nella tabella)
+        # Calcoliamo i giorni dall'ultimo aiuto target
         analisi_target['Ultimo Target (gg)'] = (oggi_dt - analisi_target['Ultimo Target']).dt.days
         
         # Freq. Aiuti Target (Logica N-1)
@@ -641,14 +642,13 @@ def time_analysis(df):
         analisi_target['Freq. Aiuti Target'] = analisi_target['Freq. Aiuti Target'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
         # 3. Merge e Creazione colonna composta "Aiuti Target (%)"
-        analisi_finale = analisi_target.merge(analisi_tot.rename(columns={'CF_TROVATO': 'CF_TROVATO'})[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
+        analisi_finale = analisi_target.merge(analisi_tot[['CF_TROVATO', 'N° Aiuti Tot', 'Freq. Aiuti']], on='CF_TROVATO', how='left')
         
-        # Calcolo quota percentuale
+        # Calcolo quota percentuale e stringa formattata
         analisi_finale['Quota %'] = (analisi_finale['N° Aiuti Target'] / analisi_finale['N° Aiuti Tot']) * 100
-        
-        # Creazione stringa: "X (Y%)"
         analisi_finale['Aiuti Target (%)'] = analisi_finale.apply(lambda x: f"{int(x['N° Aiuti Target'])} ({x['Quota %']:.1f}%)", axis=1)
 
+        # 4. Definizione Status
         def segmenta_status(row):
             if row['N° Aiuti Target'] > 1 and row['Ultimo Target (gg)'] > (row['Freq. Aiuti Target'] * 1.5) and row['Ultimo Target (gg)'] > 365:
                 return "⚠️ In Abbandono"
@@ -656,48 +656,31 @@ def time_analysis(df):
 
         analisi_finale['Status'] = analisi_finale.apply(segmenta_status, axis=1)
         
-        # Rinominazione finale per la visualizzazione
+        # Rinominazione colonne per visualizzazione
         analisi_finale.rename(columns={'CF_TROVATO': 'P.IVA', 'Freq. Aiuti': 'Freq. Aiuti (gg)', 'Freq. Aiuti Target': 'Freq. Aiuti Target (gg)'}, inplace=True)
 
-        # --- VISUALIZZAZIONE ---
-        tab_top, tab_churn = st.tabs(["🏆 Top Beneficiari Target", "🥀 Abbandono Target"])
-
-        with tab_top:
-            colonne_top = [
-                'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
-                'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Status'
-            ]
-            df_top = analisi_finale.sort_values(['N° Aiuti Target', 'Budget Target (€)'], ascending=False).head(20)
-            
-            st.dataframe(
-                df_top[colonne_top].style.format({
-                    'Budget Target (€)': '{:,.0f} €',
-                    'Freq. Aiuti (gg)': '{:.0f} gg',
-                    'Freq. Aiuti Target (gg)': '{:.0f} gg',
-                    'Ultimo Target (gg)': '{:.0f} gg'
-                }),
-                use_container_width=True, hide_index=True
-            )
-
-        with tab_churn:
-            colonne_churn = [
-                'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
-                'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Status'
-            ]
-            df_churn = analisi_finale[analisi_finale['Status'] == "⚠️ In Abbandono"].sort_values('Ultimo Target (gg)', ascending=False)
-            
-            if not df_churn.empty:
-                st.dataframe(
-                    df_churn[colonne_churn].style.format({
-                        'Budget Target (€)': '{:,.0f} €',
-                        'Freq. Aiuti (gg)': '{:.0f} gg',
-                        'Freq. Aiuti Target (gg)': '{:.0f} gg',
-                        'Ultimo Target (gg)': '{:.0f} gg'
-                    }).background_gradient(cmap='Reds', subset=['Ultimo Target (gg)']),
-                    use_container_width=True, hide_index=True
-                )
-            else:
-                st.success("Nessuna azienda ricorrente nel Target mostra segnali di abbandono.")
+        # --- VISUALIZZAZIONE UNICA ---
+        # Ordiniamo in base al minor tempo dall'ultimo aiuto (Ascending=True)
+        df_display = analisi_finale.sort_values('Ultimo Target (gg)', ascending=True)
+        
+        colonne_finali = [
+            'P.IVA', 'Ragione Sociale', 'Budget Target (€)', 'Aiuti Target (%)', 
+            'Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)', 'Ultimo Target (gg)', 'Status'
+        ]
+        
+        st.write("Elenco aziende ordinato per l'attività più recente nel settore Target.")
+        
+        st.dataframe(
+            df_display[colonne_finali].style.format({
+                'Budget Target (€)': '{:,.0f} €',
+                'Freq. Aiuti (gg)': '{:.0f} gg',
+                'Freq. Aiuti Target (gg)': '{:.0f} gg',
+                'Ultimo Target (gg)': '{:.0f} gg'
+            }).background_gradient(cmap='Reds_r', subset=['Ultimo Target (gg)']), # Reds_r inverte il colore: rosso per i valori alti (lontani)
+            use_container_width=True, hide_index=True
+        )
+    else:
+        st.warning("Nessun dato disponibile per il settore Target selezionato.")
 
     
         
