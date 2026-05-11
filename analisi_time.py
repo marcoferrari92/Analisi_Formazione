@@ -682,55 +682,54 @@ def time_analysis(df):
             use_container_width=True, hide_index=True
         )
 
-        # --- VISUALIZZAZIONE DISTRIBUZIONE FREQUENZE ---
+        # --- VISUALIZZAZIONE AVANZATA: ISTOGRAMMA + BOX PLOT SOVRAPPOSTI (STESSI COLORI) ---
         st.write("")
-    
-        # Puliamo i dati dai None per il grafico (altrimenti plotly dà errore)
-        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)'])
-    
+        
+        # Filtriamo e prepariamo i dati
+        df_stats = analisi_finale.dropna(subset=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)']).copy()
+
         if not df_stats.empty:
-            # 1. ISTOGRAMMA COMPARATIVO
-            fig_hist = px.histogram(
+            # Creiamo il grafico combinato usando marginal='box'
+            # Questo posiziona automaticamente i box plot sopra l'istogramma in orizzontale
+            fig_combined = px.histogram(
                 df_stats, 
                 x=["Freq. Aiuti (gg)", "Freq. Aiuti Target (gg)"],
-                barmode='overlay',
+                marginal="box", # <--- Posiziona i Box Plot orizzontali sopra
+                barmode='overlay', # Sovrapposizione barre
                 nbins=50,
-                title="Confronto Distribuzione Frequenze (Totale vs Target)",
+                title="Distribuzione e Dispersione Frequenze (Totale vs Target)",
                 labels={'value': 'Giorni tra gli aiuti', 'variable': 'Tipo Frequenza'},
+                # Mappatura colori esatta e coerente per entrambi i tipi di grafico
                 color_discrete_map={
-                    "Freq. Aiuti (gg)": "rgba(31, 119, 180, 0.6)", # Blu
-                    "Freq. Aiuti Target (gg)": "rgba(255, 127, 14, 0.6)" # Arancio
-                }
+                    "Freq. Aiuti (gg)": "#1f77b4", # Blu standard
+                    "Freq. Aiuti Target (gg)": "#ff7f0e" # Arancione standard
+                },
+                opacity=0.6 # Trasparenza per l'overlay dell'istogramma
             )
-            fig_hist.update_layout(xaxis_title="Giorni", yaxis_title="Numero di Aziende")
-            st.plotly_chart(fig_hist, use_container_width=True)
-    
-            # 2. BOX PLOT PER DISPERSIONE
-            fig_box = px.box(
-                df_stats.melt(
-                    id_vars=['P.IVA'], 
-                    value_vars=['Freq. Aiuti (gg)', 'Freq. Aiuti Target (gg)'],
-                    var_name='Tipo Frequenza', 
-                    value_name='Giorni'
-                ), 
-                y="Giorni", 
-                x="Tipo Frequenza", 
-                points="all", # Mostra anche i singoli punti/aziende
-                color="Tipo Frequenza",
-                title="Analisi della Dispersione e Valori Anomali (Outliers)"
+
+            # Affiniamo il layout
+            fig_combined.update_layout(
+                xaxis_title="Giorni",
+                yaxis_title="Numero di Aziende (Istogramma)",
+                bargap=0.01, # Piccolo spazio tra le barre
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1) # Legenda orizzontale in alto
             )
-            st.plotly_chart(fig_box, use_container_width=True)
-    
-            # 3. INSIGHT STATISTICO
+
+            # Rimuoviamo i punti individuali dai box plot per pulizia (opzionale)
+            fig_combined.update_traces(points=False, selector=dict(type='box'))
+
+            st.plotly_chart(fig_combined, use_container_width=True)
+
+            # --- INSIGHT STATISTICO ---
             mediana_tot = df_stats['Freq. Aiuti (gg)'].median()
             mediana_target = df_stats['Freq. Aiuti Target (gg)'].median()
             
             st.info(f"""
-            💡 **Insight Statistico:**
-            * La **Mediana Totale** è di **{mediana_tot:.0f} giorni**: indica la velocità standard di crociera delle aziende.
-            * La **Mediana Target** è di **{mediana_target:.0f} giorni**: se è molto più alta della totale, conferma che il settore target è più difficile o meno presidiato.
-            * Nel **Box Plot**, i punti molto in alto sono aziende "lente" o "dormienti", mentre i punti in basso sono i tuoi competitor più aggressivi (i "frequenti").
+            💡 **Come leggere il grafico combinato:**
+            * **Box Plot (Alto):** La linea centrale nella scatola è la **Mediana**. La scatola Totale (Blu) ha la mediana a **{mediana_tot:.0f} gg**, mentre quella Target (Arancio) è a **{mediana_target:.0f} gg**.
+            * **Istogramma (Basso):** Mostra quante aziende hanno quella specifica frequenza. La sovrapposizione evidenzia le zone di comportamento comune.
+            * **Allineamento:** Un valore sull'asse X (es. 400 giorni) corrisponde verticalmente sia alla barra dell'istogramma che alla posizione nel box plot, permettendo un confronto immediato tra conteggio e dispersione.
             """)
         else:
-            st.warning("Dati insufficienti per generare i grafici di distribuzione (servono aziende con almeno 2 aiuti).")
+            st.warning("Dati insufficienti per generare i grafici statistici comparativi.")
         
