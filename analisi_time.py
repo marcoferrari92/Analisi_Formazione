@@ -662,7 +662,7 @@ def time_analysis(df):
         
         # --- 5. VISUALIZZAZIONE: METRICHE PRINCIPALI (KPI) ---
         with st.container(border=True):
-            st.write("** Panoramica frequenze aiuti nel settore target)**")
+            st.write("** Panoramica frequenze aiuti nel settore target**")
             
             # --- KPI: METRICHE PRINCIPALI ---
             col1, col2, col3, col4 = st.columns(4)
