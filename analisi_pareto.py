@@ -108,9 +108,9 @@ def pareto_analysis(df, guida_pareto=""):
         xaxis_title="Numero Aziende",
         # Configurazione asse Y logaritmico
         yaxis=dict(
-            title="Budget (€) - Scala LOG",
+            title="Budget Target (€)",
             type="log", 
-            dtick=1, # Mostra una tacca per ogni potenza di 10 (100, 1k, 10k...)
+            dtick=1, 
             exponentformat="SI"
         ),
         yaxis2=dict(
