@@ -47,7 +47,7 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.add_trace(go.Bar(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
-        marker_color=df_pareto['Percentage'].apply(lambda x: '#e74c3c' if x <= 20 else '#3498db'),
+        marker_color='#3498db',
         name="Budget Azienda",
         opacity=0.6,
         customdata=df_pareto['Status Economico'],
