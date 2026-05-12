@@ -120,7 +120,7 @@ def geo_analysis(df):
     df_naz         = df_c.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
     df_naz.columns = ['REGIONE', 'Aiuti Totali', 'Budget Totale']
 
-    # Unione in un singole dataframe 
+    # Unione in un singole dataframe df_mappe
     lookup_geo          = df_c[['REGIONE', 'Match_Key']].drop_duplicates()
     df_mappe            = pd.merge(df_naz, lookup_geo, on='REGIONE', how='left')
     df_targ_agg         = df_targ_raw.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
