@@ -64,7 +64,7 @@ def pareto_analysis(df, guida_pareto=""):
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
         marker_color=df_pareto['color_marker'],
         name="Budget Azienda",
-        opacity=0.9,
+        opacity=1,
         customdata=df_pareto['Status Economico'],
         hovertemplate="<b>%{customdata}</b><br>Budget: %{y:,.2f}€<extra></extra>"
     ))
