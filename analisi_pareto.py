@@ -108,3 +108,5 @@ def pareto_analysis(df, guida_pareto=""):
         st.dataframe(df_pareto[['RNA_DENOMINAZIONE_BENEFICIARIO', 'RNA_ELEMENTO_DI_AIUTO', 'Percentage', 'Status Economico']].rename(
             columns={'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda', 'RNA_ELEMENTO_DI_AIUTO': 'Budget'}
         ))
+
+    return df
