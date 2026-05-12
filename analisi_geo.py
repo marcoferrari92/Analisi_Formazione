@@ -7,11 +7,10 @@ def geo_analysis(df):
     """
     Analisi geografica definitiva con:
     - Leader identificato tramite P.IVA (CF_TROVATO)
-    - Visualizzazione Ragione Sociale nelle tabelle
     - Tre livelli: Nazionale, Regionale, Locale (CAP)
     """
 
-    # --- 1. DATABASE DI INTELLIGENCE GEOGRAFICA ---
+    # DATABASE CAP
     geo_db = {
         "00": ("Roma", "Lazio"), "01": ("Viterbo", "Lazio"), "02": ("Rieti", "Lazio"),
         "03": ("Frosinone", "Lazio"), "04": ("Latina", "Lazio"), "05": ("Terni", "Umbria"),
@@ -46,35 +45,44 @@ def geo_analysis(df):
         "91": ("Trapani", "Sicilia"), "92": ("Agrigento", "Sicilia"), "93": ("Caltanissetta", "Sicilia"),
         "94": ("Enna", "Sicilia"), "95": ("Catania", "Sicilia"), "96": ("Siracusa", "Sicilia"),
         "97": ("Ragusa", "Sicilia"), "98": ("Messina", "Sicilia")
-    }
-
-    # --- 2. VERIFICA E PULIZIA ---
-    df_c = df.copy()
-    col_cap = 'CAP' if 'CAP' in df_c.columns else None
+    }  
     
-    if col_cap is None:
-        st.warning("⚠️ Colonna CAP non trovata.")
-        return df_c
+    # IDENTIFICAZIONE PARAMETRI GEOGRAFICI
+    df_c        = df.copy()
+    col_cap     = 'CAP' if 'CAP' in df_c.columns else None
+    col_budget  = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
+    col_piva    = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
+    col_rs      = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
 
-    col_budget = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
-    col_piva = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
-    col_rs = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
+    # MAPPING
+    #Se c'è il CAP, l'analisi sarà completa
+    if col_cap:
+        df_c['CAP_Str']     = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
+        df_c['Prefix']      = df_c['CAP_Str'].str[:2]
+        df_c['Regione']     = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
+        df_c['Provincia']   = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
+        df_c['CAP']         = df_c['CAP_Str']
+    # Se manca il CAP, l'analsii sarà limitata a Regione/Provincia
+    else:
+        if 'Regione' not in df_c.columns:
+            df_c['Regione'] = "Sconosciuta"
+        if 'Provincia' not in df_c.columns:
+            df_c['Provincia'] = "Sconosciuta"
+        st.info("ℹ️ Analisi limitata: CAP assente.")
 
-    # --- 3. CALCOLO LEADERSHIP E MAPPING BASE ---
-    df_c['CAP_Str'] = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
-    df_c['Prefix'] = df_c['CAP_Str'].str[:2]
-    df_c['Regione'] = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
-    df_c['Provincia'] = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-    df_c['CAP'] = df_c['CAP_Str']
-
-    # Prepariamo Match_Key subito
+    # Prepariamo Match_Key per GeoJSON
     df_c['Match_Key'] = df_c['Regione'].str.lower()
-    mapping_geo = {"friuli-venezia giulia": "friuli venezia giulia", "trentino-alto adige": "trentino-alto adige/südtirol", "valle d'aosta": "valle d'aosta/vallée d'aoste"}
+    mapping_geo = {
+        "friuli-venezia giulia": "friuli venezia giulia", 
+        "trentino-alto adige": "trentino-alto adige/südtirol", 
+        "valle d'aosta": "valle d'aosta/vallée d'aoste"
+    }
     df_c['Match_Key'] = df_c['Match_Key'].replace(mapping_geo)
 
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
+    
 
-    # --- 4. AGGREGAZIONE DATI (FONDAMENTALE DEFINIRLI QUI PER EVITARE ERRORI) ---
+    # --- 4. AGGREGAZIONE DATI ---
     # Definiamo df_bubbles e df_bubbles_t qui così sono accessibili a tutto il resto del codice
     df_bubbles = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
     df_bubbles.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
