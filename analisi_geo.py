@@ -60,7 +60,7 @@ def geo_analysis(df):
     
     # Caso A: se c'è il CAP, ignora REGIONE BENEFICIARIO dell'RNA 
     # (a volte l'RNA riporta più regioni per lo stesso beneficiario, creando bug nell'analisi) 
-    # e ricava PROVINCIA e REGIONE dai primi due numeri del CAP (prefix)
+    # e ricava PROVINCIA e REGIONE dai primi due numeri del CAP (Prefix)
     if col_cap:
         # Trasforma il CAP in stringa (rimuove decimali e aggiunge gli zeri iniziali se mancanti: es. 121 -> "00121")
         # e sostituisce alla colonna CAP i valori così ripuliti 
@@ -106,23 +106,26 @@ def geo_analysis(df):
     
 
     # AGGREGAZIONE DATI 
-    # Definiamo df_bubbles e df_bubbles_t qui così sono accessibili a tutto il resto del codice
-    df_bubbles           = df_c.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles.columns   = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti', 'Budget']
-    df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
-    df_bubbles_t         = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles_t.columns = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti Target', 'Budget Target']
-
-    # --- 5. PREPARAZIONE DATI MAPPE INIZIALI ---
-    df_naz_agg = df_c.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
-    df_naz_agg.columns = ['REGIONE', 'Aiuti Totali', 'Budget Totale']
     
-    lookup_geo = df_c[['REGIONE', 'Match_Key']].drop_duplicates()
-    df_mappe = pd.merge(df_naz_agg, lookup_geo, on='REGIONE', how='left')
+    # Raggruppa il MERCATO GLOBALE per calcolare NUMERO AIUTI TOTALI e BUDGET TOTALE per PROVINCIA
+    df_loc           = df_c.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_loc.columns   = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti', 'Budget']
+    
+    # Raggruppa il MERCATO TARGET per calcolare NUMERO AIUTI TARGET e BUDGET TARGET per PROVINCIA
+    df_targ_raw      = df_c[df_c['IS_TARGET'] == 1].copy()
+    df_loc_t         = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_loc_t.columns = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti Target', 'Budget Target']
 
-    df_targ_agg = df_targ_raw.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
+    # Raggruppa il MERCATO GLOBALE per calcolare NUMERO AIUTI TARGET e BUDGET TARGET per REGIONE
+    df_naz         = df_c.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
+    df_naz.columns = ['REGIONE', 'Aiuti Totali', 'Budget Totale']
+
+    # Unione in un singole dataframe 
+    lookup_geo          = df_c[['REGIONE', 'Match_Key']].drop_duplicates()
+    df_mappe            = pd.merge(df_naz, lookup_geo, on='REGIONE', how='left')
+    df_targ_agg         = df_targ_raw.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
     df_targ_agg.columns = ['REGIONE', 'Aiuti Target', 'Budget Target']
-    df_mappe = pd.merge(df_mappe, df_targ_agg, on='REGIONE', how='left').fillna(0)
+    df_mappe            = pd.merge(df_mappe, df_targ_agg, on='REGIONE', how='left').fillna(0)
 
 
     @st.cache_data
