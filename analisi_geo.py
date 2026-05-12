@@ -231,4 +231,29 @@ def geo_analysis(df):
         "Budget (%)": st.column_config.ProgressColumn("Budget (%)", format="%.1f%%", min_value=0, max_value=1)
     }
 
-    
+    # --- 7. VISUALIZZAZIONE TABELLE ---
+    st.write("")
+    st.write("")
+    st.write("### 🇮🇹 Analisi Nazionale")
+    df_naz = get_table_data('REGIONE')[['REGIONE', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+
+    st.write("")
+    st.write("")
+    st.write("### 🏛️ Analisi Regionale")
+    df_prov = get_table_data('PROVINCIA')
+    df_prov = pd.merge(df_prov, df_c[['PROVINCIA', 'REGIONE']].drop_duplicates(), on='PROVINCIA', how='left')
+    df_prov = df_prov[['REGIONE', 'PROVINCIA', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+
+    st.write("")
+    st.write("")
+    st.write("### 📍 Analisi Locale")
+    df_loc = get_table_data('CAP')
+    df_loc = pd.merge(df_loc, df_c[['CAP', 'PROVINCIA', 'REGIONE']].drop_duplicates(), on='CAP', how='left')
+    df_loc = df_loc[['REGIONE', 'PROVINCIA', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+
+
+    st.success("Analisi completata: leadership e saturazione integrate.")
+    return df_c
