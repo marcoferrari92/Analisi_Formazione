@@ -257,6 +257,7 @@ def geo_analysis(df):
             fig_fallback = px.treemap(df_targ_raw, path=path_gerarchia, values=col_budget)
             st.plotly_chart(fig_fallback, use_container_width=True)
 
+    
     # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
         # 1. Statistiche base
@@ -289,6 +290,16 @@ def geo_analysis(df):
     # --- 7. VISUALIZZAZIONE TABELLE (DINAMICA) ---
     st.write("")
     st.write("")
+
+    # --- 1. DEFINISCI PRIMA IL CONFIG (Spostalo qui) ---
+    common_config = {
+        "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
+        "Aiuti Target": st.column_config.NumberColumn(format="%d"),
+        "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
+        "Budget Target": st.column_config.NumberColumn(format="€ %,.2f"),
+        "Budget Leader": st.column_config.NumberColumn("Budget Leader", format="€ %,.2f"),
+        "Budget (%)": st.column_config.ProgressColumn("Saturazione", format="%.2f%%", min_value=0, max_value=1)
+    }
     
     # 7a. Analisi Nazionale (Sempre presente)
     st.write("### 🇮🇹 Analisi Nazionale")
