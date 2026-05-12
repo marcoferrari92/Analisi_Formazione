@@ -228,7 +228,7 @@ def geo_analysis(df):
         "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
         "Budget Target": st.column_config.NumberColumn(format="€ %,.2f"),
         "Budget Leader": st.column_config.NumberColumn("Budget Leader", format="€ %,.2f"),
-        "Budget (%)": st.column_config.ProgressColumn("Budget (%)", format="%.2f%", min_value=0, max_value=1)
+        "Budget (%)": st.column_config.ProgressColumn("Budget (%)", format="%.2f%%", min_value=0, max_value=1)
     }
 
     # --- 7. VISUALIZZAZIONE TABELLE ---
