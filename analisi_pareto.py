@@ -41,7 +41,7 @@ def pareto_analysis(df, guida_pareto=""):
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
         name="Budget Singola Azienda",
         marker_color='#3498db',
-        opacity=0.2,
+        opacity=0.6,
         hoverinfo='skip'
     ))
 
@@ -61,16 +61,12 @@ def pareto_analysis(df, guida_pareto=""):
             row = subset.iloc[0]
             n_aziende = int(row['N_Aziende_Count'])
             perc_aziende = (n_aziende / total_aziende) * 100
-            
-            # Colore speciale per soglie di controllo (80 e 95)
-            color_line = "red" if s in [80, 95] else "gray"
-            dash_style = "dash" if s in [80, 95] else "dot"
 
             # Linea Orizzontale soglia
             fig_pareto.add_hline(
                 y=s, yref="y2", 
-                line_dash=dash_style, 
-                line_color=color_line, 
+                line_dash="dash", 
+                line_color="red", 
                 opacity=0.5,
                 line_width=1
             )
