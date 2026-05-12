@@ -3,6 +3,16 @@ import pandas as pd
 import plotly.express as px
 import requests
 
+@st.cache_data
+def get_geojson_data():
+    try:
+        response = requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json", timeout=10)
+        return response.json()
+    except Exception as e:
+        st.error(f"Errore nel caricamento della mappa: {e}")
+        return None
+        
+
 def geo_analysis(df):
     """
     Analisi geografica definitiva con:
@@ -127,10 +137,6 @@ def geo_analysis(df):
     df_targ_agg.columns = ['REGIONE', 'Aiuti Target', 'Budget Target']
     df_mappe            = pd.merge(df_mappe, df_targ_agg, on='REGIONE', how='left').fillna(0)
 
-
-    @st.cache_data
-    def get_geojson(): return requests.get("https://raw.githubusercontent.com/stefanocudini/leaflet-geojson-selector/master/examples/italy-regions.json").json()
-    geojson_data = get_geojson()
 
     def style_map(fig):
         fig.update_geos(visible=True, showland=True, landcolor="#f8f9fa", projection_type='mercator', lataxis_range=[35, 47.5], lonaxis_range=[6, 19])
