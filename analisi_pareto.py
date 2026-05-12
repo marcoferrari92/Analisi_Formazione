@@ -33,7 +33,7 @@ def pareto_analysis(df, guida_pareto=""):
         elif p <= 50: return "Top 50%"
         elif p <= 80: return "Top 80%"
         elif p <= 95: return "Top 95%"
-        else: return "Altri"
+        else: return "N.D."
 
     df_pareto['Status Economico'] = df_pareto['Percentage'].apply(classify_status)
 
