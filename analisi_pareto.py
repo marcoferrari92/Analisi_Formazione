@@ -37,6 +37,21 @@ def pareto_analysis(df, guida_pareto=""):
 
     df_pareto['Status Economico'] = df_pareto['Percentage'].apply(classify_status)
 
+    # --- 2. LOGICA DI CLASSIFICAZIONE E COLORI ---
+    def get_color_and_status(p):
+        if p <= 20:
+            return '#e74c3c', "Top 20%"   # Rosso
+        elif p <= 50:
+            return '#f1c40f', "Top 50%"   # Giallo
+        elif p <= 95:
+            return '#2ecc71', "Top 95%"   # Verde
+        else:
+            return '#3498db', "Oltre 95%" # Blu
+
+    # Applichiamo le classificazioni
+    res = df_pareto['Percentage'].apply(get_color_and_status)
+    df_pareto['color_marker'] = [x[0] for x in res]
+
     # --- 3. LOGICA GRAFICA E SCAGLIONI ---
     scaglioni = [5, 10, 20, 50, 80, 95]
     report_data = []
@@ -47,7 +62,7 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.add_trace(go.Bar(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
-        marker_color='#3498db',
+        marker_color=df_pareto['color_marker'],
         name="Budget Azienda",
         opacity=0.6,
         customdata=df_pareto['Status Economico'],
