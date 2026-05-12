@@ -259,26 +259,32 @@ def geo_analysis(df):
 
     # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
+        # 1. Statistiche base
         tot = df_c.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index().rename(columns={'count':'Aiuti Totali', 'sum':'Budget Totale'})
         targ = df_targ_raw.groupby(groupby_col)[col_budget].agg(['count', 'sum']).reset_index().rename(columns={'count':'Aiuti Target', 'sum':'Budget Target'})
         final = pd.merge(tot, targ, on=groupby_col, how='left').fillna(0)
         
-        if col_piva and col_rs:
-            company_totals = df_targ_raw.groupby([groupby_col, col_piva, col_rs])[col_budget].sum().reset_index()
-            idx_max_t = company_totals.groupby(groupby_col)[col_budget].idxmax()
-            leaders = company_totals.loc[idx_max_t].rename(columns={col_rs: 'Azienda Leader', col_budget: 'Budget Leader'})
-            final = pd.merge(final, leaders[[groupby_col, 'Azienda Leader', 'Budget Leader']], on=groupby_col, how='left')
-            final['Budget (%)'] = (final['Budget Leader'] / final['Budget Target']).fillna(0)
-        return final.sort_values('Budget Target', ascending=False)
-
-    common_config = {
-        "Aiuti Totali": st.column_config.NumberColumn(format="%d"),
-        "Aiuti Target": st.column_config.NumberColumn(format="%d"),
-        "Budget Totale": st.column_config.NumberColumn(format="€ %,.2f"),
-        "Budget Target": st.column_config.NumberColumn(format="€ %,.2f"),
-        "Budget Leader": st.column_config.NumberColumn("Budget Leader", format="€ %,.2f"),
-        "Budget (%)": st.column_config.ProgressColumn("Budget (%)", format="%.2f%%", min_value=0, max_value=1)
-    }
+        # 2. Inizializziamo sempre le colonne leader come vuote
+        final['Azienda Leader'] = "N.D."
+        final['Budget Leader'] = 0.0
+        final['Budget (%)'] = 0.0
+        
+        # 3. Calcolo effettivo dei leader (solo se possibile)
+        if col_piva and col_rs and not df_targ_raw.empty:
+            try:
+                company_totals = df_targ_raw.groupby([groupby_col, col_piva, col_rs])[col_budget].sum().reset_index()
+                if not company_totals.empty:
+                    idx_max_t = company_totals.groupby(groupby_col)[col_budget].idxmax()
+                    leaders = company_totals.loc[idx_max_t].rename(columns={col_rs: 'Azienda Leader', col_budget: 'Budget Leader'})
+                    
+                    # Rimuoviamo le colonne vuote create prima per fare il merge con quelle vere
+                    final = final.drop(columns=['Azienda Leader', 'Budget Leader', 'Budget (%)'])
+                    final = pd.merge(final, leaders[[groupby_col, 'Azienda Leader', 'Budget Leader']], on=groupby_col, how='left')
+                    final['Budget (%)'] = (final['Budget Leader'] / final['Budget Target']).fillna(0)
+            except:
+                pass # Se fallisce, rimangono i valori di default impostati sopra
+                
+        return final.fillna({'Azienda Leader': 'N.D.', 'Budget Leader': 0, 'Budget (%)': 0})
 
     # --- 7. VISUALIZZAZIONE TABELLE (DINAMICA) ---
     st.write("")
