@@ -202,22 +202,38 @@ def geo_analysis(df):
         # Se abbiamo il CAP, cerchiamo il leader per CAP, altrimenti per Provincia
         livello_leader = 'CAP' if mostra_cap else 'PROVINCIA'
         
+        # B. CALCOLO LEADER (Versione Blindata)
         try:
-            # Raggruppamento per trovare il leader del settore
             group_cols = ['REGIONE', 'PROVINCIA']
-            if mostra_cap: group_cols.append('CAP')
+            if mostra_cap: 
+                group_cols.append('CAP')
             
-            # Trova il leader
-            leader_data = df_targ_raw.groupby(group_cols + [col_piva, col_rs])[col_budget].sum().reset_index()
-            idx_max = leader_data.groupby(group_cols)[col_budget].idxmax()
-            leaders_final = leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
-
-            # C. DATASET FINALE PER TREEMAP
+            # 1. Creiamo il dataset aggregato per il Treemap
             df_tree_agg = df_targ_raw.groupby(group_cols)[col_budget].sum().reset_index()
-            df_tree_agg.columns = group_cols + ['Budget_Target']
-            
-            # Merge con i dati del leader
-            df_tree_final = pd.merge(df_tree_agg, leaders_final[group_cols + ['Leader_Nome', 'Leader_Budget']], on=group_cols, how='left')
+            df_tree_agg = df_tree_agg.rename(columns={col_budget: 'Budget_Target'})
+
+            # 2. Inizializziamo colonne leader con valori di default (per evitare il NoneType)
+            df_tree_final = df_tree_agg.copy()
+            df_tree_final['Leader_Nome'] = "N.D."
+            df_tree_final['Leader_Budget'] = 0.0
+
+            # 3. Calcolo effettivo dei leader solo se abbiamo P.IVA e Ragione Sociale
+            if col_piva in df_targ_raw.columns and col_rs in df_targ_raw.columns:
+                leader_data = df_targ_raw.groupby(group_cols + [col_piva, col_rs])[col_budget].sum().reset_index()
+                
+                if not leader_data.empty:
+                    # Trova l'indice del massimo budget per ogni gruppo geografico
+                    idx_max = leader_data.groupby(group_cols)[col_budget].idxmax()
+                    leaders_only = leader_data.loc[idx_max, group_cols + [col_rs, col_budget]]
+                    
+                    # Rinominiamo per il merge
+                    leaders_only = leaders_only.rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
+                    
+                    # Merge finale: sovrascriviamo i default con i dati reali
+                    df_tree_final = pd.merge(df_tree_agg, leaders_only, on=group_cols, how='left').fillna({
+                        'Leader_Nome': 'N.D.',
+                        'Leader_Budget': 0.0
+                    })
 
             # D. CREAZIONE GRAFICO
             fig_tree = px.treemap(
@@ -229,17 +245,17 @@ def geo_analysis(df):
                 custom_data=['Leader_Nome', 'Leader_Budget']
             )
 
-            h_text = "<b>%{label}</b><br>Budget Target: € %{value:,.2f}<br>🏆 Leader: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<extra></extra>"
-            
-            fig_tree.update_traces(hovertemplate=h_text)
+            fig_tree.update_traces(
+                hovertemplate="<b>%{label}</b><br>Budget Target: € %{value:,.2f}<br>🏆 Leader: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<extra></extra>"
+            )
             fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
             st.plotly_chart(fig_tree, use_container_width=True)
             
         except Exception as e:
-            st.error(f"⚠️ Impossibile generare il drill-down completo: {e}")
-            # Fallback ultra-semplice se il merge complesso fallisce
-            fig_simple = px.treemap(df_targ_raw, path=[px.Constant("Italia"), 'REGIONE', 'PROVINCIA'], values=col_budget)
-            st.plotly_chart(fig_simple, use_container_width=True)
+            st.warning(f"⚠️ Nota: Drill-down visualizzato in modalità semplificata.")
+            # Fallback ultra-sicuro in caso di errori imprevisti
+            fig_fallback = px.treemap(df_targ_raw, path=path_gerarchia, values=col_budget)
+            st.plotly_chart(fig_fallback, use_container_width=True)
 
     # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
