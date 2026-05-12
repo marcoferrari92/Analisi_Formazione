@@ -264,29 +264,43 @@ def geo_analysis(df):
         "Budget (%)": st.column_config.ProgressColumn("Budget (%)", format="%.2f%%", min_value=0, max_value=1)
     }
 
-    # --- 7. VISUALIZZAZIONE TABELLE ---
+    # --- 7. VISUALIZZAZIONE TABELLE (DINAMICA) ---
     st.write("")
     st.write("")
+    
+    # 7a. Analisi Nazionale (Sempre presente)
     st.write("### 🇮🇹 Analisi Nazionale")
-    df_naz = get_table_data('REGIONE')[['REGIONE', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
-    st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+    df_naz_tab = get_table_data('REGIONE')
+    # Selezioniamo solo le colonne esistenti per evitare errori di indicizzazione
+    cols_naz = ['REGIONE', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']
+    st.dataframe(df_naz_tab[cols_naz].style.background_gradient(cmap='Reds', subset=['Budget Target']), 
+                 use_container_width=True, hide_index=True, column_config=common_config)
 
-    st.write("")
-    st.write("")
-    st.write("### 🏛️ Analisi Regionale")
-    df_prov = get_table_data('PROVINCIA')
-    df_prov = pd.merge(df_prov, df_c[['PROVINCIA', 'REGIONE']].drop_duplicates(), on='PROVINCIA', how='left')
-    df_prov = df_prov[['REGIONE', 'PROVINCIA', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
-    st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
+    # 7b. Analisi Regionale (Solo se abbiamo le province)
+    # Controlliamo che non siano tutte "Sconosciuta"
+    if (df_c['PROVINCIA'] != "Sconosciuta").any():
+        st.write("")
+        st.write("### 🏛️ Analisi Regionale (Province)")
+        df_prov_tab = get_table_data('PROVINCIA')
+        # Recuperiamo la Regione di appartenenza per chiarezza
+        df_prov_tab = pd.merge(df_prov_tab, df_c[['PROVINCIA', 'REGIONE']].drop_duplicates(), on='PROVINCIA', how='left')
+        cols_prov = ['REGIONE', 'PROVINCIA', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']
+        st.dataframe(df_prov_tab[cols_prov].style.background_gradient(cmap='Reds', subset=['Budget Target']), 
+                     use_container_width=True, hide_index=True, column_config=common_config)
 
-    st.write("")
-    st.write("")
-    st.write("### 📍 Analisi Locale")
-    df_loc = get_table_data('CAP')
-    df_loc = pd.merge(df_loc, df_c[['CAP', 'PROVINCIA', 'REGIONE']].drop_duplicates(), on='CAP', how='left')
-    df_loc = df_loc[['REGIONE', 'PROVINCIA', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
-    st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
-
+    # 7c. Analisi Locale (Solo se abbiamo i CAP)
+    # Controlliamo che la colonna CAP esista e non contenga solo "N.D."
+    if col_cap and (df_c['CAP'] != "N.D.").any():
+        st.write("")
+        st.write("### 📍 Analisi Locale (CAP)")
+        try:
+            df_loc_tab = get_table_data('CAP')
+            df_loc_tab = pd.merge(df_loc_tab, df_c[['CAP', 'PROVINCIA', 'REGIONE']].drop_duplicates(), on='CAP', how='left')
+            cols_loc = ['REGIONE', 'PROVINCIA', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']
+            st.dataframe(df_loc_tab[cols_loc].style.background_gradient(cmap='Reds', subset=['Budget Target']), 
+                         use_container_width=True, hide_index=True, column_config=common_config)
+        except Exception as e:
+            st.info("Dettaglio locale (CAP) non disponibile per questo set di dati.")
 
     st.success("Analisi completata: leadership e saturazione integrate.")
     return df_c
