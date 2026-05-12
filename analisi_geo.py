@@ -219,7 +219,7 @@ def geo_analysis(df):
             idx_max_t = company_totals.groupby(groupby_col)[col_budget].idxmax()
             leaders = company_totals.loc[idx_max_t].rename(columns={col_rs: 'Azienda Leader', col_budget: 'Budget Leader'})
             final = pd.merge(final, leaders[[groupby_col, 'Azienda Leader', 'Budget Leader']], on=groupby_col, how='left')
-            final['Budget (%)'] = (final['Budget Leader'] / final['Budget Target']).fillna(0)
+            final['Budget (%)'] = ((final['Budget Leader'] / final['Budget Target'])*100).fillna(0)
         return final.sort_values('Budget Target', ascending=False)
 
     common_config = {
