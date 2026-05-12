@@ -104,10 +104,22 @@ def pareto_analysis(df, guida_pareto=""):
 
     # --- 4. LAYOUT ---
     fig_pareto.update_layout(
-        title="Analisi Pareto con Classificazione Status",
+        title="Analisi Pareto (Scala Logaritmica per il Budget)",
         xaxis_title="Numero Aziende",
-        yaxis_title="Budget (€)",
-        yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
+        # Configurazione asse Y logaritmico
+        yaxis=dict(
+            title="Budget (€) - Scala LOG",
+            type="log", 
+            dtick=1, # Mostra una tacca per ogni potenza di 10 (100, 1k, 10k...)
+            exponentformat="SI"
+        ),
+        yaxis2=dict(
+            title="% Cumulata",
+            overlaying="y",
+            side="right",
+            range=[0, 105],
+            ticksuffix="%"
+        ),
         template="plotly_white",
         height=600
     )
