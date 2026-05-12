@@ -3,14 +3,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-
 def pareto_analysis(df, guida_pareto=""):
     """
-    Analisi di Pareto con scaglioni specifici: 5%, 10%, 20%, 50%, 80%, 95%.
+    Analisi di Pareto con scaglioni specifici e classificazione Status Economico.
     """
     df_targ = df[df['IS_TARGET'] == 1].copy()
     
@@ -28,33 +23,46 @@ def pareto_analysis(df, guida_pareto=""):
     df_pareto['Cumsum'] = df_pareto['RNA_ELEMENTO_DI_AIUTO'].cumsum()
     df_pareto['Percentage'] = (df_pareto['Cumsum'] / total_budget) * 100
     df_pareto['N_Aziende_Count'] = range(1, total_aziende + 1)
-    
-    # --- 2. DEFINIZIONE SCAGLIONI RICHIESTI ---
+
+    # --- 2. ASSEGNAZIONE STATUS ECONOMICO ---
+    # Definiamo una funzione per categorizzare in base alla percentuale cumulata
+    def classify_status(p):
+        if p <= 5: return "Top 5%"
+        elif p <= 10: return "Top 10%"
+        elif p <= 20: return "Top 20%"
+        elif p <= 50: return "Top 50%"
+        elif p <= 80: return "Top 80%"
+        elif p <= 95: return "Top 95%"
+        else: return "Altri"
+
+    df_pareto['Status Economico'] = df_pareto['Percentage'].apply(classify_status)
+
+    # --- 3. LOGICA GRAFICA E SCAGLIONI ---
     scaglioni = [5, 10, 20, 50, 80, 95]
     report_data = []
-
     fig_pareto = go.Figure()
 
-    # Barre (Budget individuale)
+    # Barre (Colorate per Status Economico)
+    # Usiamo colori diversi per evidenziare i vari scaglioni nel grafico a barre
     fig_pareto.add_trace(go.Bar(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
-        name="Budget Singola Azienda",
-        marker_color='#3498db',
+        marker_color=df_pareto['Percentage'].apply(lambda x: '#e74c3c' if x <= 20 else '#3498db'),
+        name="Budget Azienda",
         opacity=0.6,
-        hoverinfo='skip'
+        customdata=df_pareto['Status Economico'],
+        hovertemplate="<b>%{customdata}</b><br>Budget: %{y:,.2f}€<extra></extra>"
     ))
 
-    # Linea Pareto (Cumulata)
+    # Linea Pareto
     fig_pareto.add_trace(go.Scatter(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['Percentage'],
-        name="% Cumulata Budget",
-        line=dict(color='#e74c3c', width=3),
+        name="% Cumulata",
+        line=dict(color='#2c3e50', width=3),
         yaxis="y2"
     ))
 
-    # --- 3. AGGIUNTA DINAMICA DEGLI SCAGLIONI ---
     for s in scaglioni:
         subset = df_pareto[df_pareto['Percentage'] >= s]
         if not subset.empty:
@@ -62,56 +70,41 @@ def pareto_analysis(df, guida_pareto=""):
             n_aziende = int(row['N_Aziende_Count'])
             perc_aziende = (n_aziende / total_aziende) * 100
 
-            # Linea Orizzontale soglia
-            fig_pareto.add_hline(
-                y=s, yref="y2", 
-                line_dash="dash", 
-                line_color="red", 
-                opacity=0.5,
-                line_width=1
-            )
+            fig_pareto.add_hline(y=s, yref="y2", line_dash="dash", line_color="red", opacity=0.3)
             
-            # Punto di intersezione
             fig_pareto.add_trace(go.Scatter(
                 x=[n_aziende], y=[s],
                 mode='markers+text',
                 marker=dict(color='black', size=8, symbol='diamond'),
-                text=[f"<b>{s}%</b>"],
-                textposition="top left",
-                yaxis="y2",
-                name=f"Soglia {s}%",
-                hovertext=f"Soglia {s}% raggiunta da {n_aziende} aziende ({perc_aziende:.1f}% del totale)",
-                hoverinfo="text",
-                showlegend=False
+                text=[f"<b>{s}%</b>"], textposition="top left",
+                yaxis="y2", showlegend=False
             ))
             
             report_data.append({
-                "Target Budget (%)": f"{s}%",
+                "Status Economico": f"Fino a {s}%",
                 "N. Aziende": n_aziende,
                 "% su Totale Aziende": f"{perc_aziende:.2f}%",
-                "Budget Cumulativo (€)": f"€ {row['Cumsum']:,.0f}"
+                "Budget Cumulativo": f"€ {row['Cumsum']:,.0f}"
             })
 
     # --- 4. LAYOUT ---
     fig_pareto.update_layout(
-        title="Analisi di Concentrazione a Scaglioni",
-        xaxis_title="Numero di Aziende (Ordinate per Budget)",
+        title="Analisi Pareto con Classificazione Status",
+        xaxis_title="Numero Aziende",
         yaxis_title="Budget (€)",
-        yaxis2=dict(
-            title="% Cumulata Budget", 
-            overlaying="y", 
-            side="right", 
-            range=[0, 105], 
-            ticksuffix="%"
-        ),
-        legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
-        margin=dict(l=0, r=0, t=80, b=0),
-        height=600,
-        template="plotly_white"
+        yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
+        template="plotly_white",
+        height=600
     )
 
-    st.plotly_chart(fig_pareto, use_container_width=True, key="pareto_scaglioni_multipli")
+    st.plotly_chart(fig_pareto, use_container_width=True)
 
-    # --- 5. TABELLA RIASSUNTIVA ---
-    st.write("### 📊 Riepilogo Concentrazione")
+    # --- 5. VISUALIZZAZIONE RISULTATI ---
+    st.write("### 📊 Riepilogo Scaglioni")
     st.table(pd.DataFrame(report_data))
+
+    # Mostriamo le prime righe del dataframe arricchito
+    with st.expander("🔍 Visualizza Dettaglio Aziende e Status"):
+        st.dataframe(df_pareto[['RNA_DENOMINAZIONE_BENEFICIARIO', 'RNA_ELEMENTO_DI_AIUTO', 'Percentage', 'Status Economico']].rename(
+            columns={'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda', 'RNA_ELEMENTO_DI_AIUTO': 'Budget'}
+        ))
