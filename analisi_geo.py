@@ -57,11 +57,15 @@ def geo_analysis(df):
     # MAPPING
     #Se c'è il CAP, l'analisi sarà completa
     if col_cap:
+        # Trasforma il CAP in stringa (rimuove decimali e aggiunge gli zeri iniziali se mancanti: es. 121 -> "00121")
+        # e sostituisce alla colonna CAP i valori così ripuliti 
         df_c['CAP_Str']     = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
+        df_c['CAP']         = df_c['CAP_Str']
+        # Determina Regione e Provincia dai primi due numeri del CAP (prefix) usando il database geo_db
         df_c['Prefix']      = df_c['CAP_Str'].str[:2]
         df_c['Regione']     = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
         df_c['Provincia']   = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-        df_c['CAP']         = df_c['CAP_Str']
+        
     # Se manca il CAP, l'analsii sarà limitata a Regione/Provincia
     else:
         if 'Regione' not in df_c.columns:
@@ -70,7 +74,8 @@ def geo_analysis(df):
             df_c['Provincia'] = "Sconosciuta"
         st.info("ℹ️ Analisi limitata: CAP assente.")
 
-    # Prepariamo Match_Key per GeoJSON
+    # Prepariamo le chiavi di ricerca per il database GeoJSON
+    # Aggiungiamo un parametro Match_Key
     df_c['Match_Key'] = df_c['Regione'].str.lower()
     mapping_geo = {
         "friuli-venezia giulia": "friuli venezia giulia", 
@@ -78,16 +83,14 @@ def geo_analysis(df):
         "valle d'aosta": "valle d'aosta/vallée d'aoste"
     }
     df_c['Match_Key'] = df_c['Match_Key'].replace(mapping_geo)
-
-    df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
     
 
-    # --- 4. AGGREGAZIONE DATI ---
+    # AGGREGAZIONE DATI 
     # Definiamo df_bubbles e df_bubbles_t qui così sono accessibili a tutto il resto del codice
-    df_bubbles = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
-    
-    df_bubbles_t = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles           = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles.columns   = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
+    df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
+    df_bubbles_t         = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
     df_bubbles_t.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti Target', 'Budget Target']
 
     # --- 5. PREPARAZIONE DATI MAPPE INIZIALI ---
