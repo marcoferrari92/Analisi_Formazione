@@ -176,37 +176,64 @@ def geo_analysis(df):
     
 
     # --- 5. TREEMAP CON LEADER (Senza Quota) ---
-    st.write("")
     if not df_targ_raw.empty:
         st.write("")
         st.markdown("### 🔍 Drill-down Geografico")
 
-        # 1. Identificazione Leader per CAP
-        cap_leader_data = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
-        idx_max = cap_leader_data.groupby(['REGIONE', 'PROVINCIA', 'CAP'])[col_budget].idxmax()
-        cap_leaders = cap_leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
-
-        # 2. Dataset per Treemap
-        df_tree_agg = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'CAP'])[col_budget].sum().reset_index()
-        df_tree_agg.columns = ['REGIONE', 'PROVINCIA', 'CAP', 'Budget_Target']
-        df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
+        # A. DEFINIZIONE DEL PATH DINAMICO
+        # Partiamo da Italia > REGIONE. Aggiungiamo PROVINCIA e CAP solo se utili.
+        path_gerarchia = [px.Constant("Italia"), 'REGIONE']
         
-        # 3. Creazione Grafico
-        fig_tree = px.treemap(
-            df_tree_final, 
-            path=[px.Constant("Italia"), 'REGIONE', 'PROVINCIA', 'CAP'],
-            values='Budget_Target', 
-            color='Budget_Target', 
-            color_continuous_scale='Reds',
-            custom_data=['Leader_Nome', 'Leader_Budget']
-        )
+        if (df_targ_raw['PROVINCIA'] != "Sconosciuta").any():
+            path_gerarchia.append('PROVINCIA')
+            
+        # Aggiungiamo il CAP al percorso solo se non sono tutti "N.D."
+        mostra_cap = col_cap is not None and (df_targ_raw['CAP'] != "N.D.").any()
+        if mostra_cap:
+            path_gerarchia.append('CAP')
 
-        # 4. Hovertemplate semplificato
-        h_text = "<b>%{label}</b><br>Budget Target Nodo: € %{value:,.2f}<br>🏆 Leader CAP: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<extra></extra>"
+        # B. CALCOLO LEADER (Solo se ha senso per il livello di dettaglio presente)
+        # Se abbiamo il CAP, cerchiamo il leader per CAP, altrimenti per Provincia
+        livello_leader = 'CAP' if mostra_cap else 'PROVINCIA'
         
-        fig_tree.update_traces(hovertemplate=h_text)
-        fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
-        st.plotly_chart(fig_tree, use_container_width=True)
+        try:
+            # Raggruppamento per trovare il leader del settore
+            group_cols = ['REGIONE', 'PROVINCIA']
+            if mostra_cap: group_cols.append('CAP')
+            
+            # Trova il leader
+            leader_data = df_targ_raw.groupby(group_cols + [col_piva, col_rs])[col_budget].sum().reset_index()
+            idx_max = leader_data.groupby(group_cols)[col_budget].idxmax()
+            leaders_final = leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
+
+            # C. DATASET FINALE PER TREEMAP
+            df_tree_agg = df_targ_raw.groupby(group_cols)[col_budget].sum().reset_index()
+            df_tree_agg.columns = group_cols + ['Budget_Target']
+            
+            # Merge con i dati del leader
+            df_tree_final = pd.merge(df_tree_agg, leaders_final[group_cols + ['Leader_Nome', 'Leader_Budget']], on=group_cols, how='left')
+
+            # D. CREAZIONE GRAFICO
+            fig_tree = px.treemap(
+                df_tree_final, 
+                path=path_gerarchia,
+                values='Budget_Target', 
+                color='Budget_Target', 
+                color_continuous_scale='Reds',
+                custom_data=['Leader_Nome', 'Leader_Budget']
+            )
+
+            h_text = "<b>%{label}</b><br>Budget Target: € %{value:,.2f}<br>🏆 Leader: %{customdata[0]}<br>Budget Leader: € %{customdata[1]:,.2f}<extra></extra>"
+            
+            fig_tree.update_traces(hovertemplate=h_text)
+            fig_tree.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
+            st.plotly_chart(fig_tree, use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"⚠️ Impossibile generare il drill-down completo: {e}")
+            # Fallback ultra-semplice se il merge complesso fallisce
+            fig_simple = px.treemap(df_targ_raw, path=[px.Constant("Italia"), 'REGIONE', 'PROVINCIA'], values=col_budget)
+            st.plotly_chart(fig_simple, use_container_width=True)
 
     # --- 6. FUNZIONE AGGREGAZIONE TABELLE ---
     def get_table_data(groupby_col):
