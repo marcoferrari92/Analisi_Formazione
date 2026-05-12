@@ -60,43 +60,43 @@ def geo_analysis(df):
     
     # Caso A: se c'è il CAP, ignora REGIONE BENEFICIARIO dell'RNA 
     # (a volte l'RNA riporta più regioni per lo stesso beneficiario, creando bug nell'analisi) 
-    # e ricava Provincia e Regione dai primi due numeri del CAP (prefix)
+    # e ricava PROVINCIA e REGIONE dai primi due numeri del CAP (prefix)
     if col_cap:
         # Trasforma il CAP in stringa (rimuove decimali e aggiunge gli zeri iniziali se mancanti: es. 121 -> "00121")
         # e sostituisce alla colonna CAP i valori così ripuliti 
         df_c['CAP_Str']     = df_c[col_cap].astype(str).str.replace('.0', '', regex=False).str.zfill(5)
         df_c['CAP']         = df_c['CAP_Str']
-        # Determina Regione e Provincia dai primi due numeri del CAP (prefix) usando il database geo_db
+        # Determina REGIONE e PROVINCIA dai primi due numeri del CAP (prefix) usando il database geo_db
         df_c['Prefix']      = df_c['CAP_Str'].str[:2]
-        df_c['Regione']     = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
-        df_c['Provincia']   = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
+        df_c['REGIONE']     = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
+        df_c['PROVINCIA']   = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
 
     # Caso B: Manca il CAP ma abbiamo PROVINCIA
-    # Ricostruiamo la REGIONE corrispondente dalla provincia grazie al nostro db
+    # Ricostruiamo la REGIONE corrispondente dalla PROVINCIA grazie al nostro db
     elif col_prov and df_c[col_prov].notna().any():
         st.info("ℹ️ CAP assente. Geocalizzazione limitata alle PROVINCE")
         df_c['PROVINCIA']   = df_c[col_prov].astype(str).str.strip()
         prov_to_reg         = {v[0]: v[1] for k, v in geo_db.items()}
-        df_c['Regione']     = df_c['Provincia'].map(prov_to_reg).fillna("Sconosciuta")
+        df_c['REGIONE']     = df_c['PROVINCIA'].map(prov_to_reg).fillna("Sconosciuta")
         df_c['CAP']         = "N.D."
 
     # Caso C: Mancano CAP e PROVINCIA. Usiamo RNA_REGIONE_BENEEFICIARIO
     elif col_reg_rna and df_c[col_reg_rna].notna().any():
         st.warning("⚠️ CAP e PRONVICIA assenti. Geocalizzazione limitata alle REGIONI")
-        df_c['Regione'] = df_c[col_reg_rna].astype(str).str.strip()
-        df_c['Provincia'] = "Sconosciuta"
+        df_c['REGIONE'] = df_c[col_reg_rna].astype(str).str.strip()
+        df_c['PROVINCIA'] = "Sconosciuta"
         df_c['CAP'] = "N.D."
 
     # Caso D: NESSUN DATO GEOGRAFICO
     # Ritorna il DF originale per non bloccare il caricamento degli altri moduli
     else:
-        st.error("❌ Errore: Nessun riferimento geografico trovato (CAP, Provincia o Regione). L'analisi geografica verrà saltata.")
+        st.error("❌ Errore: Nessun riferimento geografico trovato (CAP, PROVINCIA o REGIONE). L'analisi geografica verrà saltata.")
         return df_c 
 
     # PREPARAZIONI CHIAVI PER MATCHING CON FILE GeoJSON
     # Creazione chiave di "match" (normalizzata minuscolo) per collegarsi al file GeoJSON della mappa. 
     # Traduce i nomi delle regioni del file dell'RNA con i nomi che si aspetta il GeoJSON
-    df_c['Match_Key'] = df_c['Regione'].str.lower()
+    df_c['Match_Key'] = df_c['REGIONE'].str.lower()
     mapping_geo = {
         "friuli-venezia giulia": "friuli venezia giulia", 
         "trentino-alto adige": "trentino-alto adige/südtirol", 
@@ -107,22 +107,22 @@ def geo_analysis(df):
 
     # AGGREGAZIONE DATI 
     # Definiamo df_bubbles e df_bubbles_t qui così sono accessibili a tutto il resto del codice
-    df_bubbles           = df_c.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles.columns   = ['Regione', 'Provincia', 'Match_Key', 'Aiuti', 'Budget']
+    df_bubbles           = df_c.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles.columns   = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti', 'Budget']
     df_targ_raw = df_c[df_c['IS_TARGET'] == 1].copy()
-    df_bubbles_t         = df_targ_raw.groupby(['Regione', 'Provincia', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
-    df_bubbles_t.columns = ['Regione', 'Provincia', 'Match_Key', 'Aiuti Target', 'Budget Target']
+    df_bubbles_t         = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'Match_Key'])[col_budget].agg(['count', 'sum']).reset_index()
+    df_bubbles_t.columns = ['REGIONE', 'PROVINCIA', 'Match_Key', 'Aiuti Target', 'Budget Target']
 
     # --- 5. PREPARAZIONE DATI MAPPE INIZIALI ---
-    df_naz_agg = df_c.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
-    df_naz_agg.columns = ['Regione', 'Aiuti Totali', 'Budget Totale']
+    df_naz_agg = df_c.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
+    df_naz_agg.columns = ['REGIONE', 'Aiuti Totali', 'Budget Totale']
     
-    lookup_geo = df_c[['Regione', 'Match_Key']].drop_duplicates()
-    df_mappe = pd.merge(df_naz_agg, lookup_geo, on='Regione', how='left')
+    lookup_geo = df_c[['REGIONE', 'Match_Key']].drop_duplicates()
+    df_mappe = pd.merge(df_naz_agg, lookup_geo, on='REGIONE', how='left')
 
-    df_targ_agg = df_targ_raw.groupby('Regione')[col_budget].agg(['count', 'sum']).reset_index()
-    df_targ_agg.columns = ['Regione', 'Aiuti Target', 'Budget Target']
-    df_mappe = pd.merge(df_mappe, df_targ_agg, on='Regione', how='left').fillna(0)
+    df_targ_agg = df_targ_raw.groupby('REGIONE')[col_budget].agg(['count', 'sum']).reset_index()
+    df_targ_agg.columns = ['REGIONE', 'Aiuti Target', 'Budget Target']
+    df_mappe = pd.merge(df_mappe, df_targ_agg, on='REGIONE', how='left').fillna(0)
 
 
     @st.cache_data
@@ -147,7 +147,7 @@ def geo_analysis(df):
             color='Budget Totale', 
             color_continuous_scale="Blues", 
             title="💰 Mercato Totale",
-            hover_name='Regione', 
+            hover_name='REGIONE', 
             hover_data={'Match_Key': False, 'Budget Totale': False}
         )
         fig_tot.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Totale: € %{z:,.2f}<extra></extra>")
@@ -163,7 +163,7 @@ def geo_analysis(df):
             color='Budget Target', 
             color_continuous_scale="Reds", 
             title="🎯 Mercato Target",
-            hover_name='Regione', 
+            hover_name='REGIONE', 
             hover_data={'Match_Key': False, 'Budget Target': False}
         )
         fig_targ.update_traces(hovertemplate="<b>%{hovertext}</b><br>Budget Target: € %{z:,.2f}<extra></extra>")
@@ -179,19 +179,19 @@ def geo_analysis(df):
         st.markdown("### 🔍 Drill-down Geografico")
 
         # 1. Identificazione Leader per CAP
-        cap_leader_data = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
-        idx_max = cap_leader_data.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].idxmax()
+        cap_leader_data = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'CAP', col_piva, col_rs])[col_budget].sum().reset_index()
+        idx_max = cap_leader_data.groupby(['REGIONE', 'PROVINCIA', 'CAP'])[col_budget].idxmax()
         cap_leaders = cap_leader_data.loc[idx_max].rename(columns={col_rs: 'Leader_Nome', col_budget: 'Leader_Budget'})
 
         # 2. Dataset per Treemap
-        df_tree_agg = df_targ_raw.groupby(['Regione', 'Provincia', 'CAP'])[col_budget].sum().reset_index()
-        df_tree_agg.columns = ['Regione', 'Provincia', 'CAP', 'Budget_Target']
+        df_tree_agg = df_targ_raw.groupby(['REGIONE', 'PROVINCIA', 'CAP'])[col_budget].sum().reset_index()
+        df_tree_agg.columns = ['REGIONE', 'PROVINCIA', 'CAP', 'Budget_Target']
         df_tree_final = pd.merge(df_tree_agg, cap_leaders[['CAP', 'Leader_Nome', 'Leader_Budget']], on='CAP', how='left')
         
         # 3. Creazione Grafico
         fig_tree = px.treemap(
             df_tree_final, 
-            path=[px.Constant("Italia"), 'Regione', 'Provincia', 'CAP'],
+            path=[px.Constant("Italia"), 'REGIONE', 'PROVINCIA', 'CAP'],
             values='Budget_Target', 
             color='Budget_Target', 
             color_continuous_scale='Reds',
@@ -232,23 +232,23 @@ def geo_analysis(df):
     st.write("")
     st.write("")
     st.write("### 🇮🇹 Analisi Nazionale")
-    df_naz = get_table_data('Regione')[['Regione', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    df_naz = get_table_data('REGIONE')[['REGIONE', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_naz.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
     st.write("")
     st.write("")
     st.write("### 🏛️ Analisi Regionale")
-    df_prov = get_table_data('Provincia')
-    df_prov = pd.merge(df_prov, df_c[['Provincia', 'Regione']].drop_duplicates(), on='Provincia', how='left')
-    df_prov = df_prov[['Regione', 'Provincia', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    df_prov = get_table_data('PROVINCIA')
+    df_prov = pd.merge(df_prov, df_c[['PROVINCIA', 'REGIONE']].drop_duplicates(), on='PROVINCIA', how='left')
+    df_prov = df_prov[['REGIONE', 'PROVINCIA', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_prov.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
     st.write("")
     st.write("")
     st.write("### 📍 Analisi Locale")
     df_loc = get_table_data('CAP')
-    df_loc = pd.merge(df_loc, df_c[['CAP', 'Provincia', 'Regione']].drop_duplicates(), on='CAP', how='left')
-    df_loc = df_loc[['Regione', 'Provincia', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
+    df_loc = pd.merge(df_loc, df_c[['CAP', 'PROVINCIA', 'REGIONE']].drop_duplicates(), on='CAP', how='left')
+    df_loc = df_loc[['REGIONE', 'PROVINCIA', 'CAP', 'Aiuti Totali', 'Budget Totale', 'Aiuti Target', 'Budget Target', 'Azienda Leader', 'Budget Leader', 'Budget (%)']]
     st.dataframe(df_loc.style.background_gradient(cmap='Reds', subset=['Budget Target']), use_container_width=True, hide_index=True, column_config=common_config)
 
 
