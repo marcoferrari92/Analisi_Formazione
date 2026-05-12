@@ -50,12 +50,17 @@ def geo_analysis(df):
     # IDENTIFICAZIONE PARAMETRI GEOGRAFICI
     df_c        = df.copy()
     col_cap     = 'CAP' if 'CAP' in df_c.columns else None
+    col_prov    = 'PROVINCIA' if 'PROVINCIA' in df_c.columns else None
+    col_reg_rna = 'RNA_REGIONE_BENEFICIARIO' if 'RNA_REGIONE_BENEFICIARIO' in df_c.columns else None
     col_budget  = 'RNA_ELEMENTO_DI_AIUTO' if 'RNA_ELEMENTO_DI_AIUTO' in df_c.columns else 'Budget'
     col_piva    = 'CF_TROVATO' if 'CF_TROVATO' in df_c.columns else None
     col_rs      = 'RAGIONE SOCIALE' if 'RAGIONE SOCIALE' in df_c.columns else None
 
-    # MAPPING
-    #Se c'è il CAP, l'analisi sarà completa
+    # RICERCA REGIONE E PROVINCIA
+    
+    # Caso A: se c'è il CAP, ignora REGIONE BENEFICIARIO dell'RNA 
+    # (a volte l'RNA riporta più regioni per lo stesso beneficiario, creando bug nell'analisi) 
+    # e ricava Provincia e Regione dai primi due numeri del CAP (prefix)
     if col_cap:
         # Trasforma il CAP in stringa (rimuove decimali e aggiunge gli zeri iniziali se mancanti: es. 121 -> "00121")
         # e sostituisce alla colonna CAP i valori così ripuliti 
@@ -65,17 +70,32 @@ def geo_analysis(df):
         df_c['Prefix']      = df_c['CAP_Str'].str[:2]
         df_c['Regione']     = df_c['Prefix'].map(lambda x: geo_db.get(x, (None, "Sconosciuta"))[1])
         df_c['Provincia']   = df_c['Prefix'].map(lambda x: geo_db.get(x, ("Sconosciuta", None))[0])
-        
-    # Se manca il CAP, l'analsii sarà limitata a Regione/Provincia
-    else:
-        if 'Regione' not in df_c.columns:
-            df_c['Regione'] = "Sconosciuta"
-        if 'Provincia' not in df_c.columns:
-            df_c['Provincia'] = "Sconosciuta"
-        st.info("ℹ️ Analisi limitata: CAP assente.")
 
-    # Prepariamo le chiavi di ricerca per il database GeoJSON
-    # Aggiungiamo un parametro Match_Key
+    # Caso B: Manca il CAP ma abbiamo PROVINCIA
+    # Ricostruiamo la REGIONE corrispondente dalla provincia grazie al nostro db
+    elif col_prov and df_c[col_prov].notna().any():
+        st.info("ℹ️ CAP assente. Geocalizzazione limitata alle PROVINCE")
+        df_c['PROVINCIA']   = df_c[col_prov].astype(str).str.strip()
+        prov_to_reg         = {v[0]: v[1] for k, v in geo_db.items()}
+        df_c['Regione']     = df_c['Provincia'].map(prov_to_reg).fillna("Sconosciuta")
+        df_c['CAP']         = "N.D."
+
+    # Caso C: Mancano CAP e PROVINCIA. Usiamo RNA_REGIONE_BENEEFICIARIO
+    elif col_reg_rna and df_c[col_reg_rna].notna().any():
+        st.warning("⚠️ CAP e PRONVICIA assenti. Geocalizzazione limitata alle REGIONI")
+        df_c['Regione'] = df_c[col_reg_rna].astype(str).str.strip()
+        df_c['Provincia'] = "Sconosciuta"
+        df_c['CAP'] = "N.D."
+
+    # Caso D: NESSUN DATO GEOGRAFICO
+    # Ritorna il DF originale per non bloccare il caricamento degli altri moduli
+    else:
+        st.error("❌ Errore: Nessun riferimento geografico trovato (CAP, Provincia o Regione). L'analisi geografica verrà saltata.")
+        return df_c 
+
+    # PREPARAZIONI CHIAVI PER MATCHING CON FILE GeoJSON
+    # Creazione chiave di "match" (normalizzata minuscolo) per collegarsi al file GeoJSON della mappa. 
+    # Traduce i nomi delle regioni del file dell'RNA con i nomi che si aspetta il GeoJSON
     df_c['Match_Key'] = df_c['Regione'].str.lower()
     mapping_geo = {
         "friuli-venezia giulia": "friuli venezia giulia", 
