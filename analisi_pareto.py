@@ -115,8 +115,10 @@ def pareto_analysis(df, guida_pareto=""):
     st.plotly_chart(fig_pareto, use_container_width=True)
 
     # --- 5. VISUALIZZAZIONE RISULTATI ---
-    st.write("### 📊 Riepilogo Scaglioni")
+    st.write("")
+    st.write("")
     st.table(pd.DataFrame(report_data))
+    st.write("")
 
     # Mostriamo le prime righe del dataframe arricchito
     with st.expander("🔍 Visualizza Dettaglio Aziende e Status"):
