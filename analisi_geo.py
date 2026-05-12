@@ -150,7 +150,7 @@ def geo_analysis(df):
     with c1:
         fig_tot = px.choropleth(
             df_mappe, 
-            geojson=get_geojson_data, 
+            geojson=get_geojson_data(), 
             locations='Match_Key', 
             featureidkey="properties.name",
             color='Budget Totale', 
@@ -166,7 +166,7 @@ def geo_analysis(df):
     with c2:
         fig_targ = px.choropleth(
             df_mappe, 
-            geojson=get_geojson_data, 
+            geojson=get_geojson_data(), 
             locations='Match_Key', 
             featureidkey="properties.name",
             color='Budget Target', 
