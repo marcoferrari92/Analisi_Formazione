@@ -94,8 +94,8 @@ def pareto_analysis(df, guida_pareto=""):
             ))
 
     fig_pareto.update_layout(
-        title="Concentrazione Mercato Target (Y in Scala Logaritmica)",
-        xaxis_title="Numero Aziende (Ranking)",
+        title="Concentrazione Settore Target",
+        xaxis_title="Numero Aziende",
         yaxis=dict(title="Budget Target (€)", type="log", dtick=1, exponentformat="SI"),
         yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
         template="plotly_white", height=600
