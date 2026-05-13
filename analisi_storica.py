@@ -13,8 +13,9 @@ GUIDA_CAGR = r"""
 
 #### ⏳ Analisi Storica del Settore Target
 
-In questa sezione trovi l'**Analisi Storica del Settore Target** che confronta la crescita composta (CAGR) con l'andamento mediano degli aiuti alle aziende.
-Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, contrazione, ecc.
+**In questa sezione trovi l'*Analisi Storica del Settore Target* che confronta la crescita composta (CAGR) con l'andamento mediano degli aiuti alle aziende.**
+1. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, contrazione, ecc.
+2. Sfrutta quest'informazione per introdurre le newsletter con una contestualizzazione del momento storico che stanno vivendo le aziende
 
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
