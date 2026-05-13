@@ -28,8 +28,7 @@ $$CAGR =\left( \frac{\text{Valore Finale - Valore Iniziale}}{\text{Valore Inizia
 
 def story_analysis(df):
 
-    st.write("Questa funzione esegue un'analisi storica del Settore Target confrontando la crescita composta (CAGR) con l'andamento del valore mediano dei contributi, 
-    offrendo una visione della stato del settore. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, regressione, ecc.")
+    st.write("Questa funzione esegue un'analisi storica del Settore Target confrontando la crescita composta (CAGR) con l'andamento del valore mediano dei contributi, offrendo una visione della stato del settore. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, regressione, ecc.")
     st.write("")
     with st.popover("💡 Strategia"):
         st.info(GUIDA_CAGR)
