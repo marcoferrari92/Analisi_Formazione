@@ -3,14 +3,9 @@ import plotly.express as px
 import streamlit as st
 
 def penetration_analysis(df, n_aziende, n_aziende_target):
-    """
-    Genera e visualizza il Funnel Chart per la penetrazione del settore target.
-    """
-    with st.expander("👁️ Penetrazione Settore Target"):
-        
-        # 1. Recupero dei valori per i passaggi del funnel
-        val_totali = n_aziende
-        val_target = n_aziende_target
+
+        n_aziende        = len(set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
+        n_aziende_target = len(set(df[df['IS_TARGET'] == 1]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
         
         # Calcolo aziende clienti nel target
         if 'STATO' in df.columns:
@@ -25,7 +20,7 @@ def penetration_analysis(df, n_aziende, n_aziende_target):
         # Creazione del DataFrame per il grafico
         funnel_df = pd.DataFrame({
             "Fase": ["Aziende Totali", "Aziende Target", "Aziende Clienti"],
-            "Numero": [val_totali, val_target, val_clienti]
+            "Numero": [n_aziende, n_aziende_target, val_clienti]
         })
 
         # Generazione del Grafico
@@ -36,14 +31,12 @@ def penetration_analysis(df, n_aziende, n_aziende_target):
             title="Penetrazione Settore Target",
             color_discrete_sequence=["#3498db"]
         )
-        
         fig_funnel.update_traces(textinfo="value+percent initial")
         fig_funnel.update_layout(
             height=450, 
             margin=dict(t=50, b=0, l=10, r=10),
             template="plotly_white"
         )
-        
         st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
 
   
