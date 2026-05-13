@@ -42,14 +42,16 @@ def story_analysis(df):
     df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
     df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
     df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
-    # Nel raggruppamento (Punto 1 del tuo codice)
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
         Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        # Qui usiamo la mediana invece della somma per il valore "tipico"
-        Mediana_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].median())
+        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum()),
+        Aiuto_Mediano_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].median())
     ).reset_index().sort_values('Anno')
+
+    # Riempi i NaN (es. se in un anno non ci sono aiuti target, la mediana è NaN)
+    df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
 
 
     # CALCOL CAGR
@@ -63,7 +65,7 @@ def story_analysis(df):
     vol_target_start = df_annual['Vol_Target'].iloc[0]
 
     # Calcolo metriche strategiche
-    df_annual['Aiuto_Medio_Target'] = (df_annual['Vol_Target'] / df_annual['Aiuti_Target']).fillna(0)
+    df_annual['Aiuto_Medio_Target'] = df_annual['Aiuto_Mediano_Target'] # Ora contiene la mediana
     df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
     df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
     df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
