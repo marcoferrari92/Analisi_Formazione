@@ -49,6 +49,7 @@ def story_analysis(df):
         Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
     ).reset_index().sort_values('Anno')
 
+    # CALCOL CAGR
     def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
         if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
@@ -71,12 +72,12 @@ def story_analysis(df):
     # --- PARTE SUPERIORE: IL GRAFICO ---
     fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Barre: Ticket Medio
+    # Barre: Aiuto Medio
     fig_strategy.add_trace(
         go.Bar(
             x=df_annual['Anno'],
             y=df_annual['Aiuto_Medio_Target'],
-            name="Ticket Medio (€)",
+            name="Aiuto Medio (€)",
             marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Aiuto Medio: € %{y:,.0f}<extra></extra>"
         ), secondary_y=False
