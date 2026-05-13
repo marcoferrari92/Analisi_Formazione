@@ -9,9 +9,9 @@ L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola fra
 Un mercato con una curva di Pareto piatta indica un settore democratico e frammentato; una curva a gomito indica un settore blindato dai grandi player.
 
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
-    *  Da **Top 5%** a **Top 20%** troviamo i *Leaders*: poche aziende che muovono capitali enormi; complesse da acquisire ma fondamentali.
-    *  Da **Top 20%** a **Top 80%** troviamo i *Competitors*: aziende più facili da acquisire ma ancora economicamente importanti.
-    *  **Oltre 95%** troviamo i *Disinteressati*: aziende non interessate a investire nel Settore Target o troppo piccole per essere determinanti in questo settore. 
+*  Da **Top 5%** a **Top 20%** troviamo i *Leaders*: poche aziende che muovono capitali enormi; complesse da acquisire ma fondamentali.
+*  Da **Top 20%** a **Top 80%** troviamo i *Competitors*: aziende più facili da acquisire ma ancora economicamente importanti.
+*  **Oltre 95%** troviamo i *Disinteressati*: aziende non interessate a investire nel Settore Target o troppo piccole per essere determinanti in questo settore. 
     
 **N.B.**
 L'appartenenza delle aziende ai vari scaglioni è individuata dallo "Status Economico" nella tabella riassuntiva di tutto il database.
