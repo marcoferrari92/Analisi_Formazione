@@ -121,12 +121,29 @@ def pareto_analysis(df, guida_pareto=""):
         yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
         template="plotly_white", height=600
     )
-
-    # --- 4. OUTPUT STREAMLIT ---
     st.plotly_chart(fig_pareto, use_container_width=True)
+    
+    
+    # --- 4. TABELLA DI RIEPILOGO INTERNA ---
+    def style_internal_table(val, mappa):
+        color = mappa.get(val, None)
+        if color:
+            text_color = "black" if any(x in val for x in ["20%", "50%"]) else "white"
+            return f'background-color: {color}; color: {text_color}; font-weight: bold;'
+        return ''
+
+    df_report = pd.DataFrame(report_data)
     st.write("")
     st.write("")
-    st.table(pd.DataFrame(report_data))
+    st.dataframe(
+        df_report.style.map(lambda x: style_internal_table(x, color_map_status), subset=['Status Economico']),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Budget Cumulativo": st.column_config.NumberColumn("Budget Cumulativo", format="€ %,.0f"),
+            "Status Economico": st.column_config.TextColumn("Ranking Scaglione")
+        }
+    )
 
     # Arricchimento del dataframe originale per il return
     status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
