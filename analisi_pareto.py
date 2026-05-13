@@ -24,6 +24,20 @@ L'appartenenza delle aziende ai vari scaglioni è individuata dallo **"Status Ec
 """
 
 
+def calculate_gini(values):
+    """Calcola l'indice di Gini (0 = equità, 1 = oligarchia)."""
+    import numpy as np
+    # Ordiniamo i valori dal più piccolo al più grande
+    array = np.array(values, dtype=np.float64)
+    array = np.sort(array)
+    n = array.shape[0]
+    if n < 2 or np.sum(array) == 0:
+        return 0.0
+    index = np.arange(1, n + 1)
+    return (np.sum((2 * index - n - 1) * array)) / (n * np.sum(array))
+
+
+
 def pareto_analysis(df, guida_pareto=""):
 
     with st.popover("💡 Strategia"):
@@ -109,6 +123,32 @@ def pareto_analysis(df, guida_pareto=""):
     res_class = df_pareto['N_Aziende_Count'].apply(classify_by_rank)
     df_pareto['Status Economico'] = [x[0] for x in res_class]
     df_pareto['color_marker'] = [x[1] for x in res_class]
+
+
+    # --- CALCOLO GINI ---
+    valori_budget = df_pareto['RNA_ELEMENTO_DI_AIUTO'].values
+    indice_gini = calculate_gini(valori_budget)
+    
+    # --- VISUALIZZAZIONE METRICHE ---
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Indice di Gini", f"{indice_gini:.2f}")
+    with col2:
+        # Quante aziende fanno il primo 80% del budget?
+        n_80 = len(df_pareto[df_pareto['Percentage'] <= 80])
+        st.metric("Aziende per l'80% Vol.", n_80)
+    with col3:
+        # Dominanza del primo player
+        top_1 = (df_pareto['RNA_ELEMENTO_DI_AIUTO'].iloc[0] / total_budget) * 100
+        st.metric("Dominanza Top Player", f"{top_1:.1f}%")
+
+    # Spiegazione dinamica del valore di Gini
+    if indice_gini > 0.7:
+        st.error(f"⚠️ **Mercato Altamente Oligarchico ({indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
+    elif indice_gini > 0.4:
+        st.warning(f"⚖️ **Distribuzione Sbilanciata ({indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
+    else:
+        st.success(f"🤝 **Mercato Frammentato ({indice_gini:.2f})**: Il budget è distribuito in modo relativamente equo.")
     
     
     # --- 3. AGGIORNAMENTO GRAFICO ---
