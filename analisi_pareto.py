@@ -208,8 +208,20 @@ def pareto_analysis(df, guida_pareto=""):
         opacity=0.1, 
         layer="below", 
         line_width=0,
-        annotation_text="80% Reale vs Teorico (GAP)",
+        annotation_text="",
         annotation_position="top left"
+    )
+    # Aggiunge la scritta centrata nello spazio extra dell'asse Y2 (107%)
+    x_centro_gap = (punto_reale_80 + punto_teorico_80) / 2
+    fig_pareto.add_annotation(
+        x=x_centro_gap,
+        y=107,               # Posiziona nel "cielo" del grafico (asse y2 arriva a 115)
+        yref="y2",           # Fondamentale per usare la scala 0-115%
+        text="<b>80% Reale vs Teorico (GAP)</b>",
+        showarrow=False,
+        font=dict(color="#2c3e50", size=12),
+        xanchor="center",
+        align="center"
     )
     # Marker di intersezione sulla diagonale (Punto Teorico 80/80)
     fig_pareto.add_trace(go.Scatter(
