@@ -245,7 +245,7 @@ if uploaded_file is not None:
         # --- ANALISI RANKING E PARETO ---
         with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
             st.write("")
-            df = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
+            df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
         st.write("")
         st.write("")
 
@@ -306,9 +306,24 @@ if uploaded_file is not None:
         report_aziende = report_aziende[ordine_colonne]
 
         # --- 5. TABELLA ---
+
+        # Funzione di stile per la tabella
+        def style_status_column(val):
+            color = mappa_colori.get(val, "")
+            if color:
+                # Determiniamo se il testo deve essere bianco o nero per leggibilità
+                text_color = "white" if val not in ["03. Top 20%", "04. Top 50%"] else "black"
+                return f'background-color: {color}; color: {text_color}; font-weight: bold;'
+            return ''
+    
         st.write("")
+        styled_report = (
+            report_aziende.style
+            .apply(colora_clienti, axis=1)
+            .applymap(lambda x: style_status_graduato(x, mappa_colori), subset=['Status Economico'])
+        )
         st.dataframe(
-            report_aziende.style.apply(colora_clienti, axis=1),
+            styled_report,
             use_container_width=True,
             hide_index=True,
             column_config={
