@@ -9,8 +9,8 @@ L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola fra
 Un mercato con una curva di Pareto piatta indica un settore democratico e frammentato; una curva a gomito indica un settore blindato dai grandi player.
 
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
-*  Da **Top 5%** a **Top 20%** troviamo i *Leaders*: poche aziende che muovono capitali enormi; complesse da acquisire ma fondamentali.
-*  Da **Top 20%** a **Top 80%** troviamo i *Competitors*: aziende più facili da acquisire ma ancora economicamente importanti.
+*  Zona **Rossa (fino al 20%)** troviamo i *Leaders*: poche aziende che muovono il 20% di tutto il budget; complesse da acquisire ma fondamentali.
+*  Zona **Arancio (fino al 50%)** *Competitors*: aziende più facili da acquisire ma ancora economicamente importanti.
 *  **Oltre 95%** troviamo i *Disinteressati*: aziende non interessate a investire nel Settore Target o troppo piccole per essere determinanti in questo settore. 
     
 **N.B.**
@@ -79,18 +79,24 @@ def pareto_analysis(df, guida_pareto=""):
     # Funzione di classificazione basata sul RANK (N_Aziende_Count)
     # L'ordine elif garantisce che se una riga è <= soglia 5%, riceva "Top 5%" e si fermi.
     def classify_by_rank(r):
-        if r <= soglie_indici.get(5, 0): 
-            return "01. Top 5%", "#e74c3c"
-        elif r <= soglie_indici.get(10, 0): 
-            return "02. Top 10%", "#e74c3c"
-        elif r <= soglie_indici.get(20, 0): 
-            return "03. Top 20%", "#e74c3c"
+        # 0-20%: ROSSO
+        if r <= soglie_indici.get(20, 0): 
+            if r <= soglie_indici.get(5, 0):
+                return "01. Top 5%", "#e74c3c"
+            elif r <= soglie_indici.get(10, 0):
+                return "02. Top 10%", "#e74c3c"
+            else:
+                return "03. Top 20%", "#e74c3c"
+        # 20-50%: ARANCIO
         elif r <= soglie_indici.get(50, 0): 
-            return "04. Top 50%", "#f1c40f"
+            return "04. Top 50%", "#e67e22"
+        # 50-80%: GIALLO
         elif r <= soglie_indici.get(80, 0): 
-            return "05. Top 80%", "#2ecc71"
+            return "05. Top 80%", "#f1c40f"
+        # 80-95%: VERDE
         elif r <= soglie_indici.get(95, 0): 
             return "06. Top 95%", "#2ecc71"
+        # Oltre 95%: BLU
         else: 
             return "07. Oltre 95%", "#3498db"
 
