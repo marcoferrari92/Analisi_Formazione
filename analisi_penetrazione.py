@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-def penetration_analysis(df, n_aziende, n_aziende_target):
+def penetration_analysis(df):
 
         n_aziende        = len(set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
         n_aziende_target = len(set(df[df['IS_TARGET'] == 1]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
