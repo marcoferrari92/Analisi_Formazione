@@ -8,7 +8,7 @@ GUIDA = """
 #### 📈 Curva di Pareto
 L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola frazione di aziende (il 20%) assorbe la maggior parte delle risorse economiche (l'80%). 
 
-Un mercato con una curva di Pareto diagonale indica un settore democratico; una curva a gomito indica un settore dominato da grandi player.
+Un mercato con una curva di Pareto diagonale indica un settore perfettamente democratico (linea tratteggiata); una curva a gomito indica un settore dominato da grandi player.
 
 #### 🎩 Status Economico nel Settore Target
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
