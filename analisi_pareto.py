@@ -172,23 +172,45 @@ def pareto_analysis(df, guida_pareto=""):
         line=dict(color='black', width=3, dash='dot'),
         yaxis="y2"
     ))
-    # Valore perfettamente democratico del 80%
+
+    
+    # Punto Reale: la prima azienda che tocca o supera l'80% nella cumulata
+    # Punto Teorico: l'80% della popolazione totale delle aziende
+    punto_reale_80 = df_pareto[df_pareto['Percentage'] >= 80]['N_Aziende_Count'].iloc[0]
     punto_teorico_80 = total_aziende * 0.8
+
+    # RETTA REALE (Pareto)
+    fig_pareto.add_vline(
+        x=punto_reale_80, 
+        line_dash="solid", 
+        line_color="#2c3e50", 
+        line_width=2,
+        annotation_text=f"Reale: {punto_reale_80} aziende", 
+        annotation_position="top left"
+    )
+    
+    # RETTA TEORICA (Equità)
     fig_pareto.add_vline(
         x=punto_teorico_80, 
         line_dash="dot", 
-        line_color="rgba(0, 0, 0, 0.5)", 
-        annotation_text="80% Aziende (Teorico)", 
-        annotation_position="top left"
+        line_color="rgba(0,0,0,0.3)", 
+        line_width=2,
+        annotation_text=f"Teorico: {int(punto_teorico_80)} aziende", 
+        annotation_position="top right"
     )
-    fig_pareto.add_trace(go.Scatter(
-        x=[punto_teorico_80],
-        y=[80],
-        mode='markers',
-        marker=dict(color='black', size=10, symbol='x'),
-        name="Punto Equità 80/80",
-        yaxis="y2"
-    ))
+    
+    # COLORARE IL GAP (Opzionale ma molto efficace)
+    # Aggiunge un rettangolo semitrasparente tra le due linee per mostrare la "distorsione"
+    fig_pareto.add_vrect(
+        x0=punto_reale_80, 
+        x1=punto_teorico_80,
+        fillcolor="gray", 
+        opacity=0.1, 
+        layer="below", 
+        line_width=0,
+        annotation_text="GAP DI CONCENTRAZIONE",
+        annotation_position="top center"
+    )
 
     # Barre
     fig_pareto.add_trace(go.Bar(
