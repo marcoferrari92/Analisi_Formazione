@@ -163,7 +163,15 @@ def pareto_analysis(df, guida_pareto=""):
         bargap=0,
         yaxis=dict(title="Budget Target (€)", type="log", dtick=1, exponentformat="SI"),
         yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
-        template="plotly_white", height=600, showlegend=False
+        template="plotly_white", height=600, 
+        showlegend=True,
+        legend=dict(
+            orientation="h",      # Legenda orizzontale
+            yanchor="top",        # Ancora la parte superiore della legenda...
+            y=-0.2,               # ...sotto l'asse X (valore negativo)
+            xanchor="center",     # Centra la legenda...
+            x=0.5                 # ...a metà della larghezza del grafico
+        )
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
