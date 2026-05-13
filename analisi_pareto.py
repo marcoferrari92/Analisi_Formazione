@@ -112,7 +112,10 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.add_trace(go.Bar(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
-        marker_color=df_pareto['color_marker'],
+        marker=dict(
+            color=df_pareto['color_marker'],
+            line=dict(width=0)  
+        ),
         name="Budget Azienda",
         customdata=df_pareto['Status Economico'],
         hovertemplate="<b>%{customdata}</b><br>Budget: %{y:,.2f}€<extra></extra>"
