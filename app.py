@@ -311,7 +311,7 @@ if uploaded_file is not None:
             """
             Applica il colore di sfondo alla cella dello Status.
             """
-            color = colormap_stato_economico.get(val, None)
+            color = mappa_colori.get(val, None)
             if color:
                 # Testo nero per colori chiari (Giallo/Verde chiaro), bianco per gli altri
                 text_color = "black" if val in ["03. Top 20%", "04. Top 50%"] else "white"
