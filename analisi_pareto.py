@@ -25,17 +25,27 @@ def pareto_analysis(df, guida_pareto=""):
     df_pareto['N_Aziende_Count'] = range(1, total_aziende + 1)
 
     # --- 2. ASSEGNAZIONE STATUS ECONOMICO ---
-    # Definiamo una funzione per categorizzare in base alla percentuale cumulata
-    def classify_status(p):
-        if p <= 5: return "Top 5%"
-        elif p <= 10: return "Top 10%"
-        elif p <= 20: return "Top 20%"
-        elif p <= 50: return "Top 50%"
-        elif p <= 80: return "Top 80%"
-        elif p <= 95: return "Top 95%"
-        else: return "N.D."
-
-    df_pareto['Status Economico'] = df_pareto['Percentage'].apply(classify_status)
+    def classify_status_and_color(p):
+        # L'ordine è fondamentale: dal più piccolo al più grande
+        if p <= 5: 
+            return "Top 5%", "#e74c3c"   # Rosso (Elite)
+        elif p <= 10: 
+            return "Top 10%", "#e74c3c"  # Rosso
+        elif p <= 20: 
+            return "Top 20%", "#e74c3c"  # Rosso
+        elif p <= 50: 
+            return "Top 50%", "#f1c40f"  # Giallo
+        elif p <= 80: 
+            return "Top 80%", "#2ecc71"  # Verde
+        elif p <= 95: 
+            return "Top 95%", "#2ecc71"  # Verde
+        else: 
+            return "Oltre 95%", "#3498db" # Blu
+    
+    # Applicazione al DataFrame
+    res = df_pareto['Percentage'].apply(classify_status_and_color)
+    df_pareto['Status Economico'] = [x[0] for x in res]
+    df_pareto['color_marker'] = [x[1] for x in res]
 
     # --- 2. LOGICA DI CLASSIFICAZIONE E COLORI ---
     def get_color_and_status(p):
