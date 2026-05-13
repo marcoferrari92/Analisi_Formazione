@@ -124,23 +124,38 @@ def pareto_analysis(df, guida_pareto=""):
     st.plotly_chart(fig_pareto, use_container_width=True)
     
     # --- 4. TABELLA DI RIEPILOGO INTERNA ---
-    def style_internal_table(val, mappa):
-        color = mappa.get(val, None)
+    report_data = []
+    for s in scaglioni:
+        if s in soglie_indici:
+            idx = soglie_indici[s]
+            row = df_pareto[df_pareto['N_Aziende_Count'] == idx].iloc[0]
+            # Usiamo lo status label corretto per attivare il colore nella tabella
+            label = classify_by_rank(idx)
+            report_data.append({
+                "Status Economico": label,
+                "Fino a Soglia": f"{s}%",
+                "N. Aziende": idx,
+                "% su Totale": f"{(idx / total_aziende * 100):.2f}%",
+                "Budget Cumulativo": row['Cumsum']
+            })
+
+    df_report = pd.DataFrame(report_data)
+
+    def style_status_column(val):
+        color = color_map_status.get(val, "")
         if color:
-            text_color = "black" if any(x in val for x in ["20%", "50%"]) else "white"
+            text_color = "black" if "20%" in val or "50%" in val else "white"
             return f'background-color: {color}; color: {text_color}; font-weight: bold;'
         return ''
 
-    df_report = pd.DataFrame(report_data)
     st.write("")
     st.write("")
     st.dataframe(
-        df_report.style.map(lambda x: style_internal_table(x, color_map_status), subset=['Status Economico']),
+        df_report.style.map(style_status_column, subset=['Status Economico']),
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Budget Cumulativo": st.column_config.NumberColumn("Budget Cumulativo", format="€ %,.0f"),
-            "Status Economico": st.column_config.TextColumn("Ranking Scaglione")
+            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")
         }
     )
 
