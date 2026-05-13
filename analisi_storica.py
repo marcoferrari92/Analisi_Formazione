@@ -16,9 +16,10 @@ GUIDA_CAGR = r"""
 **In questa sezione trovi l'*Analisi Storica del Settore Target* che confronta la crescita composta (CAGR) con l'andamento mediano degli aiuti alle aziende.**
 1. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende (crescita, contrazione, ecc) per tarare al meglio le tue campagne marketing.
 2. Sfrutta quest'informazione per approcciarti alle aziende nel modo migliore: 
-    * introduci le newsletter con una contestualizzazione del momento storico che stanno vivendo le aziende analizzate,
-
-
+    * Introduci le newsletter con una contestualizzazione del momento storico che le aziende stanno vivendo.
+    * Sprona le aziende nei periodi di contrazione, aiutandole a ottimizzare i pochi aiuti che stanno ricevendo.
+    * Cavalca il settore nei momenti di massima espansione.
+    
 #### 📈 Guida al CAGR 
 
 Il **CAGR (Compound Annual Growth Rate)** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
