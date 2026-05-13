@@ -10,6 +10,10 @@ from plotly.subplots import make_subplots
 import datetime
 
 GUIDA_CAGR = r"""
+
+In questa sezione trovi un'analisi storica del Settore Target che confronta la crescita composta (CAGR) con l'andamento mediano degli aiuti alle aziende.
+Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, contrazione, ecc.
+
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
 
 Il **CAGR** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
@@ -28,7 +32,6 @@ $$CAGR =\left( \frac{\text{Valore Finale - Valore Iniziale}}{\text{Valore Inizia
 
 def story_analysis(df):
 
-    st.write("Questa funzione esegue un'analisi storica del Settore Target confrontando la crescita composta (CAGR) con l'andamento del valore mediano dei contributi, offrendo una visione della stato del settore. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, regressione, ecc.")
     st.write("")
     with st.popover("💡 Strategia"):
         st.info(GUIDA_CAGR)
