@@ -77,7 +77,7 @@ def story_analysis(df):
         go.Bar(
             x=df_annual['Anno'],
             y=df_annual['Aiuto_Medio_Target'],
-            name="Aiuto Medio (€)",
+            name="Aiuto Target Medio (€)",
             marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Aiuto Medio: € %{y:,.0f}<extra></extra>"
         ), secondary_y=False
