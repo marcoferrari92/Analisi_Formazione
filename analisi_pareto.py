@@ -149,11 +149,11 @@ def pareto_analysis(df, guida_pareto=""):
 
     # Spiegazione dinamica del valore di Gini
     if indice_gini > 0.7:
-        st.error(f"⚠️ **Mercato Oligarchico ({indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
+        st.error(f"⚠️ **Mercato Oligarchico (G = {indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
     elif indice_gini > 0.4:
-        st.warning(f"⚖️ **Mercato Sbilanciato ({indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
+        st.warning(f"⚖️ **Mercato Sbilanciato (G = {indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
     else:
-        st.success(f"🤝 **Mercato Democratico ({indice_gini:.2f})**: Il budget è distribuito in modo relativamente equo.")
+        st.success(f"🤝 **Mercato Democratico (G = {indice_gini:.2f})**: Il budget è distribuito in modo relativamente equo.")
     
     
     # --- 3. AGGIORNAMENTO GRAFICO ---
