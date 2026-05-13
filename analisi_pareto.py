@@ -109,8 +109,21 @@ def pareto_analysis(df, guida_pareto=""):
     res_class = df_pareto['N_Aziende_Count'].apply(classify_by_rank)
     df_pareto['Status Economico'] = [x[0] for x in res_class]
     df_pareto['color_marker'] = [x[1] for x in res_class]
-
-    # --- 3. GRAFICO ---
+    
+    
+    # --- 3. AGGIORNAMENTO GRAFICO ---
+    fig_pareto = go.Figure()
+    
+    # Aggiungi la LINEA DI EQUITÀ (Diagonal)
+    x_equita = [0, total_aziende]
+    y_equita = [0, 100]
+    fig_pareto.add_trace(go.Scatter(
+        x=x_equita,
+        y=y_equita,
+        name="Equità Perfetta",
+        line=dict(color='rgba(150, 150, 150, 0.5)', width=2, dash='dot'),
+        yaxis="y2"
+    ))
     fig_pareto = go.Figure()
 
     # Barre (Scala Logaritmica)
