@@ -45,7 +45,7 @@ def calculate_gini(values):
 
 def pareto_analysis(df, guida_pareto=""):
 
-    with st.popover("💡 Strategia"):
+    with st.popover("📖 Metodologia"):
         st.markdown(GUIDA)
     st.write("")
 
