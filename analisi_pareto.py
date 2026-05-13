@@ -48,13 +48,20 @@ def pareto_analysis(df, guida_pareto=""):
     # Funzione di classificazione basata sul RANK (N_Aziende_Count)
     # L'ordine elif garantisce che se una riga è <= soglia 5%, riceva "Top 5%" e si fermi.
     def classify_by_rank(r):
-        if r <= soglie_indici.get(5, 0): return "Top 5%", "#e74c3c"
-        elif r <= soglie_indici.get(10, 0): return "Top 10%", "#e74c3c"
-        elif r <= soglie_indici.get(20, 0): return "Top 20%", "#e74c3c"
-        elif r <= soglie_indici.get(50, 0): return "Top 50%", "#f1c40f"
-        elif r <= soglie_indici.get(80, 0): return "Top 80%", "#2ecc71"
-        elif r <= soglie_indici.get(95, 0): return "Top 95%", "#2ecc71"
-        else: return "Oltre 95%", "#3498db"
+        if r <= soglie_indici.get(5, 0): 
+            return "01. Top 5%", "#e74c3c"
+        elif r <= soglie_indici.get(10, 0): 
+            return "02. Top 10%", "#e74c3c"
+        elif r <= soglie_indici.get(20, 0): 
+            return "03. Top 20%", "#e74c3c"
+        elif r <= soglie_indici.get(50, 0): 
+            return "04. Top 50%", "#f1c40f"
+        elif r <= soglie_indici.get(80, 0): 
+            return "05. Top 80%", "#2ecc71"
+        elif r <= soglie_indici.get(95, 0): 
+            return "06. Top 95%", "#2ecc71"
+        else: 
+            return "07. Oltre 95%", "#3498db"
 
     # Applichiamo lo status e il colore
     res_class = df_pareto['N_Aziende_Count'].apply(classify_by_rank)
