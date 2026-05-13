@@ -265,7 +265,8 @@ if uploaded_file is not None:
             'RNA_TITOLO_MISURA': 'count',
             'IS_TARGET': 'sum',
             'RNA_ELEMENTO_DI_AIUTO': 'sum',
-            'IMPORTO_TARGET': 'sum'
+            'IMPORTO_TARGET': 'sum',
+            'Status Economico': 'first'
         }).reset_index()
 
         # --- 3. CALCOLO Fo e Fe  ---
@@ -306,10 +307,6 @@ if uploaded_file is not None:
 
         # --- 5. TABELLA ---
         st.write("")
-        
-        # Assicurati che 'Status Economico' sia presente in report_aziende. 
-        # Se non c'è, dovrai mapparlo prima usando il nome dell'azienda o la P.IVA.
-        
         st.dataframe(
             report_aziende.style.apply(colora_clienti, axis=1),
             use_container_width=True,
