@@ -17,9 +17,9 @@ GUIDA_CAGR = r"""
 1. Usa quest'analisi per comprendere lo scenario in cui si stanno muovendo le aziende: crescita, contrazione, ecc.
 2. Sfrutta quest'informazione per introdurre le newsletter con una contestualizzazione del momento storico che stanno vivendo le aziende
 
-#### 📈 Guida al CAGR (Compound Annual Growth Rate)
+#### 📈 Guida al CAGR 
 
-Il **CAGR** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
+Il **CAGR (Compound Annual Growth Rate)** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
 
 $$CAGR = \left( \frac{\text{Valore Finale}}{\text{Valore Iniziale}} \right)^{\frac{1}{n}} - 1$$
 
