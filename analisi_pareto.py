@@ -215,9 +215,9 @@ def pareto_analysis(df, guida_pareto=""):
     x_centro_gap = (punto_reale_80 + punto_teorico_80) / 2
     fig_pareto.add_annotation(
         x=x_centro_gap,
-        y=115,               # Posiziona nel "cielo" del grafico (asse y2 arriva a 115)
-        yref="y2",           # Fondamentale per usare la scala 0-115%
-        text="<b>80% GAP (Reale vs Teorico)</b>",
+        y=110,               
+        yref="y2",           
+        text="<b>80% GAP (Reale vs Ideale)</b>",
         showarrow=False,
         font=dict(color="#2c3e50", size=12),
         xanchor="center",
@@ -227,9 +227,9 @@ def pareto_analysis(df, guida_pareto=""):
     fig_pareto.add_trace(go.Scatter(
         x=[punto_teorico_80],
         y=[80],
-        mode='markers+text', # Aggiunto +text per visualizzare l'etichetta
+        mode='markers+text', 
         marker=dict(color='black', size=10, symbol='diamond'),
-        text=[f"<b>80% Teorico</b>"], 
+        text=[f"<b>80% Ideale</b>"], 
         textposition="top left", 
         name="Punto Equità 80/80",
         yaxis="y2", 
