@@ -182,8 +182,8 @@ def pareto_analysis(df, guida_pareto=""):
     # RETTA REALE (Pareto)
     fig_pareto.add_vline(
         x=punto_reale_80, 
-        line_dash="solid", 
-        line_color="#2c3e50", 
+        line_dash="dot", 
+        line_color="rgba(0,0,0,0.3)", 
         line_width=2,
         annotation_text=f"Reale: {punto_reale_80} aziende", 
         annotation_position="top left"
