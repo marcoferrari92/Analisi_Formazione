@@ -306,6 +306,10 @@ if uploaded_file is not None:
 
         # --- 5. TABELLA ---
         st.write("")
+        
+        # Assicurati che 'Status Economico' sia presente in report_aziende. 
+        # Se non c'è, dovrai mapparlo prima usando il nome dell'azienda o la P.IVA.
+        
         st.dataframe(
             report_aziende.style.apply(colora_clienti, axis=1),
             use_container_width=True,
@@ -313,6 +317,14 @@ if uploaded_file is not None:
             column_config={
                 "P.IVA": st.column_config.TextColumn("P.IVA"),
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
+                
+                # Aggiunta della colonna Status Economico
+                "Status Economico": st.column_config.TextColumn(
+                    "💎 Status Economico", 
+                    help="Posizionamento dell'azienda basato sulla concentrazione del budget (Pareto)",
+                    width="medium"
+                ),
+                
                 "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
                 "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
                 "Budget": st.column_config.NumberColumn(
