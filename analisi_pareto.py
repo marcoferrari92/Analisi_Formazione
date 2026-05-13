@@ -114,7 +114,7 @@ def pareto_analysis(df, guida_pareto=""):
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
         marker=dict(
             color=df_pareto['color_marker'],
-            line=dict(width=0)  
+            line=dict(width=0.1)  
         ),
         name="Budget Azienda",
         customdata=df_pareto['Status Economico'],
