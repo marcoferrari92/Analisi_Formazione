@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
+
 def pareto_analysis(df, guida_pareto=""):
     """
     Esegue l'analisi di Pareto con classificazione coerente tra riepilogo e dettaglio.
@@ -26,6 +27,19 @@ def pareto_analysis(df, guida_pareto=""):
     df_pareto['N_Aziende_Count'] = range(1, total_aziende + 1)
 
     # --- 2. CALCOLO SOGLIE E CLASSIFICAZIONE COERENTE ---
+    
+    # 2A. MAPPA COLORI SACGLIONI
+    color_map_status = {
+        "01. Top 5%": "#e74c3c",    # Rosso
+        "02. Top 10%": "#f39c12",   # Arancio
+        "03. Top 20%": "#f1c40f",   # Giallo
+        "04. Top 50%": "#2ecc71",   # Verde chiaro
+        "05. Top 80%": "#27ae60",   # Verde scuro
+        "06. Top 95%": "#3498db",   # Blu chiaro
+        "07. Oltre 95%": "#2980b9"  # Blu scuro
+    }
+
+    # 2B. SCAGLIONI
     scaglioni = [5, 10, 20, 50, 80, 95]
     soglie_indici = {}
     report_data = []
@@ -124,4 +138,4 @@ def pareto_analysis(df, guida_pareto=""):
     status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
     df['Status Economico'] = df['RNA_DENOMINAZIONE_BENEFICIARIO'].map(status_map).fillna("Non Target")
     
-    return df
+    return df, color_map_status
