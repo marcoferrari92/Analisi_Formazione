@@ -130,34 +130,28 @@ def pareto_analysis(df, guida_pareto=""):
             idx = soglie_indici[s]
             row_p = df_pareto[df_pareto['N_Aziende_Count'] == idx].iloc[0]
             report_data.append({
-                "Status": classify_by_rank(idx),
+                "Status": classify_by_rank(idx), # SOLO IL TESTO
                 "Soglia": f"{s}%",
                 "N. Aziende": idx,
-                "% Aziende": f"{(idx / total_aziende * 100):.2f}%",
+                "% Aziende": f"{(idx / len(df_pareto) * 100):.2f}%",
                 "Budget Cumulativo": row_p['Cumsum']
             })
 
     df_report = pd.DataFrame(report_data)
 
-    # FUNZIONE DI STILE PER L'INTERA RIGA
-    def style_row_by_status(row):
+    # FUNZIONE STILE: legge il testo e applica il colore
+    def apply_row_style(row):
         color = color_map_status.get(row['Status'], "")
-        # Testo nero per giallo/arancio, bianco per i colori scuri
         text_color = "black" if any(x in row['Status'] for x in ["20%", "50%"]) else "white"
-        # Ritorna una lista di stili, uno per ogni colonna della riga
-        return [f'background-color: {color}; color: {text_color}; font-weight: bold;'] * len(row)
+        return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
 
     st.write("")
     st.write("")
-    
-    # Applichiamo lo stile all'intero dataframe della funzione
     st.dataframe(
-        df_report.style.apply(style_row_by_status, axis=1),
+        df_report.style.apply(apply_row_style, axis=1),
         use_container_width=True,
         hide_index=True,
-        column_config={
-            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")
-        }
+        column_config={"Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")}
     )
 
     # Arricchimento del dataframe originale per il return
