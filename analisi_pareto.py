@@ -6,6 +6,7 @@ GUIDA = """
 **Questo sezione utilizza l'*Analisi di Pareto* per determinare l'*oligarchia* del Settore Target.**
 
 L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola frazione di aziende (il 20%) assorbe la maggior parte delle risorse economiche (l'80%). 
+
 Un mercato con una curva di Pareto piatta indica un settore democratico e frammentato; una curva a gomito indica un settore blindato dai grandi player.
 
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
