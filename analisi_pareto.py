@@ -3,7 +3,13 @@ import pandas as pd
 import plotly.graph_objects as go
 
 GUIDA = """
-**Questo sezione utilizza l'*Analisi di Pareto* per determinare l'*oligarchia* del Settore Target.**
+**Questo sezione utilizza l'*Analisi di Pareto* e l'*Indice di Gini* per determinare l'*oligarchia* del Settore Target.**
+
+#### 🎩 Coefficiente di Gini
+Coefficiente $G$ compreso tra 0 e 1:
+* **$G = 0$ (Equità perfetta):** Tutte le aziende ricevono esattamente la stessa cifra. 
+    * *Esempio:* Se ci sono 100 aziende e 1 milione di euro, ognuna ha 10.000€.
+* **$G = 1$ (Massima concentrazione):** Una sola azienda prende tutto il budget del settore, e tutte le altre prendono zero.
 
 #### 📈 Curva di Pareto
 L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola frazione di aziende (il 20%) assorbe la maggior parte delle risorse economiche (l'80%). 
