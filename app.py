@@ -15,6 +15,7 @@ from plots import create_centered_pie
 from analisi_geo import geo_analysis
 from analisi_time import time_analysis
 from analisi_pareto import pareto_analysis
+from analisi_storica import story_analysis
 from analysis_benchmark import grafici_posizionamento
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -222,7 +223,16 @@ if uploaded_file is not None:
             
             st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
             
-            
+
+        # --- ANALISI STORICA ---
+        st.write("")
+        st.write("")
+        with st.expander("⏳ Analisi Storica del Settore Target"):
+            st.write("")
+            story_analysis(df)
+        st.write("")
+        st.write("")
+        
  
         # --- ANALISI GEOGRAFICA ---
         st.write("")
