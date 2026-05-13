@@ -14,10 +14,8 @@ L'appartenenza delle aziende ai vari scaglioni è individuata dallo "Status Econ
 
 def pareto_analysis(df, guida_pareto=""):
 
-    st.write("")
     with st.popover("💡 Strategia"):
         st.info(GUIDA)
-    st.write("")
 
     df_targ = df[df['IS_TARGET'] == 1].copy()
     
