@@ -311,19 +311,24 @@ if uploaded_file is not None:
             """
             Applica il colore di sfondo alla cella dello Status.
             """
+            # Usiamo None come default se lo status non è in mappa (es. "Non Target")
             color = mappa_colori.get(val, None)
             if color:
-                # Testo nero per colori chiari (Giallo/Verde chiaro), bianco per gli altri
-                text_color = "black" if val in ["03. Top 20%", "04. Top 50%"] else "white"
+                # Testo nero per colori chiari, bianco per gli altri (Rosso, Verde scuro, Blu)
+                # Assicurati che i nomi corrispondano esattamente a quelli nella mappa (es. con prefisso "03. ")
+                text_color = "black" if any(x in val for x in ["20%", "50%"]) else "white"
                 return f'background-color: {color}; color: {text_color}; font-weight: bold;'
             return ''
-    
+        
         st.write("")
+        
+        # CORREZIONE: Sostituzione di .applymap con .map
         styled_report = (
             report_aziende.style
             .apply(colora_clienti, axis=1)
-            .applymap(lambda x: style_status_graduato(x, colormap_stato_economico), subset=['Status Economico'])
+            .map(lambda x: style_status_graduato(x, colormap_stato_economico), subset=['Status Economico'])
         )
+        
         st.dataframe(
             styled_report,
             use_container_width=True,
@@ -332,29 +337,18 @@ if uploaded_file is not None:
                 "P.IVA": st.column_config.TextColumn("P.IVA"),
                 "Ragione Sociale": st.column_config.TextColumn("Ragione Sociale", width="large"),
                 
-                # Aggiunta della colonna Status Economico
                 "Status Economico": st.column_config.TextColumn(
                     "💎 Status Economico", 
-                    help="Posizionamento dell'azienda basato sulla concentrazione del budget (Pareto)",
+                    help="Posizionamento basato sulla concentrazione del budget (Pareto). Ordinabile 01->07",
                     width="medium"
                 ),
                 
                 "Aiuti": st.column_config.NumberColumn("Aiuti", format="%d"),
                 "Aiuti Target": st.column_config.NumberColumn("Aiuti Target", format="%d"),
-                "Budget": st.column_config.NumberColumn(
-                    "Budget Totale (€)",
-                    format="€ %,.2f"),
-                "Budget Target": st.column_config.NumberColumn(
-                    "Budget Target (€)",
-                    format="€ %,.2f"),
-                "Fo": st.column_config.NumberColumn(
-                    "Fo (%)",
-                    format="%.1f%%",
-                    help="Incidenza numero aiuti target"),
-                "Fe": st.column_config.NumberColumn(
-                    "Fe (%)",
-                    format="%.1f%%",
-                    help="Incidenza budget target")
+                "Budget": st.column_config.NumberColumn("Budget Totale (€)", format="€ %,.2f"),
+                "Budget Target": st.column_config.NumberColumn("Budget Target (€)", format="€ %,.2f"),
+                "Fo": st.column_config.NumberColumn("Fo (%)", format="%.1f%%"),
+                "Fe": st.column_config.NumberColumn("Fe (%)", format="%.1f%%")
             }
         )
         st.write("")
