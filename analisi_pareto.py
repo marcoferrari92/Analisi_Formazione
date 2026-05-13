@@ -139,19 +139,24 @@ def pareto_analysis(df, guida_pareto=""):
 
     df_report = pd.DataFrame(report_data)
 
-    # FUNZIONE STILE: legge il testo e applica il colore
-    def apply_row_style(row):
+    # 2. Funzione di stile che recupera il colore dalla mappa esterna
+    def apply_full_row_style(row):
+        # Recupera il colore usando la stringa "01. Top 5%" come chiave
         color = color_map_status.get(row['Status'], "")
+        # Contrasto testo: nero su giallo/arancio, bianco sugli altri
         text_color = "black" if any(x in row['Status'] for x in ["20%", "50%"]) else "white"
         return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
 
-    st.write("")
+    # 3. Visualizzazione
     st.write("")
     st.dataframe(
-        df_report.style.apply(apply_row_style, axis=1),
+        df_report.style.apply(apply_full_row_style, axis=1),
         use_container_width=True,
         hide_index=True,
-        column_config={"Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")}
+        column_config={
+            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f"),
+            "Status": st.column_config.TextColumn("Ranking Scaglione")
+        }
     )
 
     # Arricchimento del dataframe originale per il return
