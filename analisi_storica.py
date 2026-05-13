@@ -27,7 +27,6 @@ $$CAGR = \left( \frac{\text{Valore Finale}}{\text{Valore Iniziale}} \right)^{\fr
 
 def story_analysis(df):
     
-    st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
     st.write("")
     with st.popover("💡 Strategia"):
         st.info(GUIDA_CAGR)
