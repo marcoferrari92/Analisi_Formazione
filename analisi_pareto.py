@@ -211,15 +211,17 @@ def pareto_analysis(df, guida_pareto=""):
         annotation_text="GAP DI CONCENTRAZIONE",
         annotation_position="top left"
     )
-    # Marker di intersezione sulla diagonale
+    # Marker di intersezione sulla diagonale (Punto Teorico 80/80)
     fig_pareto.add_trace(go.Scatter(
         x=[punto_teorico_80],
         y=[80],
-        mode='markers',
+        mode='markers+text', # Aggiunto +text per visualizzare l'etichetta
         marker=dict(color='black', size=10, symbol='diamond'),
-        text=[f"<b>80%</b>"], textposition="top left", yaxis="y2", showlegend=False
+        text=[f"<b>80% Teorico</b>"], 
+        textposition="top left", 
         name="Punto Equità 80/80",
-        yaxis="y2"
+        yaxis="y2", 
+        showlegend=False
     ))
 
     # Barre
