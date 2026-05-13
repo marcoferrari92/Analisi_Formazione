@@ -122,7 +122,7 @@ def pareto_analysis(df, guida_pareto=""):
         y=y_equita,
         name="Equità Perfetta",
         mode='lines',
-        line=dict(color='black', width=4, dash='dot'),
+        line=dict(color='black', width=3, dash='dot'),
         yaxis="y2"
     ))
 
