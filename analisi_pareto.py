@@ -123,40 +123,37 @@ def pareto_analysis(df, guida_pareto=""):
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
-    # --- 4. TABELLA DI RIEPILOGO INTERNA ---
+    # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
     report_data = []
     for s in scaglioni:
         if s in soglie_indici:
             idx = soglie_indici[s]
-            row = df_pareto[df_pareto['N_Aziende_Count'] == idx].iloc[0]
-            # Usiamo lo status label corretto per attivare il colore nella tabella
-            label = classify_by_rank(idx)
+            row_p = df_pareto[df_pareto['N_Aziende_Count'] == idx].iloc[0]
             report_data.append({
-                "Status Economico": label,
-                "Fino a Soglia": f"{s}%",
+                "Status": classify_by_rank(idx),
+                "Soglia": f"{s}%",
                 "N. Aziende": idx,
-                "% su Totale": f"{(idx / total_aziende * 100):.2f}%",
-                "Budget Cumulativo": row['Cumsum']
+                "% Aziende": f"{(idx / total_aziende * 100):.2f}%",
+                "Budget Cumulativo": row_p['Cumsum']
             })
 
     df_report = pd.DataFrame(report_data)
 
-    def style_status_column(val):
-        color = color_map_status.get(val, "")
+    # FUNZIONE PER COLORARE L'INTERA RIGA
+    def colora_righe_pareto(row):
+        color = color_map_status.get(row['Status'], "")
         if color:
-            text_color = "black" if "20%" in val or "50%" in val else "white"
-            return f'background-color: {color}; color: {text_color}; font-weight: bold;'
-        return ''
+            text_color = "black" if "20%" in row['Status'] or "50%" in row['Status'] else "white"
+            return [f'background-color: {color}; color: {text_color}; font-weight: bold'] * len(row)
+        return [''] * len(row)
 
     st.write("")
     st.write("")
     st.dataframe(
-        df_report.style.map(style_status_column, subset=['Status Economico']),
+        df_report.style.apply(colora_righe_pareto, axis=1),
         use_container_width=True,
         hide_index=True,
-        column_config={
-            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")
-        }
+        column_config={"Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")}
     )
 
     # Arricchimento del dataframe originale per il return
