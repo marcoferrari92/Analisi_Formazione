@@ -28,6 +28,12 @@ L'appartenenza delle aziende ai vari scaglioni è individuata dallo **"Status Ec
 
 """
 
+STRAT_1 = """💡**Strategia:** Punta le campagne marketing fortemente sui Top Players. Senza di loro perdi quasi tutto il mercato."""
+STRAT_2 = """💡**Strategia:** Il mercato è dominato da Top Players che ricevono fondi ingenti ma il volume complessivo generato dalle aziende minori è ancora importante. 
+        Diversifica la campagna marketing per soddisfare i diversi bisogni di entrambi i gruppi."""
+STRAT_3 = """💡**Strategia:** Il mercato è abbastanza dispersivo. Punta sulla capillarità con campagne marketing su larga scala per coprirlo interamente."""
+
+
 
 def calculate_gini(values):
     """Calcola l'indice di Gini (0 = equità, 1 = oligarchia)."""
@@ -151,22 +157,23 @@ def pareto_analysis(df, guida_pareto=""):
 
     # Spiegazione dinamica del valore di Gini
     st.write("")
+    col_stato, col_info = st.columns([1, 2])
     if indice_gini > 0.7:
-        st.error(f"⚠️ **Mercato Oligarchico (G = {indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
-        st.info("""
-        💡 Punta le campagne marketing fortemente sui Top Players. Senza di loro perdi quasi tutto il mercato.
-        """)
+        with col_stato:
+            st.error(f"⚠️ **Mercato Oligarchico (G = {indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
+        with col_info:
+            st.info(STRAT_1)
     elif indice_gini > 0.4:
-        st.warning(f"⚖️ **Mercato Sbilanciato (G = {indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
-        st.info("""
-        💡 Il mercato è dominato da Top Players che ricevono fondi ingenti ma il volume complessivo generato dalle aziende minori è ancora importante. 
-        Diversifica la campagna marketing per soddisfare i diversi bisogni di entrambi i gruppi. 
-        """)
+        with col_stato:
+            st.warning(f"⚖️ **Mercato Sbilanciato (G = {indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
+        with col_info:
+            st.info(STRAT_2)
     else:
-        st.success(f"🤝 **Mercato Democratico (G = {indice_gini:.2f})**: Il budget è distribuito in modo equo.")
-        st.info("""
-        💡 Il mercato è abbastanza dispersivo. Punta sulla capillarità con campagne marketing su larga scala per coprirlo interamente.
-        """)
+        with col_stato:
+            st.success(f"🤝 **Mercato Democratico (G = {indice_gini:.2f})**: Il budget target è distribuito in modo equo.")
+        with col_info:
+            st.info(STRAT_3)
+        
     
     # --- 3. AGGIORNAMENTO GRAFICO ---
     fig_pareto = go.Figure()
