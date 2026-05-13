@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 
 GUIDA = r"""
-Carica il database clienti per verificare quanto sei penetrato nel Settore Target
+Carica l'elenco clienti nel database di confronto (barra laterale) per verificare quanto sei penetrato nel Settore Target
 """
 
 def penetration_analysis(df):
