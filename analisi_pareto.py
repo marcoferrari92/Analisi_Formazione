@@ -123,28 +123,17 @@ def pareto_analysis(df, guida_pareto=""):
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
-    # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
-    report_data = []
-    for s in scaglioni:
-        if s in soglie_indici:
-            idx = soglie_indici[s]
-            row_p = df_pareto[df_pareto['N_Aziende_Count'] == idx].iloc[0]
-            report_data.append({
-                "Status": classify_by_rank(idx), # SOLO IL TESTO
-                "Soglia": f"{s}%",
-                "N. Aziende": idx,
-                "% Aziende": f"{(idx / len(df_pareto) * 100):.2f}%",
-                "Budget Cumulativo": row_p['Cumsum']
-            })
-
+    # 1. Pulisci i dati: assicuriamoci che "Status" sia solo la stringa di testo
+    # Se classify_by_rank restituisce (testo, colore), prendiamo solo il testo [0]
     df_report = pd.DataFrame(report_data)
+    df_report['Status'] = df_report['Status'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
 
-    # 2. Funzione di stile che recupera il colore dalla mappa esterna
+    # 2. Funzione di stile (immutata, ma ora i dati sono puliti)
     def apply_full_row_style(row):
-        # Recupera il colore usando la stringa "01. Top 5%" come chiave
         color = color_map_status.get(row['Status'], "")
-        # Contrasto testo: nero su giallo/arancio, bianco sugli altri
-        text_color = "black" if any(x in row['Status'] for x in ["20%", "50%"]) else "white"
+        if not color: return [''] * len(row) # Evita il bianco se non trova il colore
+        
+        text_color = "black" if any(x in str(row['Status']) for x in ["20%", "50%"]) else "white"
         return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
 
     # 3. Visualizzazione
@@ -158,6 +147,7 @@ def pareto_analysis(df, guida_pareto=""):
             "Status": st.column_config.TextColumn("Ranking Scaglione")
         }
     )
+    st.write("")
 
     # Arricchimento del dataframe originale per il return
     status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
