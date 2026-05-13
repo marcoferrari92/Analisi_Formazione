@@ -119,34 +119,17 @@ def pareto_analysis(df, guida_pareto=""):
         xaxis_title="Numero Aziende",
         yaxis=dict(title="Budget Target (€)", type="log", dtick=1, exponentformat="SI"),
         yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
-        template="plotly_white", height=600
+        template="plotly_white", height=600, showlegend=False
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
     # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
     df_report = pd.DataFrame(report_data)
-
-    # Pulizia: se 'Status Economico' è una tupla ('Testo', '#colore'), estraiamo solo il testo
-    # Questo serve a rimuovere i codici esadecimali visibili nel tuo screenshot
     df_report['Status Economico'] = df_report['Status Economico'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
-
-    # Funzione di stile che punta alla colonna corretta 'Status Economico'
-    def apply_full_row_style(row):
-        # Prendiamo il valore testuale pulito
-        status_val = row['Status Economico']
-        # Peschiamo il colore dalla mappa definita nella sezione 2A
-        color = color_map_status.get(status_val, "")
-        
-        if not color: 
-            return [''] * len(row)
-        
-        # Contrasto testo: nero su giallo/arancio, bianco sugli altri
-        text_color = "black" if any(x in str(status_val) for x in ["20%", "50%"]) else "white"
-        return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
 
     st.write("")
     st.dataframe(
-        df_report.style.apply(apply_full_row_style, axis=1),
+        df_report,
         use_container_width=True,
         hide_index=True,
         column_config={
