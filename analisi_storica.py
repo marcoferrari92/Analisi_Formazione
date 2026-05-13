@@ -361,4 +361,3 @@ def story_analysis(df):
        st.write("")
        st.write("")
        st.dataframe(st_df, hide_index=True, use_container_width=True)
-       st.plotly_chart(fig_strategy, use_container_width=True)
