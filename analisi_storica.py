@@ -42,12 +42,15 @@ def story_analysis(df):
     df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
     df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
     df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
+    # Nel raggruppamento (Punto 1 del tuo codice)
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
         Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum())
+        # Qui usiamo la mediana invece della somma per il valore "tipico"
+        Mediana_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: x[df_temp.loc[x.index, 'IS_TARGET'] == 1].median())
     ).reset_index().sort_values('Anno')
+
 
     # CALCOL CAGR
     def calc_cagr(current_val, start_val, current_year, start_year):
