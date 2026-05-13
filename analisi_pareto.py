@@ -58,8 +58,8 @@ def pareto_analysis(df, guida_pareto=""):
     # --- 1. PREPARAZIONE DATI ---
     # Raggruppiamo per beneficiario e ordiniamo per budget decrescente
     df_pareto = df_targ.groupby('RNA_DENOMINAZIONE_BENEFICIARIO')['RNA_ELEMENTO_DI_AIUTO'].sum().reset_index()
-    #df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
-    df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=True)
+    df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=False)
+    #df_pareto = df_pareto.sort_values(by='RNA_ELEMENTO_DI_AIUTO', ascending=True)
     
     total_budget = df_pareto['RNA_ELEMENTO_DI_AIUTO'].sum()
     total_aziende = len(df_pareto)
