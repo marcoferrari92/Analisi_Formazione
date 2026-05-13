@@ -103,9 +103,11 @@ def pareto_analysis(df, guida_pareto=""):
 
     # --- 4. OUTPUT STREAMLIT ---
     st.plotly_chart(fig_pareto, use_container_width=True)
-    st.subheader("📊 Riepilogo Scaglioni")
+    st.write("")
+    st.write("")
     st.table(pd.DataFrame(report_data))
-
+    st.write("")
+    st.write("")
     with st.expander("🔍 Visualizza Dettaglio Aziende e Status"):
         st.dataframe(df_pareto[['RNA_DENOMINAZIONE_BENEFICIARIO', 'RNA_ELEMENTO_DI_AIUTO', 'Percentage', 'Status Economico']].rename(
             columns={'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda', 'RNA_ELEMENTO_DI_AIUTO': 'Budget'}
