@@ -187,13 +187,6 @@ if uploaded_file is not None:
                     use_container_width=True, 
                     config={'displayModeBar': False})
 
-
-        # --- FUNNEL CHART (QUALIFICAZIONE) ---
-        st.write("")
-        st.write("")
-        with st.expander("👁️ Pentrazione Settore Target"):
-            st.write("")
-            penetration_analysis(df)
             
 
         # --- ANALISI STORICA ---
@@ -204,6 +197,18 @@ if uploaded_file is not None:
             story_analysis(df)
         st.write("")
         st.write("")
+
+        # --- ANALISI RANKING E PARETO ---
+        with st.expander("🏆 Distribuzione Economica Settore Target"):
+            st.write("")
+            df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
+        st.write("")
+        st.write("")
+
+        # --- FUNNEL CHART (QUALIFICAZIONE) ---
+        with st.expander("👁️ Pentrazione Settore Target"):
+            st.write("")
+            penetration_analysis(df)
         
  
         # --- ANALISI GEOGRAFICA ---
@@ -222,12 +227,7 @@ if uploaded_file is not None:
         st.write("")
 
         
-        # --- ANALISI RANKING E PARETO ---
-        with st.expander("🏆 Distribuzione Economica Settore Target"):
-            st.write("")
-            df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
-        st.write("")
-        st.write("")
+        
 
 
 
