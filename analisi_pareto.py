@@ -47,6 +47,7 @@ def pareto_analysis(df, guida_pareto=""):
 
     with st.popover("💡 Strategia"):
         st.markdown(GUIDA)
+    st.write("")
 
     df_targ = df[df['IS_TARGET'] == 1].copy()
     
