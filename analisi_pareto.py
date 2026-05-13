@@ -139,21 +139,25 @@ def pareto_analysis(df, guida_pareto=""):
 
     df_report = pd.DataFrame(report_data)
 
-    # FUNZIONE PER COLORARE L'INTERA RIGA
-    def colora_righe_pareto(row):
+    # FUNZIONE DI STILE PER L'INTERA RIGA
+    def style_row_by_status(row):
         color = color_map_status.get(row['Status'], "")
-        if color:
-            text_color = "black" if "20%" in row['Status'] or "50%" in row['Status'] else "white"
-            return [f'background-color: {color}; color: {text_color}; font-weight: bold'] * len(row)
-        return [''] * len(row)
+        # Testo nero per giallo/arancio, bianco per i colori scuri
+        text_color = "black" if any(x in row['Status'] for x in ["20%", "50%"]) else "white"
+        # Ritorna una lista di stili, uno per ogni colonna della riga
+        return [f'background-color: {color}; color: {text_color}; font-weight: bold;'] * len(row)
 
     st.write("")
     st.write("")
+    
+    # Applichiamo lo stile all'intero dataframe della funzione
     st.dataframe(
-        df_report.style.apply(colora_righe_pareto, axis=1),
+        df_report.style.apply(style_row_by_status, axis=1),
         use_container_width=True,
         hide_index=True,
-        column_config={"Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")}
+        column_config={
+            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f")
+        }
     )
 
     # Arricchimento del dataframe originale per il return
