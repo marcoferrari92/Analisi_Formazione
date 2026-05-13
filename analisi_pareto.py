@@ -209,7 +209,7 @@ def pareto_analysis(df, guida_pareto=""):
         layer="below", 
         line_width=0,
         annotation_text="GAP DI CONCENTRAZIONE",
-        annotation_position="top center"
+        annotation_position="top left"
     )
 
     # Barre
