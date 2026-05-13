@@ -17,7 +17,7 @@ L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola fra
 
 #### 🎩 Status Economico nel Settore Target
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
-* Zona **Rossa (fino al 20%):** poche aziende leader che muovono il 20% di tutto il budget; complesse da acquisire ma fondamentali.
+* :red[Zona **Rossa (fino al 20%):**] poche aziende leader che muovono il 20% di tutto il budget; complesse da acquisire ma fondamentali.
 * Zona **Arancio (fino al 50%):** aziende che completano la metà dell'intero budget del Settore Target.
 * Zona **Gialla (fino al 80%):** aziende che completano l'80% del Mercato Target (regola di Pareto). 
 * Zona **Verde (fino al 95%):** aziende che completano la quasi totalità del Settore Target.  
