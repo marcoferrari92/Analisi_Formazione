@@ -185,7 +185,7 @@ def pareto_analysis(df, guida_pareto=""):
         line_dash="dot", 
         line_color="rgba(0,0,0,0.3)", 
         line_width=2,
-        annotation_text=f"Reale: {punto_reale_80} aziende", 
+        annotation_text=f"{punto_reale_80} aziende", 
         annotation_position="top left"
     )
     
@@ -195,7 +195,7 @@ def pareto_analysis(df, guida_pareto=""):
         line_dash="dot", 
         line_color="rgba(0,0,0,0.3)", 
         line_width=2,
-        annotation_text=f"Teorico: {int(punto_teorico_80)} aziende", 
+        annotation_text=f"{int(punto_teorico_80)} aziende", 
         annotation_position="top right"
     )
     
@@ -208,7 +208,7 @@ def pareto_analysis(df, guida_pareto=""):
         opacity=0.1, 
         layer="below", 
         line_width=0,
-        annotation_text="GAP DI CONCENTRAZIONE",
+        annotation_text="80% Reale vs Teorico (GAP)",
         annotation_position="top left"
     )
     # Marker di intersezione sulla diagonale (Punto Teorico 80/80)
