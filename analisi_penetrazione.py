@@ -2,6 +2,10 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+GUIDA = r"""
+Carica il database clienti per verificare quanto sei penetrato nel Settore Target
+"""
+
 def penetration_analysis(df):
 
         n_aziende        = len(set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
