@@ -3,6 +3,9 @@
 # ANALISI STORICA (CAGR)
 # ***********************
 
+import streamlit as st
+
+
 def story_analysis(df):
     
     st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
