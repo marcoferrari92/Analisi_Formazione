@@ -258,7 +258,7 @@ def pareto_analysis(df, guida_pareto=""):
         xaxis_title="Numero Aziende",
         bargap=0,
         yaxis=dict(title="Budget Target (€)", type="linear", dtick=1, exponentformat="SI"),
-        yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 105], ticksuffix="%"),
+        yaxis2=dict(title="% Cumulata", overlaying="y", side="right", range=[0, 115], ticksuffix="%"),
         template="plotly_white", height=600, 
         showlegend=True,
         legend=dict(
