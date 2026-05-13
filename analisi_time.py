@@ -64,15 +64,12 @@ def time_analysis(df):
         st.info(GUIDA_TIMELINE)
     
     # 2. Creazione della Figura con Subplots (2 righe, 1 colonna)
-    # shared_xaxes=True è la chiave per la sincronizzazione del puntatore
     fig = make_subplots(
         rows=2, cols=1, 
         shared_xaxes=True, 
         vertical_spacing=0.08, # Spazio tra i due grafici
         subplot_titles=("Quota di Mercato del Settore Target", "Evoluzione Temporale del Budget (Mln €)")
     )
-
-    # --- A. AGGIUNTA TRACCE AL GRAFICO SUPERIORE (Row 1) ---
     # Quota Target (%) - Area chart
     fig.add_trace(
         go.Scatter(
@@ -81,14 +78,12 @@ def time_analysis(df):
             name="Quota Target (%)",
             line=dict(color='#e74c3c', width=2, shape='spline'),
             fill='tozeroy',
-            fillcolor='rgba(231, 76, 60, 0.2)', # Rosso trasparente
+            fillcolor='rgba(231, 76, 60, 0.2)', 
             mode='lines+markers',
             marker=dict(size=6)
         ),
         row=1, col=1
     )
-
-    # --- B. AGGIUNTA TRACCE AL GRAFICO INFERIORE (Row 2) ---
     # Mercato Totale (Mln €) - Linea Blu
     fig.add_trace(
         go.Scatter(
@@ -98,7 +93,6 @@ def time_analysis(df):
             line=dict(color='#3498db', width=2, shape='spline'),
             mode='lines+markers',
             marker=dict(size=6),
-            # Tooltip custom per mostrare il valore reale (non la radice)
             hovertemplate="Mercato Totale: %{text:.2f} Mln €<extra></extra>",
             text=df_time_plot['Mercato_Mln']
         ),
@@ -120,7 +114,7 @@ def time_analysis(df):
         row=2, col=1
     )
 
-    # --- C. CONFIGURAZIONE LAYOUT E ASSI (La parte complessa) ---
+    # --- C. CONFIGURAZIONE LAYOUT E ASSI ---
     # Calcolo Tick asse Y inferiore (Scala Radice Quadrata)
     max_mln = df_time_plot['Mercato_Mln'].max()
     potential_ticks = np.array([0, 1, 5, 10, 25, 50, 100, 200, 400, 800])
@@ -129,15 +123,10 @@ def time_analysis(df):
 
     fig.update_layout(
         template="plotly_white",
-        height=700, # Altezza totale aumentata per contenere entrambi
-        margin=dict(l=80, r=40, t=50, b=50), # Margini fissi per allineamento
+        height=700, 
+        margin=dict(l=80, r=40, t=50, b=50), 
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        
-        # --- HOVER UNIFICATO: La soluzione al tuo problema ---
-        # Traccia una linea verticale attraverso TUTTA la figura (entrambi i grafici)
         hovermode="x unified",
-        
-        # Configurazione estetica della linea verticale (Spike)
         xaxis=dict(
             showspikes=True,
             spikemode='across+marker',
@@ -146,8 +135,6 @@ def time_analysis(df):
             spikecolor='#999999'
         )
     )
-
-    # Configurazione specifica Assi Y (yaxis per row 1, yaxis2 per row 2)
     fig.update_yaxes(
         title_text="Quota Target (%)", 
         ticksuffix="%", 
@@ -163,9 +150,6 @@ def time_analysis(df):
         gridcolor="#f0f0f0",
         row=2, col=1
     )
-
-    # Configurazione specifica Assi X (xaxis per row 1, xaxis2 per row 2)
-    #shared_xaxes=True nasconde automaticamente l'asse X del primo grafico
     fig.update_xaxes(
         range=[x_min, x_max], 
         constrain='domain', 
@@ -173,7 +157,6 @@ def time_analysis(df):
         griddash="dot", 
         row=1, col=1
     )
-    
     fig.update_xaxes(
         title_text="Periodo", 
         range=[x_min, x_max], 
@@ -182,8 +165,6 @@ def time_analysis(df):
         griddash="dot", 
         row=2, col=1
     )
-
-    # Rendering
     st.plotly_chart(fig, use_container_width=True, key="temporal_subplots")
     
 
