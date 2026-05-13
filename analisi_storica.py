@@ -1,10 +1,10 @@
 
-    # ***********************
-    # ANALISI STORICA (CAGR)
-    # ***********************
-  
-    st.divider()
-    st.write("")
+# ***********************
+# ANALISI STORICA (CAGR)
+# ***********************
+
+def story_analysis(df):
+    
     st.subheader("📈 Analisi Storica: Aiuto Medio vs Crescita Composta")
     st.write("")
     with st.popover("💡 Strategia"):
