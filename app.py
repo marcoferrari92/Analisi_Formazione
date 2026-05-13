@@ -16,6 +16,7 @@ from analisi_geo import geo_analysis
 from analisi_time import time_analysis
 from analisi_pareto import pareto_analysis
 from analisi_storica import story_analysis
+from analisi_penetrazione import penetration_analysis
 from analysis_benchmark import grafici_posizionamento
 
 # --- CONFIGURAZIONE PAGINA ---
@@ -191,37 +192,8 @@ if uploaded_file is not None:
         st.write("")
         st.write("")
         with st.expander("👁️ Pentrazione Settore Target"):
-            
-            # 1. Recupero dei valori per i passaggi del funnel
-            val_totali = n_aziende
-            val_target = n_aziende_target
-            
-            # Calcolo aziende clienti nel target (se il database clienti è caricato)
-            if 'STATO' in df.columns:
-                # Contiamo i CF univoci che sono sia in target che già clienti
-                val_clienti = df[(df['IS_TARGET'] == 1) & (df['STATO'].str.contains('MATCH', case=False, na=False))]['RNA_CODICE_FISCALE_BENEFICIARIO'].nunique()
-            else:
-                val_clienti = 0
-
-            # Creazione del DataFrame per il grafico
-            funnel_df = pd.DataFrame({
-                "Fase": ["Aziende Totali", "Aziende Target", "Aziende Clienti"],
-                "Numero": [val_totali, val_target, val_clienti]
-            })
-
-            # Generazione del Grafico
-            fig_funnel = px.funnel(
-                funnel_df, 
-                x='Numero', 
-                y='Fase',
-                title="Penetrazione Settore Target",
-                color_discrete_sequence=["#3498db"]
-            )
-            
-            fig_funnel.update_traces(textinfo="value+percent initial")
-            fig_funnel.update_layout(height=450, margin=dict(t=50, b=0, l=10, r=10))
-            
-            st.plotly_chart(fig_funnel, use_container_width=True, key="funnel_qualificazione_leads")
+            st.write("")
+            penetration_analysis(df)
             
 
         # --- ANALISI STORICA ---
