@@ -243,7 +243,7 @@ def story_analysis(df):
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
             * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando, spostando il baricentro su meno progetti ma più corposi.
+            * **Significato:** Dopo un periodo d'oro, il mercato target si sta portando a regime spostando il baricentro su meno progetti ma più corposi.
             """)
 
         elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
@@ -252,7 +252,7 @@ def story_analysis(df):
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
             * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando puntando a fornire più aiuti ma meno corposi.
+            * **Significato:** Dopo un periodo d'oro, il mercato target si sta portando a regime fornendo più aiuti ma meno corposi.
             """)
 
         elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
@@ -261,7 +261,7 @@ def story_analysis(df):
             **Nell'anno {anno_u}:**
             * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
             * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-            * **Significato:** Dopo un'annata d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio.
+            * **Significato:** Dopo un periodo d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio.
             """)
 
         # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
