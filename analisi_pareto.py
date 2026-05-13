@@ -215,9 +215,9 @@ def pareto_analysis(df, guida_pareto=""):
     x_centro_gap = (punto_reale_80 + punto_teorico_80) / 2
     fig_pareto.add_annotation(
         x=x_centro_gap,
-        y=107,               # Posiziona nel "cielo" del grafico (asse y2 arriva a 115)
+        y=115,               # Posiziona nel "cielo" del grafico (asse y2 arriva a 115)
         yref="y2",           # Fondamentale per usare la scala 0-115%
-        text="<b>80% Reale vs Teorico (GAP)</b>",
+        text="<b>80% GAP (Reale vs Teorico)</b>",
         showarrow=False,
         font=dict(color="#2c3e50", size=12),
         xanchor="center",
