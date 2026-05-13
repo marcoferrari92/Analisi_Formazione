@@ -141,11 +141,11 @@ def pareto_analysis(df, guida_pareto=""):
     with col2:
         # Quante aziende fanno il primo 80% del budget?
         n_80 = len(df_pareto[df_pareto['Percentage'] <= 80])
-        st.metric("Aziende per l'80% Vol.", n_80)
+        st.metric("Aziende per l'80% del Volume Target", n_80)
     with col3:
         # Dominanza del primo player
         top_1 = (df_pareto['RNA_ELEMENTO_DI_AIUTO'].iloc[0] / total_budget) * 100
-        st.metric("Dominanza Top Player", f"{top_1:.1f}%")
+        st.metric("Dominanza del Top Player", f"{top_1:.1f}%")
 
     # Spiegazione dinamica del valore di Gini
     if indice_gini > 0.7:
