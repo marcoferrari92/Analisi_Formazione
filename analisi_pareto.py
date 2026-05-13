@@ -123,43 +123,6 @@ def pareto_analysis(df, guida_pareto=""):
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
-    # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
-    df_report = pd.DataFrame(report_data)
-
-    # Pulizia: se 'Status Economico' è una tupla ('Testo', '#colore'), estraiamo solo il testo
-    # Questo serve a rimuovere i codici esadecimali visibili nel tuo screenshot
-    df_report['Status Economico'] = df_report['Status Economico'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
-
-    # Funzione di stile che punta alla colonna corretta 'Status Economico'
-    def apply_full_row_style(row):
-        # Prendiamo il valore testuale pulito
-        status_val = row['Status Economico']
-        # Peschiamo il colore dalla mappa definita nella sezione 2A
-        color = color_map_status.get(status_val, "")
-        
-        if not color: 
-            return [''] * len(row)
-        
-        # Contrasto testo: nero su giallo/arancio, bianco sugli altri
-        text_color = "black" if any(x in str(status_val) for x in ["20%", "50%"]) else "white"
-        return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
-
-    st.write("")
-    st.dataframe(
-        df_report.style.apply(apply_full_row_style, axis=1),
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f"),
-            "Status Economico": st.column_config.TextColumn("Ranking Scaglione")
-        }
-    )
-    st.write("")
-
-    # Arricchimento del dataframe originale per il return
-    status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
-    df['Status Economico'] = df['RNA_DENOMINAZIONE_BENEFICIARIO'].map(status_map).fillna("Non Target")
-    
-    return df, color_map_status
+   
 
     
