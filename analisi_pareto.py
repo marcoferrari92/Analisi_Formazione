@@ -12,8 +12,8 @@ Coefficiente $G$ compreso tra 0 e 1:
 
 #### 📈 Curva di Pareto
 L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola frazione di aziende (il 20%) assorbe la maggior parte delle risorse economiche (l'80%). 
+* Una Curva di Pareto a gomito indica un settore dominato da grandi player ($G > 0$).
 * Una Curva di Pareto diagonale indica un settore perfettamente democratico ($G = 0$, linea tratteggiata).
-* Una Curva di Pareto a gomito indica un settore dominato da grandi player.
 
 #### 🎩 Status Economico nel Settore Target
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
@@ -153,10 +153,13 @@ def pareto_analysis(df, guida_pareto=""):
     st.write("")
     if indice_gini > 0.7:
         st.error(f"⚠️ **Mercato Oligarchico (G = {indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
+        st.markdwn("""Punta le campagne marketing fortemente sui top players""")
     elif indice_gini > 0.4:
         st.warning(f"⚖️ **Mercato Sbilanciato (G = {indice_gini:.2f})**: Esiste un divario netto tra i leader e la base del mercato.")
+        st.markdwn("""Punta le campagne marketing fortemente sui top players""")
     else:
         st.success(f"🤝 **Mercato Democratico (G = {indice_gini:.2f})**: Il budget è distribuito in modo relativamente equo.")
+        st.markdwn("""Punta sulla capillarità con campagne marketing su larga scala.""")
     
     
     # --- 3. AGGIORNAMENTO GRAFICO ---
