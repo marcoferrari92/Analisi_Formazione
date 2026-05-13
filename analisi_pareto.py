@@ -124,7 +124,6 @@ def pareto_analysis(df, guida_pareto=""):
         line=dict(color='rgba(150, 150, 150, 0.5)', width=2, dash='dot'),
         yaxis="y2"
     ))
-    fig_pareto = go.Figure()
 
     # Barre (Scala Logaritmica)
     fig_pareto.add_trace(go.Bar(
