@@ -243,7 +243,7 @@ if uploaded_file is not None:
 
         
         # --- ANALISI RANKING E PARETO ---
-        with st.expander("🏆 Ranking Beneficiari e Analisi di Mercato (Pareto)"):
+        with st.expander("🏆 Distribuzione Economica Settore Target"):
             st.write("")
             df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
         st.write("")
