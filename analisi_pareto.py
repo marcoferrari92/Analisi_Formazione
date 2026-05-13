@@ -13,7 +13,7 @@ In questa sezione, mappiamo la **concentrazione del potere economico** nel Setto
 * Zona **Arancio (fino al 50%):** aziende che coprono la metà dell'intero budget del Settore Target.
 * Zona **Gialla (fino al 80%):** aziende che coprono l'80% del buddget (regola di Pareto). 
 * Zona **Verde (fino al 95%):** aziende che completano la quasi totalità del Settore Target.  
-* Zona **Blu (oltre il 95%):**troviamo i *Disinteressati*: aziende non interessate a investire nel Settore Target o troppo piccole per essere determinanti in questo settore. 
+* Zona **Blu (oltre il 95%):** troviamo i *Disinteressati*: aziende non interessate a investire nel Settore Target o troppo piccole per essere determinanti in questo settore. 
     
 **N.B.**
 L'appartenenza delle aziende ai vari scaglioni è individuata dallo "Status Economico" nella tabella riassuntiva di tutto il database.
