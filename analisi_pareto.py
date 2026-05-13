@@ -127,12 +127,6 @@ def pareto_analysis(df, guida_pareto=""):
     st.write("")
     st.write("")
     st.table(pd.DataFrame(report_data))
-    st.write("")
-    st.write("")
-    with st.expander("🔍 Visualizza Dettaglio Aziende e Status"):
-        st.dataframe(df_pareto[['RNA_DENOMINAZIONE_BENEFICIARIO', 'RNA_ELEMENTO_DI_AIUTO', 'Percentage', 'Status Economico']].rename(
-            columns={'RNA_DENOMINAZIONE_BENEFICIARIO': 'Azienda', 'RNA_ELEMENTO_DI_AIUTO': 'Budget'}
-        ), use_container_width=True)
 
     # Arricchimento del dataframe originale per il return
     status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
