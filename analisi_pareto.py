@@ -269,7 +269,7 @@ def pareto_analysis(df, guida_pareto=""):
             ))
 
     fig_pareto.update_layout(
-        title="Concentrazione Settore Target",
+        title="",
         xaxis_title="Numero Aziende",
         bargap=0,
         yaxis=dict(title="Budget Target (€)", type="linear", dtick=1, exponentformat="SI"),
