@@ -4,6 +4,7 @@
 # ***********************
 
 import streamlit as st
+import datetime
 
 GUIDA_CAGR = r"""
 #### 📈 Guida al CAGR (Compound Annual Growth Rate)
@@ -29,10 +30,12 @@ def story_analysis(df):
         st.info(GUIDA_CAGR)
     st.write("")
     
-    import datetime
+    
     anno_corrente = datetime.datetime.now().year
 
     # 1. Raggruppamento e Calcoli core
+    df_temp = df.copy()
+    df_temp = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
