@@ -123,20 +123,27 @@ def pareto_analysis(df, guida_pareto=""):
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
     
-    # 1. Pulisci i dati: assicuriamoci che "Status" sia solo la stringa di testo
-    # Se classify_by_rank restituisce (testo, colore), prendiamo solo il testo [0]
+    # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
     df_report = pd.DataFrame(report_data)
-    df_report['Status'] = df_report['Status'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
 
-    # 2. Funzione di stile (immutata, ma ora i dati sono puliti)
+    # Pulizia: se 'Status Economico' è una tupla ('Testo', '#colore'), estraiamo solo il testo
+    # Questo serve a rimuovere i codici esadecimali visibili nel tuo screenshot
+    df_report['Status Economico'] = df_report['Status Economico'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
+
+    # Funzione di stile che punta alla colonna corretta 'Status Economico'
     def apply_full_row_style(row):
-        color = color_map_status.get(row['Status'], "")
-        if not color: return [''] * len(row) # Evita il bianco se non trova il colore
+        # Prendiamo il valore testuale pulito
+        status_val = row['Status Economico']
+        # Peschiamo il colore dalla mappa definita nella sezione 2A
+        color = color_map_status.get(status_val, "")
         
-        text_color = "black" if any(x in str(row['Status']) for x in ["20%", "50%"]) else "white"
+        if not color: 
+            return [''] * len(row)
+        
+        # Contrasto testo: nero su giallo/arancio, bianco sugli altri
+        text_color = "black" if any(x in str(status_val) for x in ["20%", "50%"]) else "white"
         return [f"background-color: {color}; color: {text_color}; font-weight: bold;"] * len(row)
 
-    # 3. Visualizzazione
     st.write("")
     st.dataframe(
         df_report.style.apply(apply_full_row_style, axis=1),
@@ -144,7 +151,7 @@ def pareto_analysis(df, guida_pareto=""):
         hide_index=True,
         column_config={
             "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f"),
-            "Status": st.column_config.TextColumn("Ranking Scaglione")
+            "Status Economico": st.column_config.TextColumn("Ranking Scaglione")
         }
     )
     st.write("")
