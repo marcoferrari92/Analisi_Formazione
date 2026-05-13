@@ -307,12 +307,14 @@ if uploaded_file is not None:
 
         # --- 5. TABELLA ---
 
-        # Funzione di stile per la tabella
-        def style_status_column(val):
-            color = colormap_stato_economico.get(val, "")
+        def style_status_graduato(val, mappa_colori):
+            """
+            Applica il colore di sfondo alla cella dello Status.
+            """
+            color = colormap_stato_economico.get(val, None)
             if color:
-                # Determiniamo se il testo deve essere bianco o nero per leggibilità
-                text_color = "white" if val not in ["03. Top 20%", "04. Top 50%"] else "black"
+                # Testo nero per colori chiari (Giallo/Verde chiaro), bianco per gli altri
+                text_color = "black" if val in ["03. Top 20%", "04. Top 50%"] else "white"
                 return f'background-color: {color}; color: {text_color}; font-weight: bold;'
             return ''
     
