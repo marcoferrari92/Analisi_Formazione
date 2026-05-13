@@ -36,6 +36,10 @@ def story_analysis(df):
     # 1. Raggruppamento e Calcoli core
     df_temp = df.copy()
     df_temp = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
+    df_temp['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_temp['RNA_DATA_CONCESSIONE'])
+    df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
+    df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
+    df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
     df_annual = df_temp.groupby('Anno').agg(
         Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
         Aiuti_Target=('IS_TARGET', 'sum'),
