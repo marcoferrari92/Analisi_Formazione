@@ -172,8 +172,25 @@ def pareto_analysis(df, guida_pareto=""):
         line=dict(color='black', width=3, dash='dot'),
         yaxis="y2"
     ))
+    # Valore perfettamente democratico del 80%
+    punto_teorico_80 = total_aziende * 0.8
+    fig_pareto.add_vline(
+        x=punto_teorico_80, 
+        line_dash="dot", 
+        line_color="rgba(0, 0, 0, 0.5)", 
+        annotation_text="80% Aziende (Teorico)", 
+        annotation_position="top left"
+    )
+    fig_pareto.add_trace(go.Scatter(
+        x=[punto_teorico_80],
+        y=[80],
+        mode='markers',
+        marker=dict(color='black', size=10, symbol='x'),
+        name="Punto Equità 80/80",
+        yaxis="y2"
+    ))
 
-    # Barre (Scala Logaritmica)
+    # Barre
     fig_pareto.add_trace(go.Bar(
         x=df_pareto['N_Aziende_Count'],
         y=df_pareto['RNA_ELEMENTO_DI_AIUTO'],
