@@ -46,7 +46,7 @@ def calculate_gini(values):
 def pareto_analysis(df, guida_pareto=""):
 
     with st.popover("💡 Strategia"):
-        st.info(GUIDA)
+        st.markdown(GUIDA)
 
     df_targ = df[df['IS_TARGET'] == 1].copy()
     
