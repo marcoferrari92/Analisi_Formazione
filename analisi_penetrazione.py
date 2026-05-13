@@ -7,6 +7,10 @@ Carica il database clienti per verificare quanto sei penetrato nel Settore Targe
 """
 
 def penetration_analysis(df):
+        st.write("")
+        with st.popover("💡 Strategia"):
+                st.info(GUIDA)
+        st.write("")
 
         n_aziende        = len(set(df['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
         n_aziende_target = len(set(df[df['IS_TARGET'] == 1]['RNA_CODICE_FISCALE_BENEFICIARIO'].unique()))
