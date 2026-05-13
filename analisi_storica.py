@@ -37,8 +37,8 @@ $$CAGR =\left( \frac{\text{Valore Finale - Valore Iniziale}}{\text{Valore Inizia
 def story_analysis(df):
 
     st.write("")
-    with st.popover("💡 Strategia"):
-        st.info(GUIDA_CAGR)
+    with st.popover("📖 Metodologia"):
+        st.markdown(GUIDA_CAGR)
     st.write("")
     
     
