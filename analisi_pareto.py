@@ -211,7 +211,7 @@ def pareto_analysis(df, guida_pareto=""):
         annotation_text="GAP DI CONCENTRAZIONE",
         annotation_position="top left"
     )
-    # 3. Opzionale: Aggiungi un marker nel punto di intersezione sulla diagonale
+    # Marker di intersezione sulla diagonale
     fig_pareto.add_trace(go.Scatter(
         x=[punto_teorico_80],
         y=[80],
@@ -249,7 +249,7 @@ def pareto_analysis(df, guida_pareto=""):
             fig_pareto.add_hline(y=s, yref="y2", line_dash="dash", line_color="red", opacity=0.2)
             fig_pareto.add_trace(go.Scatter(
                 x=[soglie_indici[s]], y=[s], mode='markers+text',
-                marker=dict(color='black', size=8, symbol='diamond'),
+                marker=dict(color='black', size=10, symbol='diamond'),
                 text=[f"<b>{s}%</b>"], textposition="top left", yaxis="y2", showlegend=False
             ))
 
