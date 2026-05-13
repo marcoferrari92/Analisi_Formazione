@@ -150,6 +150,7 @@ def pareto_analysis(df, guida_pareto=""):
         st.metric("Dominanza del Top Player", f"{top_1:.1f}%")
 
     # Spiegazione dinamica del valore di Gini
+    t.write("")
     if indice_gini > 0.7:
         st.error(f"⚠️ **Mercato Oligarchico (G = {indice_gini:.2f})**: Il potere è concentrato nelle mani di pochissimi attori.")
     elif indice_gini > 0.4:
