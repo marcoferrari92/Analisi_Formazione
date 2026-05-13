@@ -223,4 +223,25 @@ def pareto_analysis(df, guida_pareto=""):
     st.plotly_chart(fig_pareto, use_container_width=True)
     
     
+    # --- 4. TABELLA RIEPILOGO CON RIGHE COLORATE ---
+    df_report = pd.DataFrame(report_data)
+    df_report['Status Economico'] = df_report['Status Economico'].apply(lambda x: x[0] if isinstance(x, tuple) else x)
+
+    st.write("")
+    st.dataframe(
+        df_report,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Budget Cumulativo": st.column_config.NumberColumn(format="€ %,.0f"),
+            "Status Economico": st.column_config.TextColumn("Ranking Scaglione")
+        }
+    )
+    st.write("")
+
+    # Arricchimento del dataframe originale per il return
+    status_map = dict(zip(df_pareto['RNA_DENOMINAZIONE_BENEFICIARIO'], df_pareto['Status Economico']))
+    df['Status Economico'] = df['RNA_DENOMINAZIONE_BENEFICIARIO'].map(status_map).fillna("Non Target")
     
+    return df, color_map_status
+
