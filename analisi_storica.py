@@ -271,7 +271,7 @@ def story_analysis(df):
 
         elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
             with col_stato:
-               st.info("📉 **AVVISO DI CONTRAZIONE**")
+               st.info("📉 **CONTRAZIONE DEL SETTORE TARGET**")
             with col_info:
                st.markdown(f"""
                **Nell'anno {anno_u}:**
