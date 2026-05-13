@@ -217,6 +217,7 @@ def pareto_analysis(df, guida_pareto=""):
         y=[80],
         mode='markers',
         marker=dict(color='black', size=10, symbol='diamond'),
+        text=[f"<b>80%</b>"], textposition="top left", yaxis="y2", showlegend=False
         name="Punto Equità 80/80",
         yaxis="y2"
     ))
