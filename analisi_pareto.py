@@ -30,7 +30,7 @@ L'appartenenza delle aziende ai vari scaglioni è individuata dallo **"Status Ec
 
 STRAT_1 = """💡**Strategia:** Punta le campagne marketing fortemente sui Top Players. Senza di loro perdi quasi tutto il mercato."""
 STRAT_2 = """💡**Strategia:** Il mercato è dominato da Top Players che ricevono fondi ingenti ma il volume complessivo generato dalle aziende minori è ancora importante. 
-        Diversifica la campagna marketing per soddisfare i diversi bisogni di entrambi i gruppi."""
+        Diversifica la campagna marketing per soddisfare i diversi bisogni delle due popolazioni."""
 STRAT_3 = """💡**Strategia:** Il mercato è abbastanza dispersivo. Punta sulla capillarità con campagne marketing su larga scala per coprirlo interamente."""
 
 
