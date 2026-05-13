@@ -209,7 +209,8 @@ if uploaded_file is not None:
         with st.expander("👁️ Pentrazione Settore Target"):
             st.write("")
             penetration_analysis(df)
-        
+        st.write("")
+        st.write("")
  
         # --- ANALISI GEOGRAFICA ---
         with st.expander("🗺️ Distribuzione Geografica Settore Target"):
