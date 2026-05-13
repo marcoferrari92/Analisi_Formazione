@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 
 GUIDA = """
 **Questo sezione utilizza l'*Analisi di Pareto* per determinare l'*oligarchia* del Settore Target.**
+
 Un mercato con una curva di Pareto piatta indica un settore democratico e frammentato; una curva a gomito indica un settore blindato dai grandi player.
 
 *N.B.*
