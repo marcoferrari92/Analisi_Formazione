@@ -5,16 +5,15 @@ import plotly.graph_objects as go
 GUIDA = """
 **Questo sezione utilizza l'*Analisi di Pareto* e l'*Indice di Gini* per determinare l'*oligarchia* del Settore Target.**
 
-#### 🎩 Coefficiente di Gini
+#### 🧮 Coefficiente di Gini
 Coefficiente $G$ compreso tra 0 e 1:
-* **$G = 0$ (Equità perfetta):** Tutte le aziende ricevono esattamente la stessa cifra. 
-    * *Esempio:* Se ci sono 100 aziende e 1 milione di euro, ognuna ha 10.000€.
-* **$G = 1$ (Massima concentrazione):** Una sola azienda prende tutto il budget del settore, e tutte le altre prendono zero.
+* **$G = 0$ (Equità perfetta):** Tutte le aziende ricevono esattamente la stessa cifra.
+* **$G = 1$ (Massima concentrazione):** Una sola azienda prende tutto il budget del settore.
 
 #### 📈 Curva di Pareto
 L'Analisi di Pareto si basa sul principio dell'**80/20**: spesso una piccola frazione di aziende (il 20%) assorbe la maggior parte delle risorse economiche (l'80%). 
-
-Un mercato con una curva di Pareto diagonale indica un settore perfettamente democratico (linea tratteggiata); una curva a gomito indica un settore dominato da grandi player.
+* Una Curva di Pareto diagonale indica un settore perfettamente democratico ($G = 0$, linea tratteggiata).
+* Una Curva di Pareto a gomito indica un settore dominato da grandi player.
 
 #### 🎩 Status Economico nel Settore Target
 In questa sezione, mappiamo la **concentrazione del potere economico** nel Settore Target estendendo l'analisi di Pareto a più scaglioni:
