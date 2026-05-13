@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-GUIDA_PARETO = """
+GUIDA = """
 **Questo sezione utilizza l'*Analisi di Pareto* per determinare l'*oligarchia* del Settore Target.**
 Un mercato con una curva di Pareto piatta indica un settore democratico e frammentato; una curva a gomito indica un settore blindato dai grandi player.
 
@@ -13,9 +13,12 @@ L'appartenenza delle aziende ai vari scaglioni è individuata dallo "Status Econ
 
 
 def pareto_analysis(df, guida_pareto=""):
-    """
-    Esegue l'analisi di Pareto con classificazione coerente tra riepilogo e dettaglio.
-    """
+
+    st.write("")
+    with st.popover("💡 Strategia"):
+        st.info(GUIDA)
+    st.write("")
+
     df_targ = df[df['IS_TARGET'] == 1].copy()
     
     if df_targ.empty:
