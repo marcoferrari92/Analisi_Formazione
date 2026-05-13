@@ -309,7 +309,7 @@ if uploaded_file is not None:
 
         # Funzione di stile per la tabella
         def style_status_column(val):
-            color = mappa_colori.get(val, "")
+            color = colormap_stato_economico.get(val, "")
             if color:
                 # Determiniamo se il testo deve essere bianco o nero per leggibilità
                 text_color = "white" if val not in ["03. Top 20%", "04. Top 50%"] else "black"
@@ -320,7 +320,7 @@ if uploaded_file is not None:
         styled_report = (
             report_aziende.style
             .apply(colora_clienti, axis=1)
-            .applymap(lambda x: style_status_graduato(x, mappa_colori), subset=['Status Economico'])
+            .applymap(lambda x: style_status_graduato(x, colormap_stato_economico), subset=['Status Economico'])
         )
         st.dataframe(
             styled_report,
