@@ -420,9 +420,9 @@ def story_analysis(df):
            
       # --- PROIEZIONE ANNO CORRENTE ---
       st.write("")
-      st.markdown(f"#### Proiezione Strategica {anno_corrente}")
+      st.markdown(f"#### Proiezione {anno_corrente}")
       
-      col_testo, col_metr1, col_metr2 = st.columns([1, 1, 1])
+      col_testo, col_space, col_metr1, col_metr2 = st.columns([1, 0.3, 1, 1])
       
       with col_testo:
           # Caso A: Proiezione Negativa
