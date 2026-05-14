@@ -426,7 +426,7 @@ def story_analysis(df):
       
       with col_testo:
           # Caso A: Proiezione Negativa
-          if variazione_run_rate < -10:
+          if variazione_run_rate < -5:
               if trend_storico == "ACCELERAZIONE":
                   st.warning("⚠️ **Inversione di rotta:**")
                   st.markdown(f"""
@@ -442,7 +442,7 @@ def story_analysis(df):
                   st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza rispetto al {anno_u}. Campagne marketing mirate e budget sotto controllo.")
 
           # Caso B: Proiezione Positiva
-          elif variazione_run_rate > 10:
+          elif variazione_run_rate > 5:
               if trend_storico == "CRISI" or trend_storico == "RECUPERO":
                   st.success("🌟 **Rinascita:**")
                   st.markdown(f"""
