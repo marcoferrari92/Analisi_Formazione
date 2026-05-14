@@ -151,7 +151,7 @@ def story_analysis(df):
    )
    # Formattazione Volume Totale e Importo Medio (Mediana)
    df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-   df_view['Importo Medio (€)'] = df_view['Aiuto_Medio_Target'].apply(lambda x: f"€ {x:,.0f}")
+   df_view['Importo Medio (€)'] = df_view['Aiuto_Mediano_Target'].apply(lambda x: f"€ {x:,.0f}")
    
    # 2. Selezione e Ridenominazione Colonne
    df_final = df_view[[
