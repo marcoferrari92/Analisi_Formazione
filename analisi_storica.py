@@ -387,18 +387,17 @@ def story_analysis(df):
       vol_reale_corso    = dati_anno_corso['Vol_Target']
       aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
        
-      # Calcolo Run Rate (Proiezione a 12 mesi)
-      proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
-      proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
-      variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
-      medio_proj = proiezione_vol / proiezione_aiuti if proiezione_aiuti > 0 else 0
-       
       # Confronto con l'anno precedente (se esiste)
       anno_prec = anno_corrente - 1
       if anno_prec in df_annual['Anno'].values:
          dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
          vol_prec             = dati_anno_prec['Vol_Target']   
          aiuti_prec           = dati_anno_prec['Aiuti_Target']
+
+         # Calcolo Run Rate (Proiezione a 12 mesi)
+         proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
+         proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
+         variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
 
          # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
          med_proj = df_temp[df_temp['Anno'] == anno_corrente]['RNA_ELEMENTO_DI_AIUTO'].median()
