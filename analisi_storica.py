@@ -161,7 +161,7 @@ def story_analysis(df):
        'Importo Medio (€)', 
        'Vol. Tot. (€)', 
        'Vol. Target (%)', 
-       'CAGR Vol. Target'
+       'CAGR Target'
    ]]
    df_final.columns = [
        'Anno', 
@@ -170,7 +170,7 @@ def story_analysis(df):
        'Importo Medio (€)', 
        'Volume Tot. (€)', 
        'Volume Target (%)', 
-       'CAGR'
+       'CAGR Target'
    ]
    
    # 3. Styling e Formattazione finale
