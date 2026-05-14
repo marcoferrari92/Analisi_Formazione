@@ -456,8 +456,8 @@ def story_analysis(df):
             else:
                st.success(f"🌟 **Crescita:** Il trend è positivo. Ottimo momento per spingere sulla lead generation.")
 
-         # Caso C: Stabilità
-         else:
+        # Caso C: Stabilità
+        else:
             st.info(f"⚖️ **Stabilità consolidata:** Il mercato si mantiene sui livelli del {anno_prec}. Mantieni una strategia di marketing costante senza grossi scossoni.")
 
         # --- STEP 3: METRICHE ---
