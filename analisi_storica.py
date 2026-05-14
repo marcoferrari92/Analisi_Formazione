@@ -64,10 +64,8 @@ def story_analysis(df):
       st.markdown(GUIDA_CAGR)
    st.write("")
     
-    
-   anno_corrente = datetime.datetime.now().year
-   
-   # 1. Raggruppamento e Calcoli core
+
+   # 1. Raggruppamento
    df_temp = df.copy()
    df_temp = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
    df_temp['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_temp['RNA_DATA_CONCESSIONE'])
@@ -85,62 +83,55 @@ def story_analysis(df):
    # Riempi i NaN (es. se in un anno non ci sono aiuti target, la mediana è NaN)
    df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
 
-   anno_start = df_annual['Anno'].min()
-   prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
-   vol_target_start = df_annual['Vol_Target'].iloc[0]
-
    # Calcolo metriche strategiche
-   df_annual['Aiuto_Medio_Target'] = df_annual['Aiuto_Mediano_Target'] # Ora contiene la mediana
-   df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
-   df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
-   df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
-   df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
+   anno_start          = df_annual['Anno'].min()
+   prat_target_start   = df_annual['Aiuti_Target'].iloc[0] 
+   vol_target_start    = df_annual['Vol_Target'].iloc[0]
+   df_annual['Aiuto_Medio_Target']     = df_annual['Aiuto_Mediano_Target'] 
+   df_annual['Quota Target (%)']       = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
+   df_annual['Quota Vol. Target (%)']  = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
+   df_annual['CAGR Target']            = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
+   df_annual['CAGR Vol. Target']       = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
    # Mascheramento anno in corso per i CAGR
+   anno_corrente = datetime.datetime.now().year
    df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
 
    # PROIEZIONE 
-   oggi = datetime.datetime.now()
-   anno_corrente = oggi.year
-   mese_corrente = oggi.month
-   
-   # Calcoliamo quanti mesi sono passati (escluso il mese in corso se non è finito, 
-   # o includendolo se vuoi una stima più aggressiva. Qui usiamo il mese attuale)
-   mesi_passati = mese_corrente 
-
    if anno_corrente in df_annual['Anno'].values:
-       # Estraiamo i dati reali dell'anno in corso
-       dati_anno_corso = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
-       vol_reale_corso = dati_anno_corso['Vol_Target']
-       aiuti_reali_corso = dati_anno_corso['Aiuti_Target']
+      
+      # Estraiamo i dati reali dell'anno in corso
+      mese_corrente = datetime.datetime.now().month
+      mesi_passati = mese_corrente
+      dati_anno_corso    = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
+      vol_reale_corso    = dati_anno_corso['Vol_Target']
+      aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
        
-       # Calcolo Run Rate (Proiezione a 12 mesi)
-       proiezione_vol = (vol_reale_corso / mesi_passati) * 12
-       proiezione_aiuti = (aiuti_reali_corso / mesi_passati) * 12
+      # Calcolo Run Rate (Proiezione a 12 mesi)
+      proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
+      proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
        
-       # Confronto con l'anno precedente (se esiste)
-       anno_prec = anno_corrente - 1
-       if anno_prec in df_annual['Anno'].values:
-           dati_anno_prec = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
-           vol_prec = dati_anno_prec['Vol_Target']
+      # Confronto con l'anno precedente (se esiste)
+      anno_prec = anno_corrente - 1
+      if anno_prec in df_annual['Anno'].values:
+         dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
+         vol_prec             = dati_anno_prec['Vol_Target']   
+         variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
            
-           variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec) * 100
-           
-           # Visualizzazione Alert
-           st.write("---")
-           col_run1, col_run2 = st.columns([1, 2])
-           with col_run1:
-               st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
-           
-           with col_run2:
-               if variazione_run_rate < -5:
-                   st.error(f"⚠️ **Early Warning:** A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}. È il momento di spingere sulle campagne!")
-               elif variazione_run_rate > 5:
-                   st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**. Il mercato è ricettivo!")
-               else:
-                   st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
+         # Visualizzazione Alert
+         col_run1, col_run2 = st.columns([1, 2])
+         with col_run1:
+            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
+         with col_run2:
+            if variazione_run_rate < -5:
+               st.error(f"⚠️ **Early Warning:** A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}. È il momento di spingere sulle campagne!")
+            elif variazione_run_rate > 5:
+               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**. Il mercato è ricettivo!")
+            else:
+               st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
 
-   # --- PARTE SUPERIORE: IL GRAFICO ---
+   
+   # --- GRAFICO ---
    fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
 
    # Barre: Aiuto Medio
