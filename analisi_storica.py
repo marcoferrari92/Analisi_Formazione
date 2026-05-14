@@ -175,9 +175,9 @@ def story_analysis(df):
    
    # 3. Styling e Formattazione finale
    st_df = df_final.style.map(
-       color_cagr, subset=['CAGR']
+       color_cagr, subset=['CAGR Target']
    ).format({
-       'CAGR': "{:.2f} %"
+       'CAGR Target': "{:.2f} %"
    }, na_rep="In corso...")
    
    # Visualizzazione
