@@ -10,27 +10,6 @@ from plotly.subplots import make_subplots
 import datetime
 
 
-# CALCOL CAGR
-def calc_cagr(current_val, start_val, current_year, start_year):
-   n_anni = current_year - start_year
-   if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
-   return (current_val / start_val) ** (1 / n_anni) - 1
-
-
-def color_cagr(val):
-    try:
-        if val is None or pd.isna(val): 
-            return ''
-        v = float(val)
-        if v > 0.001: 
-            return 'color: #27ae60; font-weight: bold;'
-        if v < -0.001: 
-            return 'color: #e74c3c; font-weight: bold;'
-    except: 
-        pass
-    return ''
-      
-
 GUIDA_CAGR = r"""
 
 #### ⏳ Analisi Storica del Settore Target
@@ -55,6 +34,28 @@ $$CAGR =\left( \frac{\text{Valore Finale - Valore Iniziale}}{\text{Valore Inizia
 
 **Esempio:** Un CAGR del 10% su 3 anni significa che, partendo dal valore iniziale, il settore è cresciuto mediamente del 10% ogni anno per tre anni di fila.
 """
+
+
+# CALCOL CAGR
+def calc_cagr(current_val, start_val, current_year, start_year):
+   n_anni = current_year - start_year
+   if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
+   return (current_val / start_val) ** (1 / n_anni) - 1
+
+
+def color_cagr(val):
+    try:
+        if val is None or pd.isna(val): 
+            return ''
+        v = float(val)
+        if v > 0.001: 
+            return 'color: #27ae60; font-weight: bold;'
+        if v < -0.001: 
+            return 'color: #e74c3c; font-weight: bold;'
+    except: 
+        pass
+    return ''
+
 
 def story_analysis(df):
 
