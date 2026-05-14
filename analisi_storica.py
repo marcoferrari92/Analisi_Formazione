@@ -428,19 +428,24 @@ def story_analysis(df):
           # Caso A: Proiezione Negativa
           if variazione_run_rate < -5:
               if trend_storico == "ACCELERAZIONE":
-                  st.warning("⚠️ **Inversione di rotta:**")
+                  st.warning("⚠️ **INVERSIONE**")
                   st.markdown(f"""
                       Il mercato arrivava da un boom ({anno_u}), ma le proiezioni per il {anno_corrente} mostrano una contrazione. 
-                      Dopo grossi investimenti nel {anno_u}, le aziende non sembrano intenzionate a investire nel Settore Target anche nel {anno_corrente}. 
+                      Dopo grossi investimenti nel {anno_u}, le aziende analizzate non sembrano intenzionate a investire nuovamente nel Settore Target. 
                       La campagna marketing deve essere **moderata**.""")
               elif trend_storico == "CRISI":
-                  st.error("🚨 **Aggravamento:**")
+                  st.error("🚨 **CRISI**")
                   st.markdown(f"""
                       La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
                       Le aziende hanno pochissima liquidità: punta tutto su newsletter di **sensibilizzazione** e ottimizzazione fiscale.""")
-              else:
-                  st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza rispetto al {anno_u}. Campagne marketing mirate e budget sotto controllo.")
-
+              elif trend_storico == "RECUPERO":
+                  st.warning(f"⚠️ **Contrazione**")
+                  st.markdown(f"""
+                      topolino""")
+              elif trend_storico == "RALLENTAMENTO":
+                  st.warning(f"⚠️ **Contrazione**")
+                  st.markdown(f"""
+                      Pippo""")
           # Caso B: Proiezione Positiva
           elif variazione_run_rate > 5:
               if trend_storico == "CRISI" or trend_storico == "RECUPERO":
