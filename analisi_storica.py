@@ -408,8 +408,10 @@ def story_analysis(df):
                * :red[**Analisi:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato Target.]
                """)
            
-      # Visualizzazione Alert
+      # PROIEZIONE ANNO CORRENTE
       st.write("")
+      st.markdown(f"""#### Proiezione {anno_corrente}""")
+      
       col1, col2, col3 = st.columns([1, 1, 1])
       with col1:
          if variazione_run_rate <= -20:
