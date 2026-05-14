@@ -208,6 +208,16 @@ def story_analysis(df):
       p_aiuto = (diff_aiuto / penultimo['Aiuto_Mediano_Target'] * 100) if penultimo['Aiuto_Mediano_Target'] > 0 else 0
       p_n = (diff_n / penultimo['Aiuti_Target'] * 100) if penultimo['Aiuti_Target'] > 0 else 0
 
+      # DEFINIAMO IL SENTIMENT STORICO
+      if cagr_att > 0 and diff_cagr > 0:
+         trend_storico = "ACCELERAZIONE"
+      elif cagr_att > 0 and diff_cagr <= 0:
+         trend_storico = "RALLENTAMENTO"
+      elif cagr_att <= 0 and diff_cagr > 0:
+         trend_storico = "RECUPERO"
+      else:
+         trend_storico = "CRISI"
+
       # PROIEZIONE ANNO CORRENTE
       if anno_corrente in df_annual['Anno'].values:
          
@@ -412,21 +422,64 @@ def story_analysis(df):
       st.write("")
       st.markdown(f"""#### Proiezione {anno_corrente}""")
       
-      col1, col2, col3 = st.columns([1, 1, 1])
-      with col1:
-         if variazione_run_rate <= -20:
-             st.error(f"🚨 **Recessione:** Il {anno_corrente} punta a un **{variazione_run_rate:.1f}%!** Calo drastico rispetto al {anno_prec}, serve una campagna di sensibilizzazione!")
-         elif -20 < variazione_run_rate <= -5:
-             st.warning(f"⚠️ **Contrazione:** Proiezione in calo del **{variazione_run_rate:.1f}%**. Ottimizza le campagne marketing, la liquidità delle aziende in questo {anno_corrente} sarà limitata.")
-         elif -5 < variazione_run_rate <= 5:
-             st.info(f"⚖️ **Stabilità:** Il mercato è in linea con il {anno_prec} ({variazione_run_rate:+.1f}%).")
-         elif 5 < variazione_run_rate <= 20:
-             st.success(f"🌟 **Crescita:** Trend positivo del **{variazione_run_rate:.1f}%**. Proponi nuovi investimenti per sfruttare la maggior liquidità che entrerà in questo {anno_corrente}.")
-         else: 
-             st.success(f"🚀**Boom Target:** Proiezione straordinaria del **+{variazione_run_rate:.1f}%**! Cavalca questo boom con campagne marketing più audaci del {anno_prec}.")
-      with col2:
-         st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M")
-         st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti ({delta_n:+.1f}%) | Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)")
+      if len(df_annual) >= 2:
+        # ... (tutti i tuoi calcoli iniziali: cagr_att, diff_cagr, variazione_run_rate, ecc.)
+
+        # --- STEP 1: DEFINIAMO IL SENTIMENT STORICO ---
+        # Creiamo una variabile per "ricordare" cosa è successo nel passato recente
+        if cagr_att > 0 and diff_cagr > 0:
+            trend_storico = "ACCELERAZIONE"
+        elif cagr_att > 0 and diff_cagr <= 0:
+            trend_storico = "RALLENTAMENTO"
+        elif cagr_att <= 0 and diff_cagr > 0:
+            trend_storico = "RECUPERO"
+        else:
+            trend_storico = "CRISI"
+
+        st.write("")
+        st.markdown(f"#### Analisi Storica ({anno_u})")
+        
+        # --- (Qui tieni i tuoi 16 scenari esistenti per l'Analisi Storica) ---
+        # ...
+        
+        # --- STEP 2: PROIEZIONE CONTESTUALIZZATA ---
+        st.write("")
+        st.markdown(f"#### Proiezione Strategica {anno_corrente}")
+        
+        col1, col2, col3 = st.columns([1, 1, 1])
+        
+        with col1:
+            # Caso A: Proiezione Negativa 2026
+            if variazione_run_rate < -10:
+                if trend_storico == "ACCELERAZIONE":
+                    st.warning(f"⚠️ **Inversione di rotta:** Il mercato arrivava da un boom ({anno_u}), ma le proiezione per il {anno_corrente} mostrano una contrazione. 
+                  Le aziende che hanno investito nel {anno_u} non sembrano interessate al Settore Target nel {anno_corrente}. La campagna marketing deve essere moderata.")
+                elif trend_storico == "CRISI":
+                    st.error(f"🚨 **Aggravamento:** La crisi iniziata nel {anno_u} continua nel {anno_corrente}. Le aziende hanno pochissima liquidità: punta tutto su newsletter di supporto e ottimizzazione fiscale.")
+                else:
+                    st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza. Campagne marketing mirate e budget sotto controllo.")
+
+            # Caso B: Proiezione Positiva 2026
+            elif variazione_run_rate > 10:
+                if trend_storico == "CRISI" or trend_storico == "RECUPERO":
+                    st.success(f"🌟 **Rinascita:** Dopo le difficoltà degli anni passati, il {anno_corrente} segna il ritorno della liquidità. Sii il primo a proporre nuovi investimenti audaci alle aziende.")
+                elif trend_storico == "ACCELERAZIONE":
+                    st.success(f"🚀 **Conferma del Boom:** Il mercato non si ferma. Cavalca l'onda con campagne marketing aggressive: la liquidità è ai massimi storici.")
+                else:
+                    st.success(f"🌟 **Crescita:** Il trend è positivo. Ottimo momento per spingere sulla lead generation.")
+
+            # Caso C: Stabilità
+            else:
+                st.info(f"⚖️ **Stabilità consolidata:** Il mercato si mantiene sui livelli del {anno_prec}. Mantieni una strategia di marketing costante senza grossi scossoni.")
+
+        # --- STEP 3: METRICHE ---
+        with col2:
+            st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M", delta=f"{variazione_run_rate:.1f}%")
+            st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti | Medio: **€ {med_proj:,.0f}**")
+
+        with col3:
+            st.metric(label=f"Reale {anno_u}", value=f"€ {vol_prec/1e6:.2f}M")
+            st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
 
       with col3:
          st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
