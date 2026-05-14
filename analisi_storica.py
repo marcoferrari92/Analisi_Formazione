@@ -399,14 +399,16 @@ def story_analysis(df):
          st.write("")
          col1, col2, col3 = st.columns([1, 1, 1])
          with col1:
-            if variazione_run_rate < -20:
-               st.error(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
-            if variazione_run_rate < -10:
-               st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
-            elif variazione_run_rate > 10:
-               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
-            else:
-               st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
+            if variazione_run_rate <= -20:
+                st.error(f"🚨 **Recessione:** Il {anno_corrente} punta a un **{variazione_run_rate:.1f}%**. Calo drastico rispetto al {anno_prec}.")
+            elif -20 < variazione_run_rate <= -5:
+                st.warning(f"⚠️ **Contrazione:** Proiezione in calo del **{variazione_run_rate:.1f}%**. Mercato in rallentamento.")
+            elif -5 < variazione_run_rate <= 5:
+                st.info(f"⚖️ **Stabilità:** Il mercato è in linea con il {anno_prec} ({variazione_run_rate:+.1f}%).")
+            elif 5 < variazione_run_rate <= 20:
+                st.success(f"🌟 **Crescita:** Trend positivo del **{variazione_run_rate:.1f}%**. Il settore è ricettivo.")
+            else: 
+                st.success(f"🚀**Boom Target:** Proiezione straordinaria del **+{variazione_run_rate:.1f}%**!")
          with col2:
             st.metric(
                 label=f"Proiezione {anno_corrente}", 
