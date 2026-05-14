@@ -171,8 +171,9 @@ def story_analysis(df):
             v = float(val)
             if v > 0.001: return 'color: #27ae60; font-weight: bold;'
             if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
-         except: pass
-         return ''
+      except: 
+         pass
+      return ''
 
    st_df = df_final.style.map(
       color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
