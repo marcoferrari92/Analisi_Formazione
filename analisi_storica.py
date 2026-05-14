@@ -302,9 +302,9 @@ def story_analysis(df):
       # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
-            with col_stato:
+         with col_stato:
                st.warning("⚠️ **RECUPERO SISTEMICO**")
-            with col_info:  
+         with col_info:  
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
@@ -313,9 +313,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
-            with col_stato:
+         with col_stato:
                st.warning("⚠️ **RECUPERO QUALITATIVO**")
-            with col_info:  
+         with col_info:  
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
@@ -324,9 +324,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
-            with col_stato:
+         with col_stato:
                st.warning("⚠️ **RECUPERO QUANTITATIVO**")
-            with col_info:  
+         with col_info:  
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
@@ -335,9 +335,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
-            with col_stato:
+         with col_stato:
                st.warning("⚠️ **RIMBALZO TECNICO**")
-            with col_info: 
+         with col_info: 
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
@@ -348,9 +348,9 @@ def story_analysis(df):
       # --- AREA 4: CAGR NEGATIVO + AGGRAVAMENTO ---
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
-            with col_stato:
+         with col_stato:
                st.error("🚨 **DISPERSIONE E CRISI**")
-            with col_info: 
+         with col_info: 
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
@@ -359,9 +359,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
-            with col_stato:
+         with col_stato:
                st.error("🚨 **EROSIONE SELETTIVA**")
-            with col_info: 
+         with col_info: 
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
@@ -370,9 +370,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
-            with col_stato:
+         with col_stato:
                st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
-            with col_info: 
+         with col_info: 
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
@@ -381,9 +381,9 @@ def story_analysis(df):
                """)
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
-            with col_stato:
+         with col_stato:
                st.error("🚨 **RECESSIONE TOTALE**")
-            with col_info: 
+         with col_info: 
                st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
