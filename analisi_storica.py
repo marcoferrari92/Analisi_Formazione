@@ -60,11 +60,11 @@ def color_cagr(val):
 def story_analysis(df):
 
    st.write("")
-   col1, col2 = st.columns([0.5, 2.5])
+   col0, col1, col2, col3 = st.columns([0.25, 0.5, 0.25, 2])
    with col1:
       with st.popover("📖 Metodologia"):
          st.markdown(GUIDA_CAGR)
-   with col2:
+   with col3:
       st.markdown(r"""**In questa sezione trovi l'*Analisi Storica del Settore Target* che confronta la crescita composta (CAGR) con l'andamento mediano degli aiuti alle aziende.**""")
    st.write("")
     
