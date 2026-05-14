@@ -249,8 +249,6 @@ def story_analysis(df):
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :green[**Analisi:** Il {anno_u} ha segnato una piena espansione del Settore Target: sono aumentati sia il numero di progetti che il loro valore economico.]
-                  * Se la proiezione per il {anno_corrente} è altrettanto rosea, puoi puntare a campagne marketing aggressive perchè la liquidità a disposizione delle aziende è elevata.
-                  * Una proiezione]
                """)
 
       elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
@@ -258,7 +256,6 @@ def story_analysis(df):
             st.success("🚀 **ACCELERAZIONE E VALORE**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :green[**Analisi:** Il mercato target è in accelerazione e sta puntando su meno aiuti prioritari dal peso maggiore.]
@@ -269,7 +266,6 @@ def story_analysis(df):
             st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :green[**Analisi:** Il mercato target è in accelerazione e sta puntando sulla capillarità: fornendo più aiuti ma dal peso minore.]
@@ -280,7 +276,6 @@ def story_analysis(df):
             st.warning("⚠️ **ANOMALIA STATISTICA (INERZIA STORICA)**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Il trend storico accelera per inerzia, ma l'anno corrente segna una contrazione reale su tutti i fronti. Verificare la saturazione del mercato.]
@@ -293,7 +288,6 @@ def story_analysis(df):
             st.warning("⚠️ **ANOMALIA DI TREND (INERZIA STORICA)**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Nel {anno_u} il **Settore Target** ha mostrato un CAGR in rallentamento al **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Caso di inerzia statistica: i dati correnti (sia numero di aiuti che importo medio in crescita) indicano un mercato in salute, ma il CAGR rallenta perché confrontato con picchi storici passati eccezionali.]
@@ -304,7 +298,6 @@ def story_analysis(df):
             st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target si sta portando a regime spostando il baricentro su meno progetti ma più corposi.]
@@ -315,7 +308,6 @@ def story_analysis(df):
             st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target si sta portando a regime fornendo più aiuti ma meno corposi.]
@@ -326,7 +318,6 @@ def story_analysis(df):
             st.info("📉 **CONTRAZIONE DEL SETTORE TARGET**")
          with col_info:
                st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio. 
@@ -340,7 +331,6 @@ def story_analysis(df):
             st.warning("⚠️ **RECUPERO SISTEMICO**")
          with col_info:  
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** cala (**{cagr_att:.2f}%**) ma recupera rispetto al {anno_p} ({c_pre:.2f}%).
                * A fronte di un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Segnali di ripresa: il mercato ricomincia ad aggiungere più aiuti e a maggior capitale.]
@@ -351,7 +341,6 @@ def story_analysis(df):
             st.warning("⚠️ **RECUPERO QUALITATIVO**")
          with col_info:  
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** cala (**{cagr_att:.2f}%**) ma recupera rispetto al {anno_p} ({c_pre:.2f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Il calo del mercato si attenua grazie a progetti più grandi che tengono in piedi il settore nonostante la perdita di molti aiuti.]
@@ -362,7 +351,6 @@ def story_analysis(df):
             st.warning("⚠️ **RECUPERO QUANTITATIVO**")
          with col_info:  
                st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** cala (**{cagr_att:.2f}%**) ma recupera rispetto al {anno_p} ({c_pre:.2f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Il mercato sta cercando di risollevararsi aumentando il numero di concessioni a basso costo per stimolare il settore.]
@@ -373,7 +361,6 @@ def story_analysis(df):
             st.warning("⚠️ **RIMBALZO TECNICO**")
          with col_info: 
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** cala (**{cagr_att:.2f}%**) ma recupera rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :yellow[**Analisi:** Il calo è meno severo, ma non ci sono spinte reali né nel valore medio né nel numero di aiuti.]
@@ -386,7 +373,6 @@ def story_analysis(df):
             st.error("🚨 **DISPERSIONE E CRISI**")
          with col_info: 
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :red[**Analisi:** Caso critico: nonostante aumentino aiuti e loro capitale il mercato target sta crollando drasticamente.]
@@ -397,7 +383,6 @@ def story_analysis(df):
             st.error("🚨 **EROSIONE SELETTIVA**")
          with col_info: 
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Al calo di {abs(diff_n)} aiuti ({p_n:.1f}%) è seguito l'aumento dell'**Aiuto Medio** di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :red[**Analisi:** Il mercato target sta crollando e sopravvivono solo pochi progetti grandi, mentre la base del mercato sta scomparendo del tutto.]
@@ -408,7 +393,6 @@ def story_analysis(df):
             st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
          with col_info: 
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :red[**Analisi:** Il mercato target si sta polverizzando in piccoli aiuti che non sostengono il volume economico del settore.]
@@ -419,7 +403,6 @@ def story_analysis(df):
             st.error("🚨 **RECESSIONE TOTALE**")
          with col_info: 
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante il calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :red[**Analisi:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.]
