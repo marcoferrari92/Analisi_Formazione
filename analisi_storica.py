@@ -91,8 +91,8 @@ def story_analysis(df):
    anno_start          = df_annual['Anno'].min()
    prat_target_start   = df_annual['Aiuti_Target'].iloc[0] 
    vol_target_start    = df_annual['Vol_Target'].iloc[0]
-   df_annual['Quota Target (%)']       = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
-   df_annual['Quota Vol. Target (%)']  = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
+   df_annual['Aiuti Target (%)']       = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
+   df_annual['Vol. Target (%)']  = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
    df_annual['CAGR Target']       = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
    # Mascheramento anno in corso per i CAGR
@@ -142,46 +142,51 @@ def story_analysis(df):
 
    # --- TABELLA DETTAGLIATA ---
 
+   # 1. Preparazione dei dati (usiamo una copia del DataFrame annuale)
    df_view = df_annual.sort_values('Anno', ascending=False).copy()
-   df_view['Aiuti Target (%)'] = df_view.apply(
-       lambda x: f"{int(x['Aiuti_Target'])} ({x['Quota Target (%)']:.1f}%)", axis=1
-   )
-   df_view['Vol. Target (%)'] = df_view.apply(
-       lambda x: f"€ {x['Vol_Target']/1e6:.2f}M ({x['Quota Vol. Target (%)']:.1f}%)", axis=1
-   )
-   # Formattazione Volume Totale e Importo Medio (Mediana)
-   df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-   df_view['Importo Medio (€)'] = df_view['Aiuto_Mediano_Target'].apply(lambda x: f"€ {x:,.0f}")
    
-   # 2. Selezione e Ridenominazione Colonne
+   # Formattazione delle colonne monetarie e conteggi
+   df_view['Vol. Totale (€)']  = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
+   df_view['Vol. Target (€)']  = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
+   df_view['Aiuto Medio (€)']  = df_view['Aiuto_Mediano_Target'].apply(lambda x: f"€ {x:,.0f}")
+   
+   # 2. Selezione e Ridenominazione Colonne (Percentuali separate)
    df_final = df_view[[
        'Anno', 
        'Aiuti_Tot', 
+       'Aiuti_Target', 
        'Aiuti Target (%)', 
-       'Importo Medio (€)', 
-       'Vol. Tot. (€)', 
+       'Aiuto Medio (€)', 
+       'Vol. Totale (€)', 
+       'Vol. Target (€)', 
        'Vol. Target (%)', 
        'CAGR Target'
    ]]
+   
    df_final.columns = [
        'Anno', 
        'Aiuti', 
+       'Aiuti Target', 
        'Aiuti Target (%)', 
        'Importo Medio (€)', 
-       'Volume Tot. (€)', 
-       'Volume Target (%)', 
+       'Vol. Totale (€)', 
+       'Vol. Target (€)', 
+       'Vol. Target (%)', 
        'CAGR Target'
    ]
    
    # 3. Styling e Formattazione finale
    st_df = df_final.style.map(
-       color_cagr, subset=['CAGR Target']
+       color_cagr, subset=['CAGR']
    ).format({
-       'CAGR Target': "{:.2f} %"
+       'CAGR': "{:.2f} %",
+       'Aiuti Target (%)': "{:.2f} %",
+       'Vol. Target (%)': "{:.2f} %"
    }, na_rep="In corso...")
    
-   # Visualizzazione
+   # Visualizzazione della tabella in Streamlit
    st.dataframe(st_df, hide_index=True, use_container_width=True)
+
 
 
    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
