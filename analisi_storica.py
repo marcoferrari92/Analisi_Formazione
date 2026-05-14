@@ -266,7 +266,7 @@ def story_analysis(df):
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** mostra un CAGR in rallentamento al **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
-               * :yellow[**Analisi:** Caso di inerzia statistica: i dati correnti (sia numero di aiuti che valore medio in crescita) indicano un mercato in salute, ma il CAGR rallenta perché confrontato con picchi storici passati eccezionali.]
+               * :yellow[**Analisi:** Caso di inerzia statistica: i dati correnti (sia numero di aiuti che importo medio in crescita) indicano un mercato in salute, ma il CAGR rallenta perché confrontato con picchi storici passati eccezionali.]
                """)
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
@@ -300,7 +300,7 @@ def story_analysis(df):
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio. 
-               Le aziende nel {anno_u} hanno ricevuto meno liquidità e le campagne marketing dovranno essere meno aggressive.]
+               Le aziende nel {anno_u} hanno quindi ricevuto meno liquidità e le campagne marketing di quest'anno dovranno essere meno aggressive.]
                """)
 
       # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
