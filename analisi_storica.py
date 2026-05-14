@@ -238,6 +238,8 @@ def story_analysis(df):
 
       st.write("")
 
+      st.markdown(r"""#### Analisi Storica ({anno_u})""")
+      
       # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE ---
       col_stato, col_info = st.columns([1, 2])
       if cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
