@@ -38,7 +38,7 @@ def story_analysis(df):
 
    st.write("")
    with st.popover("📖 Metodologia"):
-   st.markdown(GUIDA_CAGR)
+      st.markdown(GUIDA_CAGR)
    st.write("")
     
     
