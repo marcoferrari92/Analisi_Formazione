@@ -420,6 +420,7 @@ def story_analysis(df):
          med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target'].iloc[0]
          med_prec = df_annual[df_annual['Anno'] == anno_prec]['Aiuto_Mediano_Target'].iloc[0]
          delta_med = ((med_proj - med_prec) / med_prec * 100) if med_prec > 0 else 0
+         delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec * 100) if aiuti_prec > 0 else 0
            
          # Visualizzazione Alert
          st.write("")
@@ -437,7 +438,7 @@ def story_analysis(df):
                 st.success(f"🚀**Boom Target:** Proiezione straordinaria del **+{variazione_run_rate:.1f}%**! Cavalca questo boom con campagne marketing più audaci del {anno_prec}.")
          with col2:
             st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M")
-            st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti ({p_n:+.1f}%) | Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)")
+            st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti ({delta_n:+.1f}%) | Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)")
 
          with col3:
             st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
