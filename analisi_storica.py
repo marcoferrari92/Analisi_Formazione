@@ -395,16 +395,29 @@ def story_analysis(df):
          variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
            
          # Visualizzazione Alert
-         col_run1, col_run2 = st.columns([1, 2])
-         with col_run1:
+         col1, col2, col3 = st.columns([1, 1, 1])
+         with col1:
             if variazione_run_rate < -5:
                st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
             elif variazione_run_rate > 5:
                st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
             else:
                st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
-         with col_run2:
-            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
+         with col2:
+            st.metric(
+                label=f"Proiezione {anno_corrente}", 
+                value=f"€ {proiezione_vol/1e6:.2f}M", 
+                delta=f"{variazione_run_rate:.1f}%",
+                help=f"Stima basata sui primi {mesi_passati} mesi dell'anno"
+            )
+            st.caption(f"🔮 Stima: {int(proiezione_aiuti)} aiuti")
+         with col3:
+            st.metric(
+                label=f"Reale {anno_prec}", 
+                value=f"€ {vol_prec/1e6:.2f}M",
+                help=f"Volume totale aiuti target nel {anno_prec}"
+            )
+            st.caption(f"🔢 {int(aiuti_prec)} aiuti totali")
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
