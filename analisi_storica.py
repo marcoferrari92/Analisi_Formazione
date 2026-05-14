@@ -36,31 +36,36 @@ $$CAGR =\left( \frac{\text{Valore Finale - Valore Iniziale}}{\text{Valore Inizia
 
 def story_analysis(df):
 
-    st.write("")
-    with st.popover("📖 Metodologia"):
-        st.markdown(GUIDA_CAGR)
-    st.write("")
+   st.write("")
+   with st.popover("📖 Metodologia"):
+   st.markdown(GUIDA_CAGR)
+   st.write("")
     
     
-    anno_corrente = datetime.datetime.now().year
+   anno_corrente = datetime.datetime.now().year
+   
+   # 1. Raggruppamento e Calcoli core
+   df_temp = df.copy()
+   df_temp = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
+   df_temp['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_temp['RNA_DATA_CONCESSIONE'])
+   df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
+   df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
+   df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
+   df_annual = df_temp.groupby('Anno').agg(
+       Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
+       Aiuti_Target=('IS_TARGET', 'sum'),
+       Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
+       Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum()),
+       Aiuto_Mediano_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].median()),
+       Aiuto_Massimo_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].max())
+   ).reset_index().sort_values('Anno')
 
-    # 1. Raggruppamento e Calcoli core
-    df_temp = df.copy()
-    df_temp = df_temp[df_temp['RNA_ELEMENTO_DI_AIUTO'] > 0].copy()
-    df_temp['RNA_DATA_CONCESSIONE'] = pd.to_datetime(df_temp['RNA_DATA_CONCESSIONE'])
-    df_temp['AnnoMonth'] = df_temp['RNA_DATA_CONCESSIONE'].dt.to_period('M').astype(str)
-    df_temp['Anno'] = df_temp['RNA_DATA_CONCESSIONE'].dt.year
-    df_temp['Mese_Num'] = df_temp['RNA_DATA_CONCESSIONE'].dt.month
-    df_annual = df_temp.groupby('Anno').agg(
-        Aiuti_Tot=('RNA_ELEMENTO_DI_AIUTO', 'count'),
-        Aiuti_Target=('IS_TARGET', 'sum'),
-        Vol_Tot=('RNA_ELEMENTO_DI_AIUTO', 'sum'),
-        Vol_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].sum()),
-        Aiuto_Mediano_Target=('RNA_ELEMENTO_DI_AIUTO', lambda x: df_temp.loc[x.index, 'RNA_ELEMENTO_DI_AIUTO'][df_temp['IS_TARGET'] == 1].median())
-    ).reset_index().sort_values('Anno')
+   # Calcolo dell'Indice di Polarizzazione (Ratio Max/Mediana)
+   # Un valore di 10 significa che il più grande aiuto è 10 volte la mediana.
+   df_annual['Polarizzazione'] = (df_annual['Aiuto_Massimo_Target'] / df_annual['Aiuto_Mediano_Target']).fillna(0)
 
-    # Riempi i NaN (es. se in un anno non ci sono aiuti target, la mediana è NaN)
-    df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
+   # Riempi i NaN (es. se in un anno non ci sono aiuti target, la mediana è NaN)
+   df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
 
 
     # CALCOL CAGR
@@ -125,6 +130,29 @@ def story_analysis(df):
 
     #st.plotly_chart(fig_strategy, use_container_width=True)
 
+   # Sotto il grafico fig_strategy, puoi aggiungere questo:
+   
+   fig_polar = go.Figure()
+   fig_polar.add_trace(go.Scatter(
+       x=df_annual['Anno'],
+       y=df_annual['Polarizzazione'],
+       mode='lines+markers+text',
+       name='Indice di Polarizzazione',
+       text=[f"{v:.1f}x" for v in df_annual['Polarizzazione']],
+       textposition="top center",
+       line=dict(color='#9b59b6', width=3),
+       fill='tozeroy',
+       fillcolor='rgba(155, 89, 182, 0.1)'
+   ))
+   fig_polar.update_layout(
+       title="<b>Indice di Polarizzazione (Max vs Mediana)</b>",
+       xaxis_title="Anno",
+       yaxis_title="Moltiplicatore (Volte)",
+       template="plotly_white",
+       height=350
+   )
+   st.plotly_chart(fig_polar, use_container_width=True)
+
     # --- TABELLA DETTAGLIATA ---
 
     # Formattazione per la visualizzazione tabella
@@ -158,11 +186,7 @@ def story_analysis(df):
         'Quota Target (%)': "{:.2f} %", 'Quota Vol. Target (%)': "{:.2f} %"
     }, na_rep="In corso...")
 
-    #st.write("")
-    #st.write("")
-    #st.dataframe(st_df, hide_index=True, use_container_width=True)
 
-    
     # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
     if len(df_annual) >= 2:
       
