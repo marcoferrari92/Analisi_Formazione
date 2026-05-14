@@ -409,7 +409,7 @@ def story_analysis(df):
             st.metric(
                 label=f"Proiezione {anno_corrente}", 
                 value=f"€ {proiezione_vol/1e6:.2f}M", 
-                delta=f"{variazione_run_rate:.1f}%",
+                #delta=f"{variazione_run_rate:.1f}%",
                 help=f"Stima basata sui primi {mesi_passati} mesi dell'anno"
             )
             st.caption(f"🔮 Stima: {int(proiezione_aiuti)} aiuti")
