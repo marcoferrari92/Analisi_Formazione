@@ -248,7 +248,7 @@ def story_analysis(df):
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
-               * :green[**Analisi:** Il {anno_u} ha segnato una piena espansione del Settore Target: sono aumentati sia il numero di progetti che il loro valore economico.
+               * :green[**Analisi:** Il {anno_u} ha segnato una piena espansione del Settore Target: sono aumentati sia il numero di progetti che il loro valore economico.]
                   * Se la proiezione per il {anno_corrente} è altrettanto rosea, puoi puntare a campagne marketing aggressive perchè la liquidità a disposizione delle aziende è elevata.
                   * Una proiezione]
                """)
