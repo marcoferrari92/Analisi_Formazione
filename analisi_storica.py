@@ -330,8 +330,7 @@ def story_analysis(df):
                st.markdown(f"""
                * Nel {anno_u} il volume del **Settore Target** ha continuato a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
-               * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio. 
-               Le aziende nel {anno_u} hanno quindi ricevuto meno liquidità e le campagne marketing di quest'anno dovranno essere meno aggressive.]
+               * :blue[**Analisi:** Dopo un periodo d'oro, il mercato target sta rallentando accompagnato da un calo sia nel numero di aiuti che nel loro importo medio]
                """)
 
       # --- AREA 3: CAGR NEGATIVO + RECUPERO ---
@@ -443,9 +442,10 @@ def story_analysis(df):
                   st.markdown(f"""
                       topolino""")
               elif trend_storico == "RALLENTAMENTO":
-                  st.warning(f"⚠️ **Contrazione**")
+                  st.info(f"📉 **CONTRAZIONE CONFERMATA**")
                   st.markdown(f"""
-                      Pippo""")
+                      :blue[Le aziende nel {anno_u} hanno ricevuto meno liquidità e il trend sembra ripetersi anche nel {anno_corrente}.] 
+                      :blue[Le campagne marketing dovranno essere meno aggressive.]""")
           # Caso B: Proiezione Positiva
           elif variazione_run_rate > 5:
               if trend_storico == "CRISI" or trend_storico == "RECUPERO":
