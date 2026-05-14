@@ -399,9 +399,11 @@ def story_analysis(df):
          st.write("")
          col1, col2, col3 = st.columns([1, 1, 1])
          with col1:
-            if variazione_run_rate < -5:
+            if variazione_run_rate < -20:
+               st.error(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
+            if variazione_run_rate < -10:
                st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
-            elif variazione_run_rate > 5:
+            elif variazione_run_rate > 10:
                st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
             else:
                st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
