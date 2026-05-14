@@ -91,7 +91,6 @@ def story_analysis(df):
    anno_start          = df_annual['Anno'].min()
    prat_target_start   = df_annual['Aiuti_Target'].iloc[0] 
    vol_target_start    = df_annual['Vol_Target'].iloc[0]
-   df_annual['Aiuto_Medio_Target']     = df_annual['Aiuto_Mediano_Target'] 
    df_annual['Quota Target (%)']       = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
    df_annual['Quota Vol. Target (%)']  = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
    df_annual['CAGR Target']            = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
@@ -109,7 +108,7 @@ def story_analysis(df):
    fig_strategy.add_trace(
       go.Bar(
             x=df_annual['Anno'],
-            y=df_annual['Aiuto_Medio_Target'],
+            y=df_annual['Aiuto_Mediano_Target'],
             name="Aiuto Target Medio (€)",
             marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Aiuto Medio: € %{y:,.0f}<extra></extra>"
@@ -179,16 +178,16 @@ def story_analysis(df):
       cagr_att = ultimo['CAGR Vol. Target']
       c_pre = penultimo['CAGR Vol. Target']
       diff_cagr = cagr_att - c_pre
-      diff_aiuto = ultimo['Aiuto_Medio_Target'] - penultimo['Aiuto_Medio_Target']
+      diff_aiuto = ultimo['Aiuto_Mediano_Target'] - penultimo['Aiuto_Mediano_Target']
       diff_n = int(ultimo['Aiuti_Target'] - penultimo['Aiuti_Target'])
         
       # Dati pronti per le f-string
       anno_u = int(ultimo['Anno'])
       anno_p = int(penultimo['Anno'])
-      a_med = ultimo['Aiuto_Medio_Target']
+      a_med = ultimo['Aiuto_Mediano_Target']
         
       # Calcolo quote percentuali
-      p_aiuto = (diff_aiuto / penultimo['Aiuto_Medio_Target'] * 100) if penultimo['Aiuto_Medio_Target'] > 0 else 0
+      p_aiuto = (diff_aiuto / penultimo['Aiuto_Mediano_Target'] * 100) if penultimo['Aiuto_Mediano_Target'] > 0 else 0
       p_n = (diff_n / penultimo['Aiuti_Target'] * 100) if penultimo['Aiuti_Target'] > 0 else 0
 
       st.write("")
@@ -400,8 +399,8 @@ def story_analysis(df):
          variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
 
          # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
-         med_proj = df_temp[df_temp['Anno'] == anno_corrente]['RNA_ELEMENTO_DI_AIUTO'].median()
-         delta_med = ((med_proj - penultimo['Aiuto_Medio_Target']) / penultimo['Aiuto_Medio_Target'] * 100) if penultimo['Aiuto_Medio_Target'] > 0 else 0
+         med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target']
+         delta_med = ((med_proj - penultimo['Aiuto_Mediano_Target']) / penultimo['Aiuto_Mediano_Target'] * 100) if penultimo['Aiuto_Mediano_Target'] > 0 else 0
            
          # Visualizzazione Alert
          st.write("")
