@@ -390,6 +390,7 @@ def story_analysis(df):
       # Calcolo Run Rate (Proiezione a 12 mesi)
       proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
       proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
+      variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
       medio_proj = proiezione_vol / proiezione_aiuti if proiezione_aiuti > 0 else 0
        
       # Confronto con l'anno precedente (se esiste)
