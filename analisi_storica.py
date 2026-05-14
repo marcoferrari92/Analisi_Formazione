@@ -68,31 +68,31 @@ def story_analysis(df):
    df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
 
 
-    # CALCOL CAGR
-    def calc_cagr(current_val, start_val, current_year, start_year):
+   # CALCOL CAGR
+   def calc_cagr(current_val, start_val, current_year, start_year):
         n_anni = current_year - start_year
         if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
         return (current_val / start_val) ** (1 / n_anni) - 1
 
-    anno_start = df_annual['Anno'].min()
-    prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
-    vol_target_start = df_annual['Vol_Target'].iloc[0]
+   anno_start = df_annual['Anno'].min()
+   prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
+   vol_target_start = df_annual['Vol_Target'].iloc[0]
 
-    # Calcolo metriche strategiche
-    df_annual['Aiuto_Medio_Target'] = df_annual['Aiuto_Mediano_Target'] # Ora contiene la mediana
-    df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
-    df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
-    df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
-    df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
+   # Calcolo metriche strategiche
+   df_annual['Aiuto_Medio_Target'] = df_annual['Aiuto_Mediano_Target'] # Ora contiene la mediana
+   df_annual['Quota Target (%)'] = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
+   df_annual['Quota Vol. Target (%)'] = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
+   df_annual['CAGR Target'] = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
+   df_annual['CAGR Vol. Target'] = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
-    # Mascheramento anno in corso per i CAGR
-    df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
+   # Mascheramento anno in corso per i CAGR
+   df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
 
-    # --- PARTE SUPERIORE: IL GRAFICO ---
-    fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
+   # --- PARTE SUPERIORE: IL GRAFICO ---
+   fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Barre: Aiuto Medio
-    fig_strategy.add_trace(
+   # Barre: Aiuto Medio
+   fig_strategy.add_trace(
         go.Bar(
             x=df_annual['Anno'],
             y=df_annual['Aiuto_Medio_Target'],
@@ -100,11 +100,11 @@ def story_analysis(df):
             marker_color='rgba(52, 152, 219, 0.6)',
             hovertemplate="Anno %{x}<br>Aiuto Medio: € %{y:,.0f}<extra></extra>"
         ), secondary_y=False
-    )
+   )
 
-    # Linea: CAGR Volume (solo anni completi)
-    df_cagr_plot = df_annual.dropna(subset=['CAGR Vol. Target'])
-    fig_strategy.add_trace(
+   # Linea: CAGR Volume (solo anni completi)
+   df_cagr_plot = df_annual.dropna(subset=['CAGR Vol. Target'])
+   fig_strategy.add_trace(
         go.Scatter(
             x=df_cagr_plot['Anno'],
             y=df_cagr_plot['CAGR Vol. Target'],
@@ -115,23 +115,19 @@ def story_analysis(df):
             textposition="top center",
             hovertemplate="Anno %{x}<br>CAGR: %{y:.2f}%<extra></extra>"
         ), secondary_y=True
-    )
-
-    fig_strategy.update_layout(
+   )
+   fig_strategy.update_layout(
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         height=450,
         template="plotly_white",
         margin=dict(l=0, r=0, t=30, b=0)
-    )
-    fig_strategy.update_yaxes(title_text="Aiuto Medio (€)", secondary_y=False, tickformat="€,.0f")
-    fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, ticksuffix="%")
-    fig_strategy.update_xaxes(type='category')
-
-    #st.plotly_chart(fig_strategy, use_container_width=True)
+   )
+   fig_strategy.update_yaxes(title_text="Aiuto Medio (€)", secondary_y=False, tickformat="€,.0f")
+   fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, ticksuffix="%")
+   fig_strategy.update_xaxes(type='category')
 
    # Sotto il grafico fig_strategy, puoi aggiungere questo:
-   
    fig_polar = go.Figure()
    fig_polar.add_trace(go.Scatter(
        x=df_annual['Anno'],
@@ -153,24 +149,23 @@ def story_analysis(df):
    )
    st.plotly_chart(fig_polar, use_container_width=True)
 
-    # --- TABELLA DETTAGLIATA ---
+   # --- TABELLA DETTAGLIATA ---
 
-    # Formattazione per la visualizzazione tabella
-    df_view = df_annual.sort_values('Anno', ascending=False).copy()
-    df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-    df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
+   # Formattazione per la visualizzazione tabella
+   df_view = df_annual.sort_values('Anno', ascending=False).copy()
+   df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
+   df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
 
-    df_final = df_view[[
+   df_final = df_view[[
         'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
-    ]]
-
-    df_final.columns = [
+   ]]
+   df_final.columns = [
         'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
         'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
-    ]
+   ]
 
-    def color_cagr(val):
+   def color_cagr(val):
         try:
             if val is None or pd.isna(val): return ''
             v = float(val)
@@ -179,16 +174,16 @@ def story_analysis(df):
         except: pass
         return ''
 
-    st_df = df_final.style.map(
+   st_df = df_final.style.map(
         color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
-    ).format({
+      ).format({
         'CAGR Target': "{:.2f} %", 'CAGR Vol. Target': "{:.2f} %",
         'Quota Target (%)': "{:.2f} %", 'Quota Vol. Target (%)': "{:.2f} %"
-    }, na_rep="In corso...")
+       }, na_rep="In corso...")
 
 
-    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
-    if len(df_annual) >= 2:
+   # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
+   if len(df_annual) >= 2:
       
         df_valid = df_annual.dropna(subset=['CAGR Vol. Target'])
         ultimo = df_valid.iloc[-1]
@@ -396,8 +391,8 @@ def story_analysis(df):
                * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
                """)
 
-        st.write("")
-        st.plotly_chart(fig_strategy, use_container_width=True)
-        st.write("")
-        st.write("")
-        st.dataframe(st_df, hide_index=True, use_container_width=True)
+      st.write("")
+      st.plotly_chart(fig_strategy, use_container_width=True)
+      st.write("")
+      st.write("")
+      st.dataframe(st_df, hide_index=True, use_container_width=True)
