@@ -123,7 +123,7 @@ def story_analysis(df):
          name="CAGR Target (%)",
          line=dict(color='#2ecc71', width=4, shape='spline'),
          mode='lines+markers+text',
-         text=[f"{v:.1f}%" if v != 0 else "" for v in df_cagr_plot['CAGR Vol. Target']],
+         text=[f"{v:.1f}%" if v != 0 else "" for v in df_cagr_plot['CAGR Target']],
          textposition="top center",
          hovertemplate="Anno %{x}<br>CAGR: %{y:.2f}%<extra></extra>"
       ), secondary_y=True
@@ -159,7 +159,7 @@ def story_analysis(df):
    st_df = df_final.style.map(
        color_cagr, subset=['CAGR Target']
    ).format({
-       'CAGR Vol. Target': "{:.2f} %",
+       'CAGR Target': "{:.2f} %",
        'Quota Target (%)': "{:.2f} %", 
        'Quota Vol. Target (%)': "{:.2f} %"
    }, na_rep="In corso...")
@@ -168,13 +168,13 @@ def story_analysis(df):
    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
    if len(df_annual) >= 2:
       
-      df_valid  = df_annual.dropna(subset=['CAGR Vol. Target'])
+      df_valid  = df_annual.dropna(subset=['CAGR Target'])
       ultimo    = df_valid.iloc[-1]
       penultimo = df_valid.iloc[-2]
         
       # Variabili Decisionali
-      cagr_att = ultimo['CAGR Vol. Target']
-      c_pre = penultimo['CAGR Vol. Target']
+      cagr_att = ultimo['CAGR Target']
+      c_pre = penultimo['CAGR Target']
       diff_cagr = cagr_att - c_pre
       diff_aiuto = ultimo['Aiuto_Mediano_Target'] - penultimo['Aiuto_Mediano_Target']
       diff_n = int(ultimo['Aiuti_Target'] - penultimo['Aiuti_Target'])
