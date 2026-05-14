@@ -142,27 +142,46 @@ def story_analysis(df):
 
    # --- TABELLA DETTAGLIATA ---
 
-   # Formattazione per la visualizzazione tabella
    df_view = df_annual.sort_values('Anno', ascending=False).copy()
+   df_view['Aiuti Target (%)'] = df_view.apply(
+       lambda x: f"{int(x['Aiuti_Target'])} ({x['Quota Target (%)']:.1f}%)", axis=1
+   )
+   df_view['Vol. Target (%)'] = df_view.apply(
+       lambda x: f"€ {x['Vol_Target']/1e6:.2f}M ({x['Quota Vol. Target (%)']:.1f}%)", axis=1
+   )
+   # Formattazione Volume Totale e Importo Medio (Mediana)
    df_view['Vol. Tot. (€)'] = df_view['Vol_Tot'].apply(lambda x: f"€ {x/1e6:.2f}M")
-   df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
-
+   df_view['Importo Medio (€)'] = df_view['Aiuto_Medio_Target'].apply(lambda x: f"€ {x:,.0f}")
+   
+   # 2. Selezione e Ridenominazione Colonne
    df_final = df_view[[
-      'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)',
-      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Target'
+       'Anno', 
+       'Aiuti_Tot', 
+       'Aiuti Target (%)', 
+       'Importo Medio (€)', 
+       'Vol. Tot. (€)', 
+       'Vol. Target (%)', 
+       'CAGR Vol. Target'
    ]]
    df_final.columns = [
-      'Anno', 'Aiuti', 'Aiuti Target', 'Quota Target (%)',
-      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Target'
+       'Anno', 
+       'Aiuti', 
+       'Aiuti Target (%)', 
+       'Importo Medio (€)', 
+       'Volume Tot. (€)', 
+       'Volume Target (%)', 
+       'CAGR'
    ]
-
+   
+   # 3. Styling e Formattazione finale
    st_df = df_final.style.map(
-       color_cagr, subset=['CAGR Target']
+       color_cagr, subset=['CAGR']
    ).format({
-       'CAGR Target': "{:.2f} %",
-       'Quota Target (%)': "{:.2f} %", 
-       'Quota Vol. Target (%)': "{:.2f} %"
+       'CAGR': "{:.2f} %"
    }, na_rep="In corso...")
+   
+   # Visualizzazione
+   st.dataframe(st_df, hide_index=True, use_container_width=True)
 
 
    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
