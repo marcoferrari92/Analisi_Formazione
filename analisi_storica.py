@@ -325,7 +325,7 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
          with col_stato:
-            st.info("📉 **CONTRAZIONE DEL SETTORE TARGET**")
+            st.info("📉 **CONTRAZIONE**")
          with col_info:
                st.markdown(f"""
                * Nel {anno_u} il volume del **Settore Target** ha continuato a crescere al CAGR del **{cagr_att:.2f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.2f}%).
