@@ -412,14 +412,14 @@ def story_analysis(df):
                 #delta=f"{variazione_run_rate:.1f}%",
                 help=f"Stima basata sui primi {mesi_passati} mesi dell'anno"
             )
-            st.caption(f"🔮 Stima: {int(proiezione_aiuti)} aiuti")
+            st.caption(f"🔮 Stima: {int(proiezione_aiuti)} Aiuti Target")
          with col3:
             st.metric(
                 label=f"Reale {anno_prec}", 
                 value=f"€ {vol_prec/1e6:.2f}M",
                 help=f"Volume totale aiuti target nel {anno_prec}"
             )
-            st.caption(f"🔢 {int(aiuti_prec)} aiuti totali")
+            st.caption(f"{int(aiuti_prec)} Aiuti Target Totali")
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
