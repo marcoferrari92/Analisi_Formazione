@@ -418,63 +418,59 @@ def story_analysis(df):
                * :red[**Analisi:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato Target.]
                """)
            
-      # PROIEZIONE ANNO CORRENTE
+      # --- PROIEZIONE ANNO CORRENTE ---
       st.write("")
-      st.markdown(r"""#### Proiezione {anno_corrente}""")
-        
-      col1, col2, col3 = st.columns([1, 1, 1])
-        
-      with col1:
-           
-         # Caso A: Proiezione Negativa 2026
-         if variazione_run_rate < -10:
-            if trend_storico == "ACCELERAZIONE":
-               st.warning(f"⚠️ **Inversione di rotta:**")
-               st.markdown(r"""
-               Il mercato arrivava da un boom ({anno_u}), ma le proiezione per il {anno_corrente} mostrano una contrazione. 
-               Dopo grossi investimenti nel {anno_u} le aziende non sembrano interessate a investire nel Settore Target anche nel {anno_corrente}. 
-               La campagna marketing deve essere moderata.""")
-            elif trend_storico == "CRISI":
-               st.error(f"🚨 **Aggravamento:**")
-               st.markdown(r"""
-               La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
-               Le aziende hanno pochissima liquidità: punta tutto su newsletter di sensibilizzazione e ottimizzazione fiscale.""")
-            else:
-               st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza. Campagne marketing mirate e budget sotto controllo.")
+      st.markdown(f"#### Proiezione Strategica {anno_corrente}")
+      
+      col_testo, col_metr1, col_metr2 = st.columns([1.2, 0.9, 0.9])
+      
+      with col_testo:
+          # Caso A: Proiezione Negativa
+          if variazione_run_rate < -10:
+              if trend_storico == "ACCELERAZIONE":
+                  st.warning("⚠️ **Inversione di rotta:**")
+                  st.markdown(f"""
+                      Il mercato arrivava da un boom ({anno_u}), ma le proiezioni per il {anno_corrente} mostrano una contrazione. 
+                      Dopo grossi investimenti nel {anno_u}, le aziende non sembrano intenzionate a investire nel Settore Target anche nel {anno_corrente}. 
+                      La campagna marketing deve essere **moderata**.""")
+              elif trend_storico == "CRISI":
+                  st.error("🚨 **Aggravamento:**")
+                  st.markdown(f"""
+                      La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
+                      Le aziende hanno pochissima liquidità: punta tutto su newsletter di **sensibilizzazione** e ottimizzazione fiscale.""")
+              else:
+                  st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza rispetto al {anno_u}. Campagne marketing mirate e budget sotto controllo.")
 
-         # Caso B: Proiezione Positiva 2026
-         elif variazione_run_rate > 10:
-            if trend_storico == "CRISI" or trend_storico == "RECUPERO":
-               st.success(f"🌟 **Rinascita:**")
-               st.markdown(r"""
-               Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità. 
-               Sii il primo a proporre nuovi investimenti audaci alle aziende.""")
-            elif trend_storico == "ACCELERAZIONE":
-               st.success(f"🚀 **Conferma del Boom:**")
-               st.markdown(r"""
-               Il mercato non si ferma. Cavalca l'onda con campagne marketing aggressive: la liquidità è ai massimi storici.""")
-            else:
-               st.success(f"🌟 **Crescita:** Il trend è positivo. Ottimo momento per spingere sulla lead generation.")
+          # Caso B: Proiezione Positiva
+          elif variazione_run_rate > 10:
+              if trend_storico == "CRISI" or trend_storico == "RECUPERO":
+                  st.success("🌟 **Rinascita:**")
+                  st.markdown(f"""
+                      Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità. 
+                      Sii il primo a proporre nuovi investimenti **audaci** alle aziende.""")
+              elif trend_storico == "ACCELERAZIONE":
+                  st.success("🚀 **Conferma del Boom:**")
+                  st.markdown(f"""
+                      Il mercato non si ferma. Cavalca l'onda con campagne marketing **aggressive**: la liquidità è ai massimi storici.""")
+              else:
+                  st.success(f"🌟 **Crescita:** Il trend è positivo nel {anno_corrente}. Ottimo momento per spingere sulla lead generation.")
 
-        # Caso C: Stabilità
-        else:
-            st.info(f"⚖️ **Stabilità consolidata:** Il mercato si mantiene sui livelli del {anno_prec}. Mantieni una strategia di marketing costante senza grossi scossoni.")
+          # Caso C: Stabilità
+          else:
+              st.info("⚖️ **Stabilità consolidata:**")
+              st.markdown(f"Il mercato nel {anno_corrente} si mantiene sui livelli del {anno_prec}. Mantieni una strategia di marketing costante senza grossi scossoni.")
 
-        # --- STEP 3: METRICHE ---
-        with col2:
-            st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M", delta=f"{variazione_run_rate:.1f}%")
-            st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti | Medio: **€ {med_proj:,.0f}**")
+      # --- METRICHE (Fuori dal blocco with col_testo) ---
+      with col_metr1:
+          st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M", delta=f"{variazione_run_rate:.1f}%")
+          st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti | Medio: **€ {med_proj:,.0f}**")
 
-        with col3:
-            st.metric(label=f"Reale {anno_u}", value=f"€ {vol_prec/1e6:.2f}M")
-            st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
+      with col_metr2:
+          st.metric(label=f"Reale {anno_u}", value=f"€ {vol_prec/1e6:.2f}M")
+          st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
 
-      with col3:
-         st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
-         st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
-
+   # --- FINE ANALISI E VISUALIZZAZIONE GRAFICI ---
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
-   st.write("")
    st.write("")
    st.dataframe(st_df, hide_index=True, use_container_width=True)
