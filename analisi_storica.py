@@ -424,41 +424,47 @@ def story_analysis(df):
       col_testo, col_space, col_metr1, col_metr2 = st.columns([1, 0.3, 0.85, 0.85])
       
       with col_testo:
+         
           # Caso A: Proiezione Negativa
           if variazione_run_rate < -5:
+             
               if trend_storico == "ACCELERAZIONE":
                   st.warning("⚠️ **INVERSIONE**")
                   st.markdown(f"""
-                      Il mercato arrivava da un boom ({anno_u}), ma le proiezioni per il {anno_corrente} mostrano una contrazione. 
-                      Dopo grossi investimenti nel {anno_u}, le aziende analizzate non sembrano intenzionate a investire nuovamente nel Settore Target. 
-                      La campagna marketing deve essere **moderata**.""")
+                      :yellow[Il mercato arrivava da un boom ({anno_u}), ma le proiezioni per il {anno_corrente} mostrano una contrazione. ]
+                      :yellow[Dopo grossi investimenti nel {anno_u}, le aziende analizzate non sembrano intenzionate a investire nuovamente nel Settore Target.] 
+                      :yellow[La campagna marketing deve essere **moderata**.]""")
+                 
               elif trend_storico == "CRISI":
                   st.error("🚨 **CRISI**")
                   st.markdown(f"""
-                      La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
-                      Le aziende hanno pochissima liquidità: punta tutto su newsletter di **sensibilizzazione** e ottimizzazione fiscale.""")
-              elif trend_storico == "RECUPERO":
-                  st.warning(f"⚠️ **Contrazione**")
-                  st.markdown(f"""
-                      topolino""")
-              elif trend_storico == "RALLENTAMENTO":
+                      :red[La crisi iniziata nel {anno_u} continua nel {anno_corrente}.] 
+                      :red[Le aziende hanno pochissima liquidità: punta tutto su newsletter di **sensibilizzazione** e campagne di ottimizzazione fiscale.]""")
+                 
+              else:
                   st.info(f"📉 **CONTRAZIONE CONFERMATA**")
                   st.markdown(f"""
-                      :blue[Le aziende nel {anno_u} hanno ricevuto meno liquidità e il trend sembra ripetersi anche nel {anno_corrente}.] 
-                      :blue[Le campagne marketing dovranno essere meno aggressive.]""")
+                      :blue[Le aziende nel {anno_u} hanno ricevuto meno liquidità e il trend sembra continuare nel {anno_corrente}.] 
+                      :blue[Le campagne marketing dovranno essere meno aggressive per far fronte alla minor liquidità delle aziende.]""")
+                 
           # Caso B: Proiezione Positiva
           elif variazione_run_rate > 5:
+             
               if trend_storico == "CRISI" or trend_storico == "RECUPERO":
-                  st.success("🌟 **Rinascita:**")
+                  st.success("🌟 **RINASCITA:**")
                   st.markdown(f"""
-                      Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità. 
-                      Sii il primo a proporre nuovi investimenti **audaci** alle aziende.""")
+                      :green[Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità.] 
+                      :green[Sii il primo a proporre nuovi investimenti alle aziende.]""")
+                 
               elif trend_storico == "ACCELERAZIONE":
-                  st.success("🚀 **Conferma del Boom:**")
+                  st.success("🚀 **BOOM CONFERMATO**")
                   st.markdown(f"""
-                      Il mercato non si ferma. Cavalca l'onda con campagne marketing **aggressive**: la liquidità è ai massimi storici.""")
+                      :green[Il mercato non si ferma. Cavalca l'onda con campagne marketing **aggressive**: la liquidità è ai massimi storici.]""")
+                 
               else:
-                  st.success(f"🌟 **Crescita:** Il trend è positivo nel {anno_corrente}. Ottimo momento per spingere sulla lead generation.")
+                  st.success(f"🌟 **CRESCITA**")
+                  st.markdown(f"""
+                      :green[Il trend è positivo nel {anno_corrente}. Ottimo momento per spingere sulla lead generation.]""")
 
           # Caso C: Stabilità
           else:
