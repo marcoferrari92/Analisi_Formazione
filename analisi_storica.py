@@ -354,7 +354,7 @@ def story_analysis(df):
             with col_stato:
                st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
             with col_info: 
-            st.markdown(f"""
+               st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
