@@ -222,9 +222,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
          with col_stato:
-               st.success("🚀 **ACCELERAZIONE E VALORE**")
+            st.success("🚀 **ACCELERAZIONE E VALORE**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -233,9 +233,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
          with col_stato:
-               st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
+            st.success("🚀 **ACCELERAZIONE E DIFFUSIONE**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è diminuito di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -244,9 +244,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
          with col_stato:
-               st.warning("⚠️ **ANOMALIA STATISTICA (INERZIA STORICA)**")
+            st.warning("⚠️ **ANOMALIA STATISTICA (INERZIA STORICA)**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -257,9 +257,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
          with col_stato:
-               st.warning("⚠️ **ANOMALIA DI TREND (INERZIA STORICA)**")
+            st.warning("⚠️ **ANOMALIA DI TREND (INERZIA STORICA)**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** mostra un CAGR in rallentamento al **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -268,9 +268,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
          with col_stato:
-               st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
+            st.info("📉 **RALLENTAMENTO CON CONSOLIDAMENTO**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -279,9 +279,9 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
          with col_stato:
-               st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
+            st.info("📉 **RALLENTAMENTO CON FRAZIONAMENTO**")
          with col_info:
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** continua a crescere al CAGR del **{cagr_att:.1f}%** ma **📉 in rallentamento** rispetto al {anno_p} ({c_pre:.1f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -290,7 +290,7 @@ def story_analysis(df):
 
       elif cagr_att > 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
          with col_stato:
-               st.info("📉 **CONTRAZIONE DEL SETTORE TARGET**")
+            st.info("📉 **CONTRAZIONE DEL SETTORE TARGET**")
          with col_info:
                st.markdown(f"""
                **Nell'anno {anno_u}:**
@@ -303,9 +303,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n > 0:
          with col_stato:
-               st.warning("⚠️ **RECUPERO SISTEMICO**")
+            st.warning("⚠️ **RECUPERO SISTEMICO**")
          with col_info:  
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
                * A fronte di un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -314,9 +314,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
          with col_stato:
-               st.warning("⚠️ **RECUPERO QUALITATIVO**")
+            st.warning("⚠️ **RECUPERO QUALITATIVO**")
          with col_info:  
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
                * Grazie al calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -325,7 +325,7 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n > 0:
          with col_stato:
-               st.warning("⚠️ **RECUPERO QUANTITATIVO**")
+            st.warning("⚠️ **RECUPERO QUANTITATIVO**")
          with col_info:  
                st.markdown(f"""
                **Nell'anno {anno_u}:**
@@ -336,9 +336,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr > 0 and diff_aiuto <= 0 and diff_n <= 0:
          with col_stato:
-               st.warning("⚠️ **RIMBALZO TECNICO**")
+            st.warning("⚠️ **RIMBALZO TECNICO**")
          with col_info: 
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** cala (**{cagr_att:.1f}%**) ma recupera rispetto al {anno_p} ({c_pre:.1f}%).
                * Nonostante un calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -349,9 +349,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n > 0:
          with col_stato:
-               st.error("🚨 **DISPERSIONE E CRISI**")
+            st.error("🚨 **DISPERSIONE E CRISI**")
          with col_info: 
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Nonostante un aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -360,9 +360,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto > 0 and diff_n <= 0:
          with col_stato:
-               st.error("🚨 **EROSIONE SELETTIVA**")
+            st.error("🚨 **EROSIONE SELETTIVA**")
          with col_info: 
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Al calo di {abs(diff_n)} aiuti ({p_n:.1f}%) è seguito l'aumento dell'**Aiuto Medio** di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -371,9 +371,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n > 0:
          with col_stato:
-               st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
+            st.error("🚨 **POLVERIZZAZIONE DA CRISI**")
          with col_info: 
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * A fronte dell'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
@@ -382,9 +382,9 @@ def story_analysis(df):
 
       elif cagr_att <= 0 and diff_cagr <= 0 and diff_aiuto <= 0 and diff_n <= 0:
          with col_stato:
-               st.error("🚨 **RECESSIONE TOTALE**")
+            st.error("🚨 **RECESSIONE TOTALE**")
          with col_info: 
-               st.markdown(f"""
+            st.markdown(f"""
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta crollando a un tasso CAGR del **{cagr_att:.1f}%** rispetto al {anno_p} ({c_pre:.1f}%).
                * Nonostante il calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
