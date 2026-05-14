@@ -237,7 +237,6 @@ def story_analysis(df):
             delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec) * 100 if aiuti_prec > 0 else 0
 
       st.write("")
-
       st.markdown(r"""#### Analisi Storica ({anno_u})""")
       
       # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE ---
@@ -247,7 +246,6 @@ def story_analysis(df):
             st.success("🚀 **BOOM TOTALE**")
          with col_info:
             st.markdown(f"""
-               **Analisi Storica ({anno_u}):**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :green[**Analisi:** Il {anno_u} ha segnato una piena espansione del Settore Target: sono aumentati sia il numero di progetti che il loro valore economico.]
@@ -449,8 +447,4 @@ def story_analysis(df):
          st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
          st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
 
-   st.write("")
-   st.plotly_chart(fig_strategy, use_container_width=True)
-   st.write("")
-   st.write("")
-   st.dataframe(st_df, hide_index=True, use_container_width=True)
+   
