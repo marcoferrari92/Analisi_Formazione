@@ -126,7 +126,6 @@ def story_analysis(df):
    fig_strategy.update_yaxes(title_text="Aiuto Medio (€)", secondary_y=False, tickformat="€,.0f")
    fig_strategy.update_yaxes(title_text="CAGR (%)", secondary_y=True, ticksuffix="%")
    fig_strategy.update_xaxes(type='category')
-   st.plotly_chart(fig_strategy, use_container_width=True)
 
    # Sotto il grafico fig_strategy, puoi aggiungere questo:
    fig_polar = go.Figure()
@@ -148,7 +147,7 @@ def story_analysis(df):
        template="plotly_white",
        height=350
    )
-   st.plotly_chart(fig_polar, use_container_width=True)
+   
 
    # --- TABELLA DETTAGLIATA ---
 
@@ -399,7 +398,8 @@ def story_analysis(df):
                """)
 
       st.write("")
-      #st.plotly_chart(fig_strategy, use_container_width=True)
+      st.plotly_chart(fig_strategy, use_container_width=True)
       st.write("")
+      st.plotly_chart(fig_polar, use_container_width=True)
       st.write("")
       st.dataframe(st_df, hide_index=True, use_container_width=True)
