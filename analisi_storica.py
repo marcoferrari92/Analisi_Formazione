@@ -121,14 +121,14 @@ def story_analysis(df):
          # Visualizzazione Alert
          col_run1, col_run2 = st.columns([1, 2])
          with col_run1:
-            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
-         with col_run2:
             if variazione_run_rate < -5:
-               st.error(f"⚠️ **Early Warning:** A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}. È il momento di spingere sulle campagne!")
+               st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
             elif variazione_run_rate > 5:
-               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**. Il mercato è ricettivo!")
+               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
             else:
                st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
+         with col_run2:
+            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
 
    
    # --- GRAFICO ---
