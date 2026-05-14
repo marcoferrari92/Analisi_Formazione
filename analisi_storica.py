@@ -93,12 +93,11 @@ def story_analysis(df):
    vol_target_start    = df_annual['Vol_Target'].iloc[0]
    df_annual['Quota Target (%)']       = (df_annual['Aiuti_Target'] / df_annual['Aiuti_Tot'] * 100).fillna(0)
    df_annual['Quota Vol. Target (%)']  = (df_annual['Vol_Target'] / df_annual['Vol_Tot'] * 100).fillna(0)
-   df_annual['CAGR Target']            = df_annual.apply(lambda x: calc_cagr(x['Aiuti_Target'], prat_target_start, x['Anno'], anno_start) * 100, axis=1)
-   df_annual['CAGR Vol. Target']       = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
+   df_annual['CAGR Target']       = df_annual.apply(lambda x: calc_cagr(x['Vol_Target'], vol_target_start, x['Anno'], anno_start) * 100, axis=1)
 
    # Mascheramento anno in corso per i CAGR
    anno_corrente = datetime.datetime.now().year
-   df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
+   df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target']] = None
 
    
    # --- GRAFICO ---
@@ -116,12 +115,12 @@ def story_analysis(df):
    )
 
    # Linea: CAGR Volume (solo anni completi)
-   df_cagr_plot = df_annual.dropna(subset=['CAGR Vol. Target'])
+   df_cagr_plot = df_annual.dropna(subset=['CAGR Target'])
    fig_strategy.add_trace(
       go.Scatter(
          x=df_cagr_plot['Anno'],
-         y=df_cagr_plot['CAGR Vol. Target'],
-         name="CAGR Vol. Target (%)",
+         y=df_cagr_plot['CAGR Target'],
+         name="CAGR Target (%)",
          line=dict(color='#2ecc71', width=4, shape='spline'),
          mode='lines+markers+text',
          text=[f"{v:.1f}%" if v != 0 else "" for v in df_cagr_plot['CAGR Vol. Target']],
@@ -150,15 +149,15 @@ def story_analysis(df):
 
    df_final = df_view[[
       'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)',
-      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
+      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Target'
    ]]
    df_final.columns = [
       'Anno', 'Aiuti', 'Aiuti Target', 'Quota Target (%)',
-      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
+      'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Target'
    ]
 
    st_df = df_final.style.map(
-       color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
+       color_cagr, subset=['CAGR Target']
    ).format({
        'CAGR Vol. Target': "{:.2f} %",
        'Quota Target (%)': "{:.2f} %", 
