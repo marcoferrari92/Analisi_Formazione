@@ -420,7 +420,7 @@ def story_analysis(df):
          med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target'].iloc[0]
          med_prec = df_annual[df_annual['Anno'] == anno_prec]['Aiuto_Mediano_Target'].iloc[0]
          delta_med = ((med_proj - med_prec) / med_prec * 100) if med_prec > 0 else 0
-         delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec * 100) if aiuti_prec > 0 else 0
+         delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec) * 100 if aiuti_prec > 0 else 0
            
          # Visualizzazione Alert
          st.write("")
