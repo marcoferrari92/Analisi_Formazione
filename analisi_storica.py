@@ -168,7 +168,7 @@ def story_analysis(df):
        'Aiuti', 
        'Aiuti Target', 
        'Aiuti Target (%)', 
-       'Importo Medio (€)', 
+       'Aiuto Medio (€)', 
        'Vol. Totale (€)', 
        'Vol. Target (€)', 
        'Vol. Target (%)', 
