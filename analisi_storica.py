@@ -97,39 +97,6 @@ def story_analysis(df):
    anno_corrente = datetime.datetime.now().year
    df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
 
-   # PROIEZIONE 
-   if anno_corrente in df_annual['Anno'].values:
-      
-      # Estraiamo i dati reali dell'anno in corso
-      mese_corrente = datetime.datetime.now().month
-      mesi_passati = mese_corrente
-      dati_anno_corso    = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
-      vol_reale_corso    = dati_anno_corso['Vol_Target']
-      aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
-       
-      # Calcolo Run Rate (Proiezione a 12 mesi)
-      proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
-      proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
-       
-      # Confronto con l'anno precedente (se esiste)
-      anno_prec = anno_corrente - 1
-      if anno_prec in df_annual['Anno'].values:
-         dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
-         vol_prec             = dati_anno_prec['Vol_Target']   
-         variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
-           
-         # Visualizzazione Alert
-         col_run1, col_run2 = st.columns([1, 2])
-         with col_run1:
-            if variazione_run_rate < -5:
-               st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
-            elif variazione_run_rate > 5:
-               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
-            else:
-               st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
-         with col_run2:
-            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
-
    
    # --- GRAFICO ---
    fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
@@ -405,6 +372,39 @@ def story_analysis(df):
                * Nonostante il calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * **Significato:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.
                """)
+
+   # PROIEZIONE 
+   if anno_corrente in df_annual['Anno'].values:
+      
+      # Estraiamo i dati reali dell'anno in corso
+      mese_corrente = datetime.datetime.now().month
+      mesi_passati = mese_corrente
+      dati_anno_corso    = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
+      vol_reale_corso    = dati_anno_corso['Vol_Target']
+      aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
+       
+      # Calcolo Run Rate (Proiezione a 12 mesi)
+      proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
+      proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
+       
+      # Confronto con l'anno precedente (se esiste)
+      anno_prec = anno_corrente - 1
+      if anno_prec in df_annual['Anno'].values:
+         dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
+         vol_prec             = dati_anno_prec['Vol_Target']   
+         variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
+           
+         # Visualizzazione Alert
+         col_run1, col_run2 = st.columns([1, 2])
+         with col_run1:
+            if variazione_run_rate < -5:
+               st.warning(f"⚠️ A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}.")
+            elif variazione_run_rate > 5:
+               st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**.")
+            else:
+               st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
+         with col_run2:
+            st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
