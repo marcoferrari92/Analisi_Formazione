@@ -392,6 +392,7 @@ def story_analysis(df):
       if anno_prec in df_annual['Anno'].values:
          dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
          vol_prec             = dati_anno_prec['Vol_Target']   
+         aiuti_prec           = dati_anno_prec['Aiuti_Target']
          variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
            
          # Visualizzazione Alert
