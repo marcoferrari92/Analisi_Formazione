@@ -398,7 +398,10 @@ def story_analysis(df):
          dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
          vol_prec             = dati_anno_prec['Vol_Target']   
          aiuti_prec           = dati_anno_prec['Aiuti_Target']
-         variazione_run_rate  = ((proiezione_vol - vol_prec) / vol_prec) * 100
+
+         # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
+         med_proj = df_temp[df_temp['Anno'] == anno_corrente]['RNA_ELEMENTO_DI_AIUTO'].median()
+         delta_med = ((med_proj - penultimo['Aiuto_Medio_Target']) / penultimo['Aiuto_Medio_Target'] * 100) if penultimo['Aiuto_Medio_Target'] > 0 else 0
            
          # Visualizzazione Alert
          st.write("")
@@ -423,7 +426,7 @@ def story_analysis(df):
             )
             st.caption(
                  f"🔮 **{int(proiezione_aiuti)}** Aiuti ({p_n:+.1f}%) | "
-                 f"Medio: **€ {medio_proj:,.0f}** ({p_aiuto:+.1f}%)"
+                 f"Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)"
              )
          with col3:
             st.metric(
