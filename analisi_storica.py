@@ -419,7 +419,7 @@ def story_analysis(df):
                 value=f"€ {vol_prec/1e6:.2f}M",
                 help=f"Volume totale aiuti target nel {anno_prec}"
             )
-            st.caption(f"{int(aiuti_prec)} Aiuti Target Totali")
+            st.caption(f"{int(aiuti_prec)} Aiuti Target")
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
