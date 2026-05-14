@@ -18,17 +18,17 @@ def calc_cagr(current_val, start_val, current_year, start_year):
 
 
 def color_cagr(val):
-   try:
-      if val is None or pd.isna(val): 
-         return ''
-         v = float(val)
-         if v > 0.001: 
+    try:
+        if val is None or pd.isna(val): 
+            return ''
+        v = float(val)
+        if v > 0.001: 
             return 'color: #27ae60; font-weight: bold;'
-         if v < -0.001: 
+        if v < -0.001: 
             return 'color: #e74c3c; font-weight: bold;'
-      except: 
-         pass
-      return ''
+    except: 
+        pass
+    return ''
       
 
 GUIDA_CAGR = r"""
