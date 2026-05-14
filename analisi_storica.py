@@ -420,7 +420,10 @@ def story_analysis(df):
                 #delta=f"{variazione_run_rate:.1f}%",
                 help=f"Stima basata sui primi {mesi_passati} mesi dell'anno"
             )
-            st.caption(f"🔮 Stima: {int(proiezione_aiuti)} Aiuti Target")
+            st.caption(
+                 f"🔮 **{int(proiezione_aiuti)}** Aiuti ({p_n:+.1f}%) | "
+                 f"Medio: **€ {medio_proj:,.0f}** ({p_aiuto:+.1f}%)"
+             )
          with col3:
             st.metric(
                 label=f"Reale {anno_prec}", 
