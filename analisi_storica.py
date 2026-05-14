@@ -431,14 +431,14 @@ def story_analysis(df):
             if trend_storico == "ACCELERAZIONE":
                st.warning(f"⚠️ **Inversione di rotta:**")
                st.markdown(r"""
-                  Il mercato arrivava da un boom ({anno_u}), ma le proiezione per il {anno_corrente} mostrano una contrazione. 
-                  Dopo grossi investimenti nel {anno_u} le aziende non sembrano interessate a investire nel Settore Target anche nel {anno_corrente}. 
-                  La campagna marketing deve essere moderata.""")
+               Il mercato arrivava da un boom ({anno_u}), ma le proiezione per il {anno_corrente} mostrano una contrazione. 
+               Dopo grossi investimenti nel {anno_u} le aziende non sembrano interessate a investire nel Settore Target anche nel {anno_corrente}. 
+               La campagna marketing deve essere moderata.""")
             elif trend_storico == "CRISI":
                st.error(f"🚨 **Aggravamento:**")
                st.markdown(r"""
-                  La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
-                  Le aziende hanno pochissima liquidità: punta tutto su newsletter di sensibilizzazione e ottimizzazione fiscale.""")
+               La crisi iniziata nel {anno_u} continua nel {anno_corrente}. 
+               Le aziende hanno pochissima liquidità: punta tutto su newsletter di sensibilizzazione e ottimizzazione fiscale.""")
             else:
                st.warning(f"⚠️ **Contrazione:** Il {anno_corrente} conferma un momento di prudenza. Campagne marketing mirate e budget sotto controllo.")
 
@@ -447,12 +447,12 @@ def story_analysis(df):
             if trend_storico == "CRISI" or trend_storico == "RECUPERO":
                st.success(f"🌟 **Rinascita:**")
                st.markdown(r"""
-                   Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità. 
-                   Sii il primo a proporre nuovi investimenti audaci alle aziende.""")
+               Dopo le difficoltà degli anni passati, il {anno_corrente} sembra indicare un ritorno della liquidità. 
+               Sii il primo a proporre nuovi investimenti audaci alle aziende.""")
             elif trend_storico == "ACCELERAZIONE":
                st.success(f"🚀 **Conferma del Boom:**")
                st.markdown(r"""
-                  Il mercato non si ferma. Cavalca l'onda con campagne marketing aggressive: la liquidità è ai massimi storici.""")
+               Il mercato non si ferma. Cavalca l'onda con campagne marketing aggressive: la liquidità è ai massimi storici.""")
             else:
                st.success(f"🌟 **Crescita:** Il trend è positivo. Ottimo momento per spingere sulla lead generation.")
 
