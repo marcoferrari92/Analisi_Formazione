@@ -447,4 +447,8 @@ def story_analysis(df):
          st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
          st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
 
-   
+   st.write("")
+   st.plotly_chart(fig_strategy, use_container_width=True)
+   st.write("")
+   st.write("")
+   st.dataframe(st_df, hide_index=True, use_container_width=True)
