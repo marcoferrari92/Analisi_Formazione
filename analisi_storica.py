@@ -237,7 +237,7 @@ def story_analysis(df):
             delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec) * 100 if aiuti_prec > 0 else 0
 
       st.write("")
-      st.markdown(r"""#### Analisi Storica ({anno_u})""")
+      st.markdown(f"""#### Analisi Storica ({anno_u})""")
       
       # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE ---
       col_stato, col_info = st.columns([1, 2])
