@@ -176,11 +176,13 @@ def story_analysis(df):
       return ''
 
    st_df = df_final.style.map(
-      color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
+       color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
    ).format({
-      'CAGR Target': "{:.2f} %", 'CAGR Vol. Target': "{:.2f} %",
-      'Quota Target (%)': "{:.2f} %", 'Quota Vol. Target (%)': "{:.2f} %"
-      }, na_rep="In corso...")
+       'CAGR Target': "{:.2f} %", 
+       'CAGR Vol. Target': "{:.2f} %",
+       'Quota Target (%)': "{:.2f} %", 
+       'Quota Vol. Target (%)': "{:.2f} %"
+   }, na_rep="In corso...")
 
 
    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
