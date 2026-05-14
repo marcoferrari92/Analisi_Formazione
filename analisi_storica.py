@@ -21,7 +21,7 @@ GUIDA_CAGR = r"""
     * Sprona le aziende nei periodi di contrazione, aiutandole a ottimizzare i pochi aiuti che stanno ricevendo.
     * Cavalca il settore nei momenti di massima espansione.
     
-#### 📈 Guida al CAGR 
+#### 📈 Guida al  
 
 Il **CAGR (Compound Annual Growth Rate)** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
 
@@ -177,9 +177,9 @@ def story_analysis(df):
    
    # 3. Styling e Formattazione finale
    st_df = df_final.style.map(
-       color_cagr, subset=['CAGR']
+       color_cagr, subset=['CAGR Target']
    ).format({
-       'CAGR': "{:.2f} %",
+       'CAGR Target': "{:.2f} %",
        'Aiuti Target (%)': "{:.2f} %",
        'Vol. Target (%)': "{:.2f} %"
    }, na_rep="In corso...")
