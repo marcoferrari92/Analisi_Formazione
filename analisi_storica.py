@@ -21,7 +21,7 @@ GUIDA_CAGR = r"""
     * Sprona le aziende nei periodi di contrazione, aiutandole a ottimizzare i pochi aiuti che stanno ricevendo.
     * Cavalca il settore nei momenti di massima espansione.
     
-#### 📈 Guida al  
+#### 📈 Guida al CAGR
 
 Il **CAGR (Compound Annual Growth Rate)** misura la crescita media annua del **Settore Target**, ipotizzando una progressione costante.
 
