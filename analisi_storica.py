@@ -166,14 +166,17 @@ def story_analysis(df):
    ]
 
    def color_cagr(val):
-      try:
-         if val is None or pd.isna(val): return ''
+        try:
+            if val is None or pd.isna(val): 
+                return ''
             v = float(val)
-            if v > 0.001: return 'color: #27ae60; font-weight: bold;'
-            if v < -0.001: return 'color: #e74c3c; font-weight: bold;'
-      except: 
-         pass
-      return ''
+            if v > 0.001: 
+                return 'color: #27ae60; font-weight: bold;'
+            if v < -0.001: 
+                return 'color: #e74c3c; font-weight: bold;'
+        except: 
+            pass
+        return ''
 
    st_df = df_final.style.map(
        color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
