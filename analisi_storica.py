@@ -183,10 +183,6 @@ def story_analysis(df):
        'Aiuti Target (%)': "{:.2f} %",
        'Vol. Target (%)': "{:.2f} %"
    }, na_rep="In corso...")
-   
-   # Visualizzazione della tabella in Streamlit
-   st.dataframe(st_df, hide_index=True, use_container_width=True)
-
 
 
    # --- INTERPRETAZIONE FINALE INTEGRALE (16 SCENARI PIATTI) ---
