@@ -398,15 +398,8 @@ def story_analysis(df):
                """)
 
    st.write("")
-   #st.plotly_chart(fig_strategy, use_container_width=True)
-   #st.write("")
-   #st.plotly_chart(fig_polar, use_container_width=True)
-   #st.write("")
-   #st.dataframe(st_df, hide_index=True, use_container_width=True)
-
-   tab1, tab2 = st.tabs(["Trend & CAGR", "Polarizzazione & Dettagli"])
-   with tab1:
-       st.plotly_chart(fig_strategy, use_container_width=True)
-   with tab2:
-       st.plotly_chart(fig_polar, use_container_width=True)
-       st.dataframe(st_df, use_container_width=True)
+   st.plotly_chart(fig_strategy, use_container_width=True)
+   st.write("")
+   st.plotly_chart(fig_polar, use_container_width=True)
+   st.write("")
+   st.dataframe(st_df, hide_index=True, use_container_width=True)
