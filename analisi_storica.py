@@ -65,7 +65,7 @@ def story_analysis(df):
       with st.popover("📖 Metodologia"):
          st.markdown(GUIDA_CAGR)
    with col3:
-      st.markdown(r"""**In questa sezione trovi l'*Analisi Storica* che confronta la crescita composta (CAGR) del *Settore Target* con l'andamento degli aiuti erogati negli anni.**""")
+      st.markdown(r"""**In questa sezione trovi l'*Analisi Storica del Settore Target* che confronta la crescita composta (CAGR) del settore con l'andamento degli aiuti erogati negli anni.**""")
    st.write("")
     
 
