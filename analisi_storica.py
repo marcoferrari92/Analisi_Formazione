@@ -149,18 +149,17 @@ def story_analysis(df):
    df_view['Vol. Target (€)'] = df_view['Vol_Target'].apply(lambda x: f"€ {x/1e6:.2f}M")
 
    df_final = df_view[[
-      'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)', 'CAGR Target',
+      'Anno', 'Aiuti_Tot', 'Aiuti_Target', 'Quota Target (%)',
       'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
    ]]
    df_final.columns = [
-      'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
+      'Anno', 'Aiuti', 'Aiuti Target', 'Quota Target (%)',
       'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
    ]
 
    st_df = df_final.style.map(
        color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
    ).format({
-       'CAGR Target': "{:.2f} %", 
        'CAGR Vol. Target': "{:.2f} %",
        'Quota Target (%)': "{:.2f} %", 
        'Quota Vol. Target (%)': "{:.2f} %"
