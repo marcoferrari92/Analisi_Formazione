@@ -208,6 +208,34 @@ def story_analysis(df):
       p_aiuto = (diff_aiuto / penultimo['Aiuto_Mediano_Target'] * 100) if penultimo['Aiuto_Mediano_Target'] > 0 else 0
       p_n = (diff_n / penultimo['Aiuti_Target'] * 100) if penultimo['Aiuti_Target'] > 0 else 0
 
+      # PROIEZIONE ANNO CORRENTE
+      if anno_corrente in df_annual['Anno'].values:
+         
+         # Estraiamo i dati reali dell'anno in corso
+         mese_corrente = datetime.datetime.now().month
+         mesi_passati = mese_corrente
+         dati_anno_corso    = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
+         vol_reale_corso    = dati_anno_corso['Vol_Target']
+         aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
+          
+         # Confronto con l'anno precedente (se esiste)
+         anno_prec = anno_corrente - 1
+         if anno_prec in df_annual['Anno'].values:
+            dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
+            vol_prec             = dati_anno_prec['Vol_Target']   
+            aiuti_prec           = dati_anno_prec['Aiuti_Target']
+   
+            # Calcolo Run Rate (Proiezione a 12 mesi)
+            proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
+            proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
+            variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
+   
+            # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
+            med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target'].iloc[0]
+            med_prec = df_annual[df_annual['Anno'] == anno_prec]['Aiuto_Mediano_Target'].iloc[0]
+            delta_med = ((med_proj - med_prec) / med_prec * 100) if med_prec > 0 else 0
+            delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec) * 100 if aiuti_prec > 0 else 0
+
       st.write("")
 
       # --- AREA 1: CAGR POSITIVO + ACCELERAZIONE ---
@@ -220,7 +248,9 @@ def story_analysis(df):
                **Nell'anno {anno_u}:**
                * Il volume del **Settore Target** sta accelerando al CAGR del **{cagr_att:.2f}%** rispetto al {anno_p} ({c_pre:.2f}%).
                * Nonostante l'aumento di {diff_n} aiuti ({p_n:+.1f}%), l'**Aiuto Medio** è comunque salito di **€ {diff_aiuto:,.0f}** ({p_aiuto:+.1f}%) arrivando a **€ {a_med:,.0f}**.
-               * :green[**Analisi:** Il mercato target è in piena espansione: aumentano contemporaneamente il numero di progetti e il loro valore economico.]
+               * :green[**Analisi:** Il {anno_u} ha segnato una piena espansione del Settore Target: sono aumentati sia il numero di progetti che il loro valore economico.
+                  * Se la proiezione per il {anno_corrente} è altrettanto rosea, puoi puntare a campagne marketing aggressive perchè la liquidità a disposizione delle aziende è elevata.
+                  * Una proiezione]
                """)
 
       elif cagr_att > 0 and diff_cagr > 0 and diff_aiuto > 0 and diff_n <= 0:
@@ -394,56 +424,28 @@ def story_analysis(df):
                * Nonostante il calo di {abs(diff_n)} aiuti ({p_n:.1f}%), l'**Aiuto Medio** è comunque sceso di **€ {abs(diff_aiuto):,.0f}** ({p_aiuto:.1f}%) arrivando a **€ {a_med:,.0f}**.
                * :red[**Analisi:** Stato di crisi massima: esaurimento dei fondi e crollo totale dell'interesse e del valore sul mercato target.]
                """)
-
-   # PROIEZIONE 
-   if anno_corrente in df_annual['Anno'].values:
-      
-      # Estraiamo i dati reali dell'anno in corso
-      mese_corrente = datetime.datetime.now().month
-      mesi_passati = mese_corrente
-      dati_anno_corso    = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
-      vol_reale_corso    = dati_anno_corso['Vol_Target']
-      aiuti_reali_corso  = dati_anno_corso['Aiuti_Target']
-       
-      # Confronto con l'anno precedente (se esiste)
-      anno_prec = anno_corrente - 1
-      if anno_prec in df_annual['Anno'].values:
-         dati_anno_prec       = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
-         vol_prec             = dati_anno_prec['Vol_Target']   
-         aiuti_prec           = dati_anno_prec['Aiuti_Target']
-
-         # Calcolo Run Rate (Proiezione a 12 mesi)
-         proiezione_vol    = (vol_reale_corso / mesi_passati) * 12
-         proiezione_aiuti  = (aiuti_reali_corso / mesi_passati) * 12
-         variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec * 100) if vol_prec > 0 else 0
-
-         # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
-         med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target'].iloc[0]
-         med_prec = df_annual[df_annual['Anno'] == anno_prec]['Aiuto_Mediano_Target'].iloc[0]
-         delta_med = ((med_proj - med_prec) / med_prec * 100) if med_prec > 0 else 0
-         delta_n = ((proiezione_aiuti - aiuti_prec) / aiuti_prec) * 100 if aiuti_prec > 0 else 0
            
-         # Visualizzazione Alert
-         st.write("")
-         col1, col2, col3 = st.columns([1, 1, 1])
-         with col1:
-            if variazione_run_rate <= -20:
-                st.error(f"🚨 **Recessione:** Il {anno_corrente} punta a un **{variazione_run_rate:.1f}%!** Calo drastico rispetto al {anno_prec}, serve una campagna di sensibilizzazione!")
-            elif -20 < variazione_run_rate <= -5:
-                st.warning(f"⚠️ **Contrazione:** Proiezione in calo del **{variazione_run_rate:.1f}%**. Ottimizza le campagne marketing, la liquidità delle aziende in questo {anno_corrente} sarà limitata.")
-            elif -5 < variazione_run_rate <= 5:
-                st.info(f"⚖️ **Stabilità:** Il mercato è in linea con il {anno_prec} ({variazione_run_rate:+.1f}%).")
-            elif 5 < variazione_run_rate <= 20:
-                st.success(f"🌟 **Crescita:** Trend positivo del **{variazione_run_rate:.1f}%**. Proponi nuovi investimenti per sfruttare la maggior liquidità che entrerà in questo {anno_corrente}.")
-            else: 
-                st.success(f"🚀**Boom Target:** Proiezione straordinaria del **+{variazione_run_rate:.1f}%**! Cavalca questo boom con campagne marketing più audaci del {anno_prec}.")
-         with col2:
-            st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M")
-            st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti ({delta_n:+.1f}%) | Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)")
+      # Visualizzazione Alert
+      st.write("")
+      col1, col2, col3 = st.columns([1, 1, 1])
+      with col1:
+         if variazione_run_rate <= -20:
+             st.error(f"🚨 **Recessione:** Il {anno_corrente} punta a un **{variazione_run_rate:.1f}%!** Calo drastico rispetto al {anno_prec}, serve una campagna di sensibilizzazione!")
+         elif -20 < variazione_run_rate <= -5:
+             st.warning(f"⚠️ **Contrazione:** Proiezione in calo del **{variazione_run_rate:.1f}%**. Ottimizza le campagne marketing, la liquidità delle aziende in questo {anno_corrente} sarà limitata.")
+         elif -5 < variazione_run_rate <= 5:
+             st.info(f"⚖️ **Stabilità:** Il mercato è in linea con il {anno_prec} ({variazione_run_rate:+.1f}%).")
+         elif 5 < variazione_run_rate <= 20:
+             st.success(f"🌟 **Crescita:** Trend positivo del **{variazione_run_rate:.1f}%**. Proponi nuovi investimenti per sfruttare la maggior liquidità che entrerà in questo {anno_corrente}.")
+         else: 
+             st.success(f"🚀**Boom Target:** Proiezione straordinaria del **+{variazione_run_rate:.1f}%**! Cavalca questo boom con campagne marketing più audaci del {anno_prec}.")
+      with col2:
+         st.metric(label=f"Proiezione {anno_corrente}", value=f"€ {proiezione_vol/1e6:.2f}M")
+         st.caption(f"🔮 **{int(proiezione_aiuti)}** Aiuti ({delta_n:+.1f}%) | Medio: **€ {med_proj:,.0f}** ({delta_med:+.1f}%)")
 
-         with col3:
-            st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
-            st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
+      with col3:
+         st.metric(label=f"Reale {anno_prec}", value=f"€ {vol_prec/1e6:.2f}M")
+         st.caption(f"📊 {int(aiuti_prec)} Aiuti | Medio: **€ {med_prec:,.0f}**")
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
