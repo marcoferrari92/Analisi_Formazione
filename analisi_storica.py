@@ -9,6 +9,28 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots 
 import datetime
 
+
+# CALCOL CAGR
+def calc_cagr(current_val, start_val, current_year, start_year):
+   n_anni = current_year - start_year
+   if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
+   return (current_val / start_val) ** (1 / n_anni) - 1
+
+
+def color_cagr(val):
+   try:
+      if val is None or pd.isna(val): 
+         return ''
+         v = float(val)
+         if v > 0.001: 
+            return 'color: #27ae60; font-weight: bold;'
+         if v < -0.001: 
+            return 'color: #e74c3c; font-weight: bold;'
+      except: 
+         pass
+      return ''
+      
+
 GUIDA_CAGR = r"""
 
 #### ⏳ Analisi Storica del Settore Target
@@ -62,13 +84,6 @@ def story_analysis(df):
    # Riempi i NaN (es. se in un anno non ci sono aiuti target, la mediana è NaN)
    df_annual['Aiuto_Mediano_Target'] = df_annual['Aiuto_Mediano_Target'].fillna(0)
 
-
-   # CALCOL CAGR
-   def calc_cagr(current_val, start_val, current_year, start_year):
-      n_anni = current_year - start_year
-      if n_anni <= 0 or start_val <= 0 or current_val <= 0: return 0.0
-      return (current_val / start_val) ** (1 / n_anni) - 1
-
    anno_start = df_annual['Anno'].min()
    prat_target_start = df_annual['Aiuti_Target'].iloc[0] 
    vol_target_start = df_annual['Vol_Target'].iloc[0]
@@ -82,6 +97,47 @@ def story_analysis(df):
 
    # Mascheramento anno in corso per i CAGR
    df_annual.loc[df_annual['Anno'] == anno_corrente, ['CAGR Target', 'CAGR Vol. Target']] = None
+
+   # PROIEZIONE 
+   oggi = datetime.datetime.now()
+   anno_corrente = oggi.year
+   mese_corrente = oggi.month
+   
+   # Calcoliamo quanti mesi sono passati (escluso il mese in corso se non è finito, 
+   # o includendolo se vuoi una stima più aggressiva. Qui usiamo il mese attuale)
+   mesi_passati = mese_corrente 
+
+   if anno_corrente in df_annual['Anno'].values:
+       # Estraiamo i dati reali dell'anno in corso
+       dati_anno_corso = df_annual[df_annual['Anno'] == anno_corrente].iloc[0]
+       vol_reale_corso = dati_anno_corso['Vol_Target']
+       aiuti_reali_corso = dati_anno_corso['Aiuti_Target']
+       
+       # Calcolo Run Rate (Proiezione a 12 mesi)
+       proiezione_vol = (vol_reale_corso / mesi_passati) * 12
+       proiezione_aiuti = (aiuti_reali_corso / mesi_passati) * 12
+       
+       # Confronto con l'anno precedente (se esiste)
+       anno_prec = anno_corrente - 1
+       if anno_prec in df_annual['Anno'].values:
+           dati_anno_prec = df_annual[df_annual['Anno'] == anno_prec].iloc[0]
+           vol_prec = dati_anno_prec['Vol_Target']
+           
+           variazione_run_rate = ((proiezione_vol - vol_prec) / vol_prec) * 100
+           
+           # Visualizzazione Alert
+           st.write("---")
+           col_run1, col_run2 = st.columns([1, 2])
+           with col_run1:
+               st.metric("Proiezione Fine Anno", f"€ {proiezione_vol/1e6:.2f}M", f"{variazione_run_rate:.1f}% vs {anno_prec}")
+           
+           with col_run2:
+               if variazione_run_rate < -5:
+                   st.error(f"⚠️ **Early Warning:** A questo ritmo, il {anno_corrente} chiuderà con un **{variazione_run_rate:.1f}%** rispetto al {anno_prec}. È il momento di spingere sulle campagne!")
+               elif variazione_run_rate > 5:
+                   st.success(f"🚀 **Trend Positivo:** La proiezione indica una crescita del **{variazione_run_rate:.1f}%**. Il mercato è ricettivo!")
+               else:
+                   st.info(f"⚖️ **Stabilità:** Il mercato è in linea con i volumi dell'anno scorso.")
 
    # --- PARTE SUPERIORE: IL GRAFICO ---
    fig_strategy = make_subplots(specs=[[{"secondary_y": True}]])
@@ -138,19 +194,6 @@ def story_analysis(df):
       'Anno', 'Aiuti Tot.', 'Aiuti Target', 'Quota Target (%)', 'CAGR Target',
       'Vol. Tot. (€)', 'Vol. Target (€)', 'Quota Vol. Target (%)', 'CAGR Vol. Target'
    ]
-
-   def color_cagr(val):
-        try:
-            if val is None or pd.isna(val): 
-                return ''
-            v = float(val)
-            if v > 0.001: 
-                return 'color: #27ae60; font-weight: bold;'
-            if v < -0.001: 
-                return 'color: #e74c3c; font-weight: bold;'
-        except: 
-            pass
-        return ''
 
    st_df = df_final.style.map(
        color_cagr, subset=['CAGR Target', 'CAGR Vol. Target']
