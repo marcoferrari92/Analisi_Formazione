@@ -400,7 +400,8 @@ def story_analysis(df):
 
          # Il confronto (delta_medio) lo facciamo tra la mediana attuale e quella dell'anno scorso
          med_proj = df_annual[df_annual['Anno'] == anno_corrente]['Aiuto_Mediano_Target'].iloc[0]
-         delta_med = ((med_proj - penultimo['Aiuto_Mediano_Target']) / penultimo['Aiuto_Mediano_Target'] * 100) if penultimo['Aiuto_Mediano_Target'] > 0 else 0
+         med_prec = penultimo['Aiuto_Mediano_Target']
+         delta_med = ((med_proj - med_prec / med_prec * 100) if med_prec > 0 else 0
            
          # Visualizzazione Alert
          st.write("")
@@ -433,7 +434,10 @@ def story_analysis(df):
                 value=f"€ {vol_prec/1e6:.2f}M",
                 help=f"Volume totale aiuti target nel {anno_prec}"
             )
-            st.caption(f"{int(aiuti_prec)} Aiuti Target")
+            st.caption(
+                 f"{int(aiuti_prec)} Aiuti Target | "
+                 f"Medio: **€ {med_prec:,.0f}**"
+             )
 
    st.write("")
    st.plotly_chart(fig_strategy, use_container_width=True)
