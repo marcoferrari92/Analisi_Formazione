@@ -420,35 +420,11 @@ def story_analysis(df):
            
       # PROIEZIONE ANNO CORRENTE
       st.write("")
-      st.markdown(f"""#### Proiezione {anno_corrente}""")
-      
-      if len(df_annual) >= 2:
-        # ... (tutti i tuoi calcoli iniziali: cagr_att, diff_cagr, variazione_run_rate, ecc.)
-
-        # --- STEP 1: DEFINIAMO IL SENTIMENT STORICO ---
-        # Creiamo una variabile per "ricordare" cosa è successo nel passato recente
-        if cagr_att > 0 and diff_cagr > 0:
-            trend_storico = "ACCELERAZIONE"
-        elif cagr_att > 0 and diff_cagr <= 0:
-            trend_storico = "RALLENTAMENTO"
-        elif cagr_att <= 0 and diff_cagr > 0:
-            trend_storico = "RECUPERO"
-        else:
-            trend_storico = "CRISI"
-
-        st.write("")
-        st.markdown(f"#### Analisi Storica ({anno_u})")
+      st.markdown(r"""#### Proiezione {anno_corrente}""")
         
-        # --- (Qui tieni i tuoi 16 scenari esistenti per l'Analisi Storica) ---
-        # ...
+      col1, col2, col3 = st.columns([1, 1, 1])
         
-        # --- STEP 2: PROIEZIONE CONTESTUALIZZATA ---
-        st.write("")
-        st.markdown(f"#### Proiezione Strategica {anno_corrente}")
-        
-        col1, col2, col3 = st.columns([1, 1, 1])
-        
-        with col1:
+      with col1:
            
             # Caso A: Proiezione Negativa 2026
             if variazione_run_rate < -10:
