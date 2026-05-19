@@ -189,43 +189,40 @@ if uploaded_file is not None:
 
             
 
-        # --- ANALISI STORICA ---
+        # --- 1. ANALISI STORICA ---
         st.write("")
-        st.write("")
-        with st.expander("⏳ Analisi Storica del Settore Target"):
-            st.write("")
-            story_analysis(df)
-        st.write("")
-        st.write("")
-
-        # --- ANALISI RANKING E PARETO ---
-        with st.expander("🏆 Distribuzione Economica Settore Target"):
-            st.write("")
-            df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
-        st.write("")
-        st.write("")
-
-        # --- FUNNEL CHART (QUALIFICAZIONE) ---
-        with st.expander("👁️ Pentrazione Settore Target"):
-            st.write("")
-            penetration_analysis(df)
-        st.write("")
-        st.write("")
- 
-        # --- ANALISI GEOGRAFICA ---
-        with st.expander("🗺️ Distribuzione Geografica Settore Target"):
-            st.write("")
-            geo_analysis(df)
-        st.write("")
-        st.write("")
-
+        attiva_storica = st.toggle("⏳ Attiva Analisi Storica del Settore Target", value=False)
+        if attiva_storica:
+            with st.expander("Visualizza Analisi Storica", expanded=True):
+                story_analysis(df)
         
-        # --- SEZIONE TEMPORALE ---
-        with st.expander("📅 Distribuzione Temporale Settore Target"):
-            st.write("")
-            time_analysis(df)
+        # --- 2. DISTRIBUZIONE ECONOMICA / PARETO ---
         st.write("")
+        attiva_pareto = st.toggle("🏆 Attiva Distribuzione Economica (Pareto)", value=False)
+        if attiva_pareto:
+            with st.expander("Visualizza Distribuzione Economica", expanded=True):
+                df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
+
+        # --- 3. PENETRAZIONE ---
         st.write("")
+        attiva_penetrazione = st.toggle("👁️ Attiva Analisi di Penetrazione", value=False)
+        if attiva_penetrazione:
+            with st.expander("Visualizza Penetrazione Settore", expanded=True):
+                penetration_analysis(df)
+
+        # --- 4. ANALISI GEOGRAFICA ---
+        st.write("")
+        attiva_geo = st.toggle("🗺️ Attiva Distribuzione Geografica", value=False)
+        if attiva_geo:
+            with st.expander("Visualizza Mappe e Dati Regionali", expanded=True):
+                geo_analysis(df)
+            
+        # --- 5. ANALISI TEMPORALE ---
+        st.write("")
+        attiva_time = st.toggle("📅 Attiva Distribuzione Temporale", value=False)
+        if attiva_time:
+            with st.expander("Visualizza Trend Temporali", expanded=True):
+                time_analysis(df)
 
         
         
