@@ -191,35 +191,35 @@ if uploaded_file is not None:
 
         # --- 1. ANALISI STORICA ---
         st.write("")
-        attiva_storica = st.toggle("⏳ Attiva Analisi Storica del Settore Target", value=False)
+        attiva_storica = st.toggle("⏳ Analisi Storica del Settore Target", value=False)
         if attiva_storica:
             with st.expander("Visualizza Analisi Storica", expanded=True):
                 story_analysis(df)
         
         # --- 2. DISTRIBUZIONE ECONOMICA / PARETO ---
         st.write("")
-        attiva_pareto = st.toggle("🏆 Attiva Distribuzione Economica (Pareto)", value=False)
+        attiva_pareto = st.toggle("🏆 Distribuzione Economica del Settore Target", value=False)
         if attiva_pareto:
             with st.expander("Visualizza Distribuzione Economica", expanded=True):
                 df, colormap_stato_economico = pareto_analysis(df, guida_pareto=GUIDA_PARETO)
 
         # --- 3. PENETRAZIONE ---
         st.write("")
-        attiva_penetrazione = st.toggle("👁️ Attiva Analisi di Penetrazione", value=False)
+        attiva_penetrazione = st.toggle("👁️ Penetrazione del Settore Target", value=False)
         if attiva_penetrazione:
             with st.expander("Visualizza Penetrazione Settore", expanded=True):
                 penetration_analysis(df)
 
         # --- 4. ANALISI GEOGRAFICA ---
         st.write("")
-        attiva_geo = st.toggle("🗺️ Attiva Distribuzione Geografica", value=False)
+        attiva_geo = st.toggle("🗺️ Distribuzione Geografica del Settore Target", value=False)
         if attiva_geo:
             with st.expander("Visualizza Mappe e Dati Regionali", expanded=True):
                 geo_analysis(df)
             
         # --- 5. ANALISI TEMPORALE ---
         st.write("")
-        attiva_time = st.toggle("📅 Attiva Distribuzione Temporale", value=False)
+        attiva_time = st.toggle("📅 Distribuzione Temporale del Settore Target", value=False)
         if attiva_time:
             with st.expander("Visualizza Trend Temporali", expanded=True):
                 time_analysis(df)
